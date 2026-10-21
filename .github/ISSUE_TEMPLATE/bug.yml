@@ -1,0 +1,28 @@
+name: באג
+description: משהו לא עובד כמו שצריך
+title: "Bug: "
+labels: ["type: bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: מה קרה
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: מה היה צריך לקרות
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: איך משחזרים
+      value: |
+        1.
+        2.
+  - type: input
+    id: device
+    attributes:
+      label: מכשיר וגרסת Android

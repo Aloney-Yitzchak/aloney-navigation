@@ -1,0 +1,19 @@
+# Android / Gradle
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+# Firebase config contains project keys — keep it out of a public repo
+app/google-services.json
+# ML: training images stay outside git (large, may show people)
+ml/dataset/
+*.tflite.tmp
+# Office lock files
+~$*

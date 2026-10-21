@@ -1,0 +1,29 @@
+name: מטלה
+description: מטלה מתוכנית ניהול הפרויקט
+title: "T__: "
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: מה צריך לעשות
+      description: תיאור המטלה במשפט או שניים
+    validations:
+      required: true
+  - type: input
+    id: requirement
+    attributes:
+      label: דרישה מקושרת
+      placeholder: FR-03
+  - type: textarea
+    id: done
+    attributes:
+      label: תנאי סיום
+      description: איך יודעים שהמטלה גמורה
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: input
+    id: hours
+    attributes:
+      label: הערכת שעות
