@@ -1,0 +1,21 @@
+# Publishes the wiki/ folder to the repository Wiki on every push to main.
+# The wiki is edited like code: change files under wiki/, open a PR, merge.
+name: Publish wiki
+on:
+  push:
+    branches: [main]
+    paths: ["wiki/**", ".github/workflows/publish-wiki.yml"]
+  workflow_dispatch:
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Andrew-Chen-Wang/github-wiki-action@v4
+        with:
+          path: wiki/
