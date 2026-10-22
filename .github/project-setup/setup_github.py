@@ -53,10 +53,11 @@ for tid, title, mkey, typ, fr, prio, hours, what, done, page, state in TASKS:
         continue
     checks = "\n".join(f"- [{'x' if state == 'closed' else ' '}] {d}" for d in done)
     req = fr or "—"
+    # Full link: in an issue a relative "../../wiki/…" drops the repo name (github.com/OWNER/wiki/…).
     body = (f'<div dir="rtl">\n\n## מה צריך לעשות\n\n{what}\n\n'
             f'## תנאי סיום\n\n{checks}\n\n'
             f'| דרישה | הערכה | פירוט |\n| --- | --- | --- |\n'
-            f'| {req} | {hours} שעות | [Wiki — {page.replace("-", " ")}](../../wiki/{page}) |\n\n</div>\n')
+            f'| {req} | {hours} שעות | [Wiki — {page.replace("-", " ")}](https://github.com/{REPO}/wiki/{page}) |\n\n</div>\n')
     labels = [PHASE_LABEL[mkey], f"type: {typ}", f"priority: {prio}"] + ([fr] if fr else [])
     issue = api("POST", "issues", {"title": f"{tid}: {title}", "body": body, "labels": labels,
                                    "milestone": key_to_number[mkey]})
