@@ -17,7 +17,7 @@
 
 ## פתיחה ובנייה
 
-1. ב-Android Studio: ‏**File → Open** ובוחרים את התיקייה `app` (זו שיש בה `settings.gradle`).
+1. ב-Android Studio: ‏**File → Open** ובוחרים את התיקייה הראשית של המאגר (`aloney-navigation`). שם נמצאים `settings.gradle` ו-`gradlew`, והמודול של האפליקציה הוא התיקייה `app`.
 2. מריצים על טלפון או אמולטור (Run ▶).
 
 משורת הפקודה:
@@ -25,7 +25,6 @@
 <div dir="ltr">
 
 ```bash
-cd app
 ./gradlew assembleDebug        # בונה app/build/outputs/apk/debug/app-debug.apk
 ./gradlew testDebugUnitTest    # בדיקות יחידה
 ```
@@ -36,7 +35,7 @@ cd app
 
 ## google-services.json
 
-הקובץ של Firebase **לא נכנס למאגר** (הוא ב-`.gitignore`). מורידים אותו מ-Firebase Console → Project settings → Your apps, ושמים אותו ב-`app/app/google-services.json`. הוא נדרש מ-T08.
+הקובץ של Firebase **לא נכנס למאגר** (הוא ב-`.gitignore`). מורידים אותו מ-Firebase Console → Project settings → Your apps, ושמים אותו ב-`app/google-services.json`. הוא נדרש מ-T08.
 
 ## בדיקת תמיכה ב-ARCore (סיכון R3)
 
