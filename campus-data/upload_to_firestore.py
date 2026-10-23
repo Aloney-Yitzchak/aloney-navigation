@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Uploads the campus data from the CSV files to Firestore (T06).
 
-The service account key stays OUTSIDE the repo. Point to it with the
-standard environment variable:
+Sign-in uses Google's Application Default Credentials, so no key file is needed:
 
-    export GOOGLE_APPLICATION_CREDENTIALS=~/keys/aloney-navigation-key.json
-    python upload_to_firestore.py --dry-run     # check and show what would change
-    python upload_to_firestore.py               # upload
+  * Google Cloud Shell (the >_ button in Firebase console): already signed in as you.
+        git clone https://github.com/Aloney-Yitzchak/aloney-navigation && cd aloney-navigation/campus-data
+        pip install -r requirements.txt
+        python upload_to_firestore.py --dry-run     # check and show what would change
+        python upload_to_firestore.py               # upload
+  * Your own computer: `gcloud auth application-default login` once, then the same commands.
+  * A service account key also works: GOOGLE_APPLICATION_CREDENTIALS=<path OUTSIDE the repo>.
 
 Steps:
   1. validate.py checks run first; invalid data is never uploaded.
@@ -52,18 +55,20 @@ def build_documents(data):
 
 
 def connect():
-    import firebase_admin
     from firebase_admin import firestore
 
     if os.environ.get("FIRESTORE_EMULATOR_HOST"):
         # the emulator needs no key
         from google.auth.credentials import AnonymousCredentials
         return firestore.firestore.Client(project=PROJECT_ID, credentials=AnonymousCredentials())
-    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        sys.exit("חסר GOOGLE_APPLICATION_CREDENTIALS: הנתיב לקובץ המפתח (מחוץ למאגר!)")
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(options={"projectId": PROJECT_ID})
-    return firestore.client()
+    import google.auth
+    from google.auth.exceptions import DefaultCredentialsError
+    try:
+        credentials, _ = google.auth.default()
+    except DefaultCredentialsError:
+        sys.exit("אין הרשאה ל-Google Cloud. הריצו ב-Cloud Shell, "
+                 "או `gcloud auth application-default login`, או הגדירו GOOGLE_APPLICATION_CREDENTIALS.")
+    return firestore.firestore.Client(project=PROJECT_ID, credentials=credentials)
 
 
 def plan_changes(db, docs, collections):

@@ -5,7 +5,7 @@ The security rules allow a write only when the signed-in user has the custom
 claim staff == true. The staff member first creates an account in the app
 (T24) or in Firebase Console → Authentication; then:
 
-    export GOOGLE_APPLICATION_CREDENTIALS=~/keys/aloney-navigation-key.json
+    # in Cloud Shell, or after `gcloud auth application-default login`:
     python set_staff_claim.py teacher@a-y.org.il            # grant
     python set_staff_claim.py teacher@a-y.org.il --remove   # revoke
     python set_staff_claim.py --list                        # who has access
@@ -14,7 +14,6 @@ The claim reaches the phone the next time the user signs in (or within an hour).
 """
 
 import argparse
-import os
 import sys
 
 PROJECT_ID = "aloney-navigation"
@@ -23,8 +22,8 @@ PROJECT_ID = "aloney-navigation"
 def init():
     import firebase_admin
 
-    if not os.environ.get("FIREBASE_AUTH_EMULATOR_HOST") and not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        sys.exit("חסר GOOGLE_APPLICATION_CREDENTIALS: הנתיב לקובץ המפתח (מחוץ למאגר!)")
+    # Application Default Credentials: Cloud Shell, `gcloud auth application-default login`,
+    # or GOOGLE_APPLICATION_CREDENTIALS pointing at a key OUTSIDE the repo.
     if not firebase_admin._apps:
         firebase_admin.initialize_app(options={"projectId": PROJECT_ID})
 
