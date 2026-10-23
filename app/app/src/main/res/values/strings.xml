@@ -9,6 +9,7 @@
     <string name="permission_missing_title">חלק מההרשאות לא אושרו</string>
     <string name="permission_missing_location">בלי הרשאת מיקום אפשר לחפש חדרים ולראות את המפה, אבל לא לנווט. אפשר לאשר את ההרשאה בהגדרות הטלפון.</string>
     <string name="permission_missing_camera">בלי הרשאת מצלמה הניווט יעבוד על המפה בלבד, בלי חץ על המצלמה. אפשר לאשר את ההרשאה בהגדרות הטלפון.</string>
+    <string name="permission_missing_both">בלי הרשאות מיקום ומצלמה אפשר לחפש חדרים ולראות את המפה, אבל לא לנווט ולא לראות חץ על המצלמה. אפשר לאשר את ההרשאות בהגדרות הטלפון.</string>
     <string name="permission_continue">המשך</string>
 
     <string name="search_placeholder">מסך החיפוש ייבנה במטלה T09</string>
