@@ -199,12 +199,14 @@ function check() {
 }
 
 // ---------- map
-const map = L.map('map', { doubleClickZoom: false }).setView(CAMPUS_CENTER, 17);
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  { maxZoom: 20, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+const map = L.map('map', { doubleClickZoom: false, maxZoom: 21 }).setView(CAMPUS_CENTER, 17);
+// Satellite first: mapping is done on the imagery. The street map is CARTO (OpenStreetMap data),
+// because tile.openstreetmap.org refuses pages opened directly from a file (no Referer).
 const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { maxZoom: 20, maxNativeZoom: 19, attribution: 'Imagery &copy; Esri' });
-L.control.layers({ 'מפה': osm, 'לוויין': sat }).addTo(map);
+  { maxZoom: 21, maxNativeZoom: 19, attribution: 'Imagery &copy; Esri' }).addTo(map);
+const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+  { maxZoom: 21, maxNativeZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' });
+L.control.layers({ 'לוויין': sat, 'מפה': streets }).addTo(map);
 const layer = L.layerGroup().addTo(map);
 
 function draw(fit) {
