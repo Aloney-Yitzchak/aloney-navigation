@@ -22,14 +22,14 @@ public class NodeTest {
 
     @Test
     public void oneThousandthDegreeEast_isShorterByCosLatitude() {
-        // 111.195 · cos(32.49°) = 93.798 m
-        assertEquals(93.798, Node.distance(32.49, 34.950, 32.49, 34.951), TOLERANCE_M);
+        // 111.195 · cos(32.49°) = 93.791 m
+        assertEquals(93.791, Node.distance(32.49, 34.950, 32.49, 34.951), TOLERANCE_M);
     }
 
     @Test
     public void diagonal_isPythagoras() {
         double d = Node.distance(32.490, 34.950, 32.491, 34.951);
-        assertEquals(Math.hypot(111.195, 93.798), d, 0.05);
+        assertEquals(Math.hypot(111.195, 93.791), d, TOLERANCE_M);
     }
 
     @Test
