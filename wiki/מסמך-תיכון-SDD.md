@@ -172,7 +172,7 @@ Room לא מאפשר שאילתות על ה-UI thread, ולכן הקריאות �
 
 ## 4. תרשים מחלקות
 
-![תרשים מחלקות · 25 מחלקות בארבע חבילות](images/class-diagram.png)
+![תרשים מחלקות · 26 מחלקות בארבע חבילות](images/class-diagram.png)
 
 <details>
 <summary>אותו תרשים בפורמט Mermaid (נבנה אוטומטית ב-GitHub, וניתן לעריכה ב-mermaid.live)</summary>
@@ -308,6 +308,7 @@ namespace data {
     +roomDao() RoomDao
     +graphDao() GraphDao
     +favoriteDao() FavoriteDao
+    +recentDao() RecentDao
   }
   class FirestoreSource {
     +fetchAll()
@@ -318,23 +319,33 @@ namespace data {
 
 namespace model {
   class CampusRoom {
+    <<Entity>>
     +String number
     +String name
     +String owner
-    +int entranceNodeId
+    +Integer entranceNodeId
+    +String planYear
   }
   class Node {
+    <<Entity>>
     +int id
     +double lat
     +double lng
     +distanceTo(Node other) double
   }
   class Edge {
+    <<Entity>>
+    +int id
     +int fromId
     +int toId
     +double length
   }
   class Favorite {
+    <<Entity>>
+    +String roomNumber
+    +long timestamp
+  }
+  class Recent {
     <<Entity>>
     +String roomNumber
     +long timestamp
@@ -382,13 +393,14 @@ Route o-- Node
 Edge --> Node : from, to
 CampusRoom --> Node : entrance
 AppDatabase ..> Favorite
+AppDatabase ..> Recent
 ```
 
 </div>
 
 </details>
 
-<sub>תרשים מחלקות · 25 מחלקות בארבע חבילות</sub>
+<sub>תרשים מחלקות · 26 מחלקות בארבע חבילות</sub>
 
 כל חץ מסמן תלות: המחלקה שבמקור החץ משתמשת במחלקה שבקצה. החבילות מסודרות מלמעלה למטה, ותלות רצה רק כלפי מטה: מסך לעולם לא קורא לחיישן או לבסיס הנתונים בעצמו. SearchActivity ו-SplashActivity נעזרות ב-CampusRepository; החיצים שלהן הושמטו כדי שהתרשים יישאר קריא.
 
@@ -431,16 +443,45 @@ NavigationManager שומר את המצב הנוכחי במשתנה מסוג enum
 
 חמש טבלאות ב-Room. הטבלאות rooms, nodes ו-edges הן עותק של Firestore; favorites ו-recent קיימות רק בטלפון.
 
+| טבלה | מחלקה | מפתח | קשרים |
+| --- | --- | --- | --- |
+| rooms | `CampusRoom` | `number` — מספר החדר כפי שהוא מודפס בתרשים ("36", "ש36"), קבוע משנה לשנה | `entrance_node_id` → nodes; ריק עד שהכניסה ממופה |
+| nodes | `Node` | `id` | — |
+| edges | `Edge` | `id` | `from_id`, `to_id` → nodes |
+| favorites | `Favorite` | `room_number` | → rooms; נמחק עם החדר |
+| recent | `Recent` | `id` | `room_number` → rooms; שורה אחת לכל חדר, 10 האחרונים |
+
+`name` הוא מה שיש בחדר השנה (כיתה ט2, ספרייה), ו-`plan_year` הוא שנת התרשים שממנה הגיע השיבוץ. כך שיבוץ חדש בכל שנה משנה שדות, ולא את המפתח.
+
+**סנכרון:** `GraphDao.replaceCampus` מחליף את העותק בטרנזקציה אחת. חדרים ונקודות מתעדכנים במקום (Upsert) ולא נמחקים ונוצרים מחדש, ולכן המועדפים והחיפושים האחרונים נשמרים. חדר שירד מהנתונים נמחק, והמועדף שלו איתו (ON DELETE CASCADE). אם משהו נכשל באמצע, שום דבר לא נשמר.
+
+**השאילתות:** `RoomDao` (חיפוש, ו-JOIN עם nodes — סעיף 2.3), `GraphDao`, `FavoriteDao`, `RecentDao`. הקוד ב-`app/app/src/main/java/il/org/ay/navigation/data`, והבדיקות שלו ב-`AppDatabaseTest`.
+
 ### 8.1 המבנה ב-Firestore
 
 Firestore שומר מסמכים באוספים ולא טבלאות, ולכן הקשרים נשמרים כמזהים בתוך המסמך.
 
 | אוסף | מזהה מסמך | שדות | מי כותב |
 | --- | --- | --- | --- |
-| rooms | מספר החדר ("42") | name, owner, entranceNodeId | איש צוות, מפתח |
-| nodes | מספר הנקודה | lat, lng | מפתח |
-| edges | מספר הקשת | fromId, toId, length | מפתח |
-| meta | version | number, updatedAt | מעודכן בכל שינוי |
+| rooms | מספר החדר ("36", "ש36") | name, owner, entranceNodeId, planYear | איש צוות, מפתח |
+| nodes | מספר הנקודה ("12") | lat, lng | מפתח |
+| edges | מספר הקשת ("5") | fromId, toId, length | מפתח |
+| meta | version | number, updatedAt | מעודכן בכל העלאה ובכל שינוי |
+
+שמות השדות ב-Firestore הם שמות השדות במחלקות Java (camelCase), ולכן אותה מחלקה משמשת גם כמסמך Firestore וגם כשורה ב-Room (שם העמודה ב-snake_case, דרך `@ColumnInfo`). מזהה המסמך הוא המפתח של הטבלה. דוגמה למסמך:
+
+<div dir="ltr">
+
+```
+rooms/36  →  { name: "ט2", owner: "מחנכת ט2", entranceNodeId: 14, planYear: "tashpaz" }
+nodes/14  →  { lat: 32.49012, lng: 34.95231 }
+edges/5   →  { fromId: 14, toId: 15, length: 23.4 }
+meta/version → { number: 3, updatedAt: <timestamp> }
+```
+
+</div>
+
+הנתונים מועלים מהקבצים ב-`campus-data/` בסקריפט `upload_to_firestore.py`, אחרי בדיקת התקינות של `validate.py`.
 
 ### 8.2 כללי אבטחה
 

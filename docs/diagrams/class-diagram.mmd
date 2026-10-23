@@ -126,6 +126,7 @@ namespace data {
     +roomDao() RoomDao
     +graphDao() GraphDao
     +favoriteDao() FavoriteDao
+    +recentDao() RecentDao
   }
   class FirestoreSource {
     +fetchAll()
@@ -136,23 +137,33 @@ namespace data {
 
 namespace model {
   class CampusRoom {
+    <<Entity>>
     +String number
     +String name
     +String owner
-    +int entranceNodeId
+    +Integer entranceNodeId
+    +String planYear
   }
   class Node {
+    <<Entity>>
     +int id
     +double lat
     +double lng
     +distanceTo(Node other) double
   }
   class Edge {
+    <<Entity>>
+    +int id
     +int fromId
     +int toId
     +double length
   }
   class Favorite {
+    <<Entity>>
+    +String roomNumber
+    +long timestamp
+  }
+  class Recent {
     <<Entity>>
     +String roomNumber
     +long timestamp
@@ -200,3 +211,4 @@ Route o-- Node
 Edge --> Node : from, to
 CampusRoom --> Node : entrance
 AppDatabase ..> Favorite
+AppDatabase ..> Recent
