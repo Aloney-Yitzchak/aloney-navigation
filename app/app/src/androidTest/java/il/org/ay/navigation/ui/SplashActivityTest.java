@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import il.org.ay.navigation.R;
@@ -48,6 +49,7 @@ public class SplashActivityTest {
     private static final Pattern ALLOW = Pattern.compile(
             ".*:id/(permission_allow_foreground_only_button|permission_allow_button)");
     private static final Pattern DENY = Pattern.compile(".*:id/permission_deny_button");
+    private static final Pattern MESSAGE = Pattern.compile(".*:id/permission_message");
 
     private UiDevice device;
     private ActivityScenario<SplashActivity> scenario;
@@ -85,8 +87,7 @@ public class SplashActivityTest {
     @Test
     public void allowBoth_opensSearch() {
         onView(withId(R.id.button_start)).perform(click());
-        answer(ALLOW);   // location
-        answer(ALLOW);   // camera
+        answerPrompts(ALLOW, ALLOW);
         onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
         screenshot("02-search");
     }
@@ -94,8 +95,7 @@ public class SplashActivityTest {
     @Test
     public void denyCamera_explainsAndMapStillAvailable() {
         onView(withId(R.id.button_start)).perform(click());
-        answer(ALLOW);   // location
-        answer(DENY);    // camera
+        answerPrompts(ALLOW, DENY);
         onView(withText(R.string.permission_missing_camera)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("03-camera-denied");
         assertDialogIsRightToLeft();
@@ -106,8 +106,7 @@ public class SplashActivityTest {
     @Test
     public void denyLocation_explainsAndSearchStillAvailable() {
         onView(withId(R.id.button_start)).perform(click());
-        answer(DENY);    // location
-        answer(ALLOW);   // camera
+        answerPrompts(DENY, ALLOW);
         onView(withText(R.string.permission_missing_location)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("04-location-denied");
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
@@ -117,20 +116,28 @@ public class SplashActivityTest {
     @Test
     public void denyBoth_oneMessageAboutBoth() {
         onView(withId(R.id.button_start)).perform(click());
-        answer(DENY);    // location
-        answer(DENY);    // camera
+        answerPrompts(DENY, DENY);
         onView(withText(R.string.permission_missing_both)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("05-both-denied");
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
         onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
     }
 
-    /** Clicks a button in the system permission dialog. */
-    private void answer(Pattern button) {
-        UiObject2 b = device.wait(Until.findObject(By.res(button)), TIMEOUT_MS);
-        assertNotNull("permission dialog button not found: " + button, b);
-        b.click();
-        device.waitForIdle();
+    /**
+     * Answers the two system permission prompts. Android decides their order,
+     * so each prompt is read and answered by what it asks about.
+     */
+    private void answerPrompts(Pattern location, Pattern camera) {
+        for (int i = 0; i < 2; i++) {
+            UiObject2 message = device.wait(Until.findObject(By.res(MESSAGE)), TIMEOUT_MS);
+            assertNotNull("permission prompt " + (i + 1) + " did not appear", message);
+            boolean isLocation = message.getText().toLowerCase(Locale.ROOT).contains("location");
+            UiObject2 button = device.findObject(By.res(isLocation ? location : camera));
+            assertNotNull("button not found in the " + (isLocation ? "location" : "camera") + " prompt", button);
+            button.click();
+            device.wait(Until.gone(By.res(MESSAGE)), TIMEOUT_MS);
+            device.waitForIdle();
+        }
     }
 
     /** The dialog title must sit on the right: its right edge is further right than its left edge is from the left. */
