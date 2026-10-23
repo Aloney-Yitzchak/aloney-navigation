@@ -13,6 +13,8 @@ android {
         versionCode 1
         versionName '0.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        // every emulator test starts from a fresh install: no data, no permissions
+        testInstrumentationRunnerArguments clearPackageData: 'true'
     }
 
     buildTypes {
@@ -25,6 +27,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    testOptions {
+        // runs each emulator test in its own process (needed for clearPackageData)
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+    }
 }
 
 dependencies {
@@ -34,4 +40,12 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
 
     testImplementation 'junit:junit:4.13.2'
+
+    // Emulator tests (GitHub Actions: .github/workflows/android-emulator.yml)
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+    androidTestUtil 'androidx.test:orchestrator:1.5.1'
 }
