@@ -2,8 +2,10 @@
 <!-- Splash: placeholder layout. T30 replaces it with the Figma design (docs/design/splash.png). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:id="@+id/splash_root"
     android:layout_height="match_parent"
     android:background="@color/primary"
+    android:layoutDirection="rtl"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="@dimen/margin_screen">
@@ -25,6 +27,7 @@
         android:textSize="@dimen/text_body" />
 
     <TextView
+        android:id="@+id/splash_why_location"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
