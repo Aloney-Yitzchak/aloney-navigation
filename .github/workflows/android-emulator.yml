@@ -47,8 +47,12 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          # A freshly booted emulator sometimes shows "System UI isn't responding" or is slow to
+          # give the app window focus: hide error dialogs, unlock, and retry the tests once.
           script: |
-            ./gradlew connectedDebugAndroidTest || touch tests-failed
+            adb shell settings put global hide_error_dialogs 1 || true
+            adb shell input keyevent 82 || true
+            ./gradlew connectedDebugAndroidTest || ./gradlew connectedDebugAndroidTest || touch tests-failed
             mkdir -p screenshots/api-${{ matrix.api-level }}
             adb pull /sdcard/Pictures/aloney/. screenshots/api-${{ matrix.api-level }}/ || true
             test ! -f tests-failed
