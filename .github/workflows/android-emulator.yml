@@ -47,7 +47,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-            script: |
+          script: |
             ./gradlew connectedDebugAndroidTest || touch tests-failed
             mkdir -p screenshots/api-${{ matrix.api-level }}
             adb pull /sdcard/Pictures/aloney/. screenshots/api-${{ matrix.api-level }}/ || true
