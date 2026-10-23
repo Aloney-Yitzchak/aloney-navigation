@@ -1,0 +1,202 @@
+%% תרשים מחלקות — ניווט אלוני יצחק
+%% להדבקה ב-https://mermaid.live
+%% חצים:  -->  שימוש / שיוך   ..>  תלות (יוצר, פותח)   *--  הרכבה   o--  צבירה   <|--  ירושה
+
+classDiagram
+direction TB
+
+namespace ui {
+  class SplashActivity {
+    -CampusRepository repo
+    +onCreate(Bundle)
+    -requestPermissions()
+    -syncCampusData()
+  }
+  class SearchActivity {
+    -CampusRepository repo
+    -RecyclerView resultsList
+    +onQueryChanged(String text)
+    +onRoomSelected(CampusRoom room)
+    +toggleFavorite(CampusRoom room)
+  }
+  class MapActivity {
+    -NavigationManager nav
+    -MapView mapView
+    +drawRoute(Route route)
+    +showPlanOverlay(SchoolPlan plan)
+    +onMapTap(double lat, double lng)
+  }
+  class ArNavActivity {
+    -NavigationManager nav
+    -BuildingRecognizer recognizer
+    +drawArrow(float angle, double dist)
+    +onArrived()
+  }
+  class AdminActivity {
+    -AuthManager auth
+    -CampusRepository repo
+    +login()
+    +saveRoom(CampusRoom room)
+  }
+  class MapAlignmentActivity {
+    -GeoTransform transform
+    -SchoolPlan plan
+    +loadPlan(String year)
+    +addControlPoint(PointF px, LatLng ll)
+    +assignRoom(PointF px, CampusRoom room)
+    +savePlan()
+  }
+  class CalibrationDialog {
+    +onPointPicked(LatLng point)
+    +onConfirm()
+  }
+  class ArrivalDialog {
+    +show(CampusRoom room)
+    +onDone()
+  }
+}
+
+namespace logic {
+  class NavigationManager {
+    -Route route
+    -NavState state
+    +update(LatLng pos, float heading)
+    +getArrowAngle() float
+    +getDistanceLeft() double
+    +isArrived() boolean
+  }
+  class LocationService {
+    -FusedLocationProviderClient client
+    +smooth(Location loc) LatLng
+    +snapToPath(LatLng p) LatLng
+    +calibrate(LatLng p)
+    +addListener(LocationListener l)
+  }
+  class HeadingService {
+    -SensorManager sensors
+    +getHeading() float
+    +getAccuracy() int
+    +countSteps() int
+    +addListener(HeadingListener l)
+  }
+  class BuildingRecognizer {
+    -Interpreter model
+    -float threshold
+    +analyze(ImageProxy image)
+    +getLast() Recognition
+  }
+  class Recognition {
+    +String label
+    +float confidence
+    +int nodeId
+  }
+  class GeoTransform {
+    -double[] coefficients
+    +fit(List~ControlPoint~ points)
+    +toLatLng(double u, double v) LatLng
+    +residual(int i) double
+  }
+}
+
+namespace data {
+  class CampusRepository {
+    -AppDatabase db
+    -FirestoreSource remote
+    +load() CampusGraph
+    +search(String text) List~CampusRoom~
+    +sync()
+  }
+  class CampusGraph {
+    -Map~Integer, Edge[]~ adjacency
+    +findPath(Node from, Node to) Route
+    +nearestNode(LatLng p) Node
+  }
+  class Route {
+    +List~Node~ nodes
+    +totalDistance() double
+    +nextNode(LatLng p) Node
+  }
+  class AuthManager {
+    +signIn(String email, String pw)
+    +isStaff() boolean
+    +signOut()
+  }
+  class AppDatabase {
+    <<abstract>>
+    +roomDao() RoomDao
+    +graphDao() GraphDao
+    +favoriteDao() FavoriteDao
+  }
+  class FirestoreSource {
+    +fetchAll()
+    +listen(Callback cb)
+    +updateRoom(CampusRoom room)
+  }
+}
+
+namespace model {
+  class CampusRoom {
+    +String number
+    +String name
+    +String owner
+    +int entranceNodeId
+  }
+  class Node {
+    +int id
+    +double lat
+    +double lng
+    +distanceTo(Node other) double
+  }
+  class Edge {
+    +int fromId
+    +int toId
+    +double length
+  }
+  class Favorite {
+    <<Entity>>
+    +String roomNumber
+    +long timestamp
+  }
+  class SchoolPlan {
+    +String year
+    +String imageUrl
+    +List~ControlPoint~ controlPoints
+  }
+}
+
+%% ui
+SplashActivity --> CampusRepository
+SearchActivity --> CampusRepository
+SearchActivity ..> AdminActivity : opens
+MapActivity --> NavigationManager
+MapActivity ..> CalibrationDialog : opens
+MapActivity --> SchoolPlan : overlay
+ArNavActivity --> NavigationManager
+ArNavActivity --> BuildingRecognizer
+ArNavActivity ..> ArrivalDialog : opens
+AdminActivity --> AuthManager
+AdminActivity --> CampusRepository
+AdminActivity ..> MapAlignmentActivity : opens
+MapAlignmentActivity --> GeoTransform
+MapAlignmentActivity --> SchoolPlan
+
+%% logic
+NavigationManager --> LocationService
+NavigationManager --> HeadingService
+NavigationManager --> BuildingRecognizer
+NavigationManager o-- Route
+BuildingRecognizer ..> Recognition : creates
+LocationService --> CampusGraph : snap to path
+GeoTransform ..> SchoolPlan : control points
+
+%% data
+CampusRepository --> AppDatabase
+CampusRepository --> FirestoreSource
+CampusRepository ..> CampusGraph : builds
+CampusGraph *-- Node
+CampusGraph *-- Edge
+CampusGraph ..> Route : creates
+Route o-- Node
+Edge --> Node : from, to
+CampusRoom --> Node : entrance
+AppDatabase ..> Favorite
