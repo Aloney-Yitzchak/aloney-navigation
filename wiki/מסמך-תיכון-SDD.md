@@ -455,7 +455,7 @@ NavigationManager שומר את המצב הנוכחי במשתנה מסוג enum
 
 **סנכרון:** `GraphDao.replaceCampus` מחליף את העותק בטרנזקציה אחת. חדרים ונקודות מתעדכנים במקום (Upsert) ולא נמחקים ונוצרים מחדש, ולכן המועדפים והחיפושים האחרונים נשמרים. חדר שירד מהנתונים נמחק, והמועדף שלו איתו (ON DELETE CASCADE). אם משהו נכשל באמצע, שום דבר לא נשמר.
 
-**השאילתות:** `RoomDao` (חיפוש, ו-JOIN עם nodes — סעיף 2.3), `GraphDao`, `FavoriteDao`, `RecentDao`. הקוד ב-`app/app/src/main/java/il/org/ay/navigation/data`, והבדיקות שלו ב-`AppDatabaseTest`.
+**השאילתות:** `RoomDao` (חיפוש, ו-JOIN עם nodes — סעיף 2.3), `GraphDao`, `FavoriteDao`, `RecentDao`. הקוד ב-`app/src/main/java/il/org/ay/navigation/data`, והבדיקות שלו ב-`AppDatabaseTest`.
 
 ### 8.1 המבנה ב-Firestore
 
