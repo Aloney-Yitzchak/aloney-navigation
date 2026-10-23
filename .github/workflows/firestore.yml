@@ -1,0 +1,33 @@
+name: Firestore rules and upload
+
+on:
+  pull_request:
+    paths: ['firestore.rules', 'firebase.json', 'firestore-tests/**', 'campus-data/**', '.github/workflows/firestore.yml']
+  push:
+    branches: [main]
+    paths: ['firestore.rules', 'firebase.json', 'firestore-tests/**', 'campus-data/**', '.github/workflows/firestore.yml']
+
+jobs:
+  emulator-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: firestore-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4        # the Firestore emulator runs on Java
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: pip install -r ../campus-data/requirements.txt
+      - name: Security rules tests
+        run: npm test
+      - name: Upload script against the emulator
+        run: npm run test:upload

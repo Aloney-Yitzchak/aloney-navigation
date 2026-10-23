@@ -1,0 +1,14 @@
+{
+  "name": "aloney-navigation-firestore-tests",
+  "private": true,
+  "description": "Security rules tests (T06, NFR-10): read for everyone, write for staff only",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-aloney-navigation --config ../firebase.json \"node --test rules.test.mjs\"",
+    "test:upload": "firebase emulators:exec --only firestore --project demo-aloney-navigation --config ../firebase.json \"cd ../campus-data && python -m unittest tests.test_upload -v\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
+    "firebase": "11.1.0",
+    "firebase-tools": "13.29.1"
+  }
+}

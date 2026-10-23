@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// Campus data (SDD 8.2, NFR-10): everyone can read, only staff can write.
+// "staff" is a custom claim set with campus-data/set_staff_claim.py.
+// Source of truth: firestore.rules in the GitHub repo.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{collection}/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.token.staff == true;
+    }
+  }
+}
