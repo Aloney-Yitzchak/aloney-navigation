@@ -34,6 +34,16 @@ public class PermissionState {
         return !location || !camera;
     }
 
+    /** Which explanation to show when something is missing (AT-12). */
+    public enum Missing { NONE, LOCATION, CAMERA, BOTH }
+
+    public Missing missing() {
+        if (!location && !camera) return Missing.BOTH;
+        if (!location) return Missing.LOCATION;
+        if (!camera) return Missing.CAMERA;
+        return Missing.NONE;
+    }
+
     public boolean hasLocation() {
         return location;
     }

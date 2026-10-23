@@ -55,9 +55,18 @@ public class SplashActivity extends AppCompatActivity {
             openSearch();
             return;
         }
-        int message = !state.hasLocation()
-                ? R.string.permission_missing_location
-                : R.string.permission_missing_camera;
+        int message;
+        switch (state.missing()) {
+            case BOTH:
+                message = R.string.permission_missing_both;
+                break;
+            case LOCATION:
+                message = R.string.permission_missing_location;
+                break;
+            default:
+                message = R.string.permission_missing_camera;
+                break;
+        }
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.permission_missing_title)
                 .setMessage(message)

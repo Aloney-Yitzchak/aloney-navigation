@@ -1,5 +1,6 @@
 package il.org.ay.navigation.logic;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -14,6 +15,7 @@ public class PermissionStateTest {
         assertTrue(s.canNavigate());
         assertTrue(s.canUseAr());
         assertFalse(s.needsExplanation());
+        assertEquals(PermissionState.Missing.NONE, s.missing());
     }
 
     @Test
@@ -22,6 +24,7 @@ public class PermissionStateTest {
         assertTrue(s.canNavigate());
         assertFalse(s.canUseAr());
         assertTrue(s.needsExplanation());
+        assertEquals(PermissionState.Missing.CAMERA, s.missing());
     }
 
     @Test
@@ -31,5 +34,14 @@ public class PermissionStateTest {
         assertFalse(s.canNavigate());
         assertFalse(s.canUseAr());
         assertTrue(s.needsExplanation());
+        assertEquals(PermissionState.Missing.LOCATION, s.missing());
+    }
+
+    @Test
+    public void bothRefused_oneMessageAboutBoth() {
+        PermissionState s = new PermissionState(false, false);
+        assertTrue(s.canSearch());
+        assertFalse(s.canNavigate());
+        assertEquals(PermissionState.Missing.BOTH, s.missing());
     }
 }

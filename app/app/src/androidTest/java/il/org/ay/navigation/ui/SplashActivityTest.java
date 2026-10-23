@@ -114,6 +114,17 @@ public class SplashActivityTest {
         onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void denyBoth_oneMessageAboutBoth() {
+        onView(withId(R.id.button_start)).perform(click());
+        answer(DENY);    // location
+        answer(DENY);    // camera
+        onView(withText(R.string.permission_missing_both)).inRoot(isDialog()).check(matches(isDisplayed()));
+        screenshot("05-both-denied");
+        onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
+        onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
+    }
+
     /** Clicks a button in the system permission dialog. */
     private void answer(Pattern button) {
         UiObject2 b = device.wait(Until.findObject(By.res(button)), TIMEOUT_MS);
