@@ -1,11 +1,11 @@
 number,name,owner,entrance_node_id,plan_year
 1,רכזת בוגרים ובגרויות,רכזת בוגרים ובגרויות,,tashpaz
 2,חדר מחשבים,,,tashpaz
-3,י נעל"ה - כיתת עברית,,,tashpaz
+3,"י נעל""ה - כיתת עברית",,,tashpaz
 4,רכזת שכבה ח',רכזת שכבה ח',,tashpaz
 5,רכזת שכבה ט',רכזת שכבה ט',,tashpaz
 6,רכז שכבה ז',רכז שכבה ז',,tashpaz
-7,מחסן מזכירות ביה"ס,,,tashpaz
+7,"מחסן מזכירות ביה""ס",,,tashpaz
 8,חדר מחשבים,,,tashpaz
 ש9,ט4,,,tashpaz
 10-11,שירותים,,,tashpaz
@@ -20,12 +20,12 @@ number,name,owner,entrance_node_id,plan_year
 20,ספרייה,,,tashpaz
 21,חדר הכלה,,,tashpaz
 22,חדר אנגלית,,,tashpaz
-23,חדר מורים ומזכירות ביה"ס,,,tashpaz
+23,"חדר מורים ומזכירות ביה""ס",,,tashpaz
 24,צוות אנגלית,,,tashpaz
 25,צוות מתמטיקה,,,tashpaz
 27,חדר שהייה,,,tashpaz
 28,יא2,,,tashpaz
-29,מנהלת חט"ע,מנהלת חט"ע,,tashpaz
+29,"מנהלת חט""ע","מנהלת חט""ע",,tashpaz
 30,אולפן,,,tashpaz
 31,יא6,,,tashpaz
 32,יועצת,יועצת,,tashpaz

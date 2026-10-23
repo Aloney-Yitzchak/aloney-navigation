@@ -41,6 +41,12 @@
   .popup label { display: block; margin: 4px 0; }
   .popup input, .popup select { font: inherit; width: 100%; }
   #loader { display: none; }
+  #draft { display: none; background: #FFF3E0; border-radius: 8px; padding: 8px 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; max-height: 26vh; overflow-y: auto; }
+  .chip { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--bg); border-radius: 14px; padding: 2px 9px; cursor: pointer; }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip small { color: var(--quiet); }
+  .chip.on small { color: #fff; }
   @media (max-width: 760px) { body { grid-template-columns: 1fr; grid-template-rows: auto 60vh; } aside { border: 0; max-height: 50vh; } }
 </style>
 </head>
@@ -52,6 +58,11 @@
     <h2>טעינת הקבצים</h2>
     <p class="hint">הדף נפתח ישירות מהקובץ, ולכן צריך לבחור את nodes.csv, edges.csv ו-rooms.csv מהתיקייה campus-data.</p>
     <label class="file">בחירת קבצים<input id="files" type="file" accept=".csv" multiple hidden></label>
+  </div>
+
+  <div id="draft">
+    <div id="draftText"></div>
+    <div class="row" style="margin-top:6px"><button id="draftRestore" class="primary">שחזור הטיוטה</button><button id="draftDiscard">מחיקה</button></div>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -66,10 +77,15 @@
     <h2>עריכה</h2>
     <div class="row">
       <button id="edit">מצב עריכה</button>
-      <button id="dlNodes">הורדת nodes.csv</button>
-      <button id="dlEdges">הורדת edges.csv</button>
+      <button id="dlAll" class="primary">הורדת 3 הקבצים</button>
     </div>
-    <p class="hint">במצב עריכה: לחיצה על המפה מוסיפה צומת; לחיצה על נקודה ואחריה על נקודה אחרת מוסיפה או מוחקת שביל ביניהן; גרירה מזיזה נקודה; לחיצה כפולה על נקודה פותחת עריכה של הסוג והתווית. אחרי ההורדה מחליפים את הקבצים בתיקייה ומריצים <code>python validate.py --write</code>.</p>
+    <p class="hint">במצב עריכה: לחיצה על המפה מוסיפה צומת; לחיצה על נקודה ואחריה על נקודה אחרת מוסיפה או מוחקת שביל ביניהן; גרירה מזיזה נקודה; לחיצה כפולה על נקודה פותחת עריכה: סוג, תווית והחדרים שמאחורי הכניסה. כל שינוי נשמר אוטומטית בדפדפן כטיוטה. בסוף מורידים את שלושת הקבצים, מחליפים אותם בתיקייה ומריצים <code>python validate.py --write --complete</code>.</p>
+  </div>
+
+  <div>
+    <h2>חדרים בלי כניסה <span id="unmappedCount"></span></h2>
+    <p class="hint">בוחרים חדר, ואז לוחצים על המפה במקום הכניסה שלו (נוצרת נקודת כניסה) או על נקודת כניסה קיימת (חדר נוסף מאחורי אותה דלת). כדאי לעבור לשכבת "לוויין".</p>
+    <div class="chips" id="unmapped"></div>
   </div>
 
   <div class="legend hint">
@@ -82,11 +98,11 @@
 <script>
 'use strict';
 const LONG_EDGE_M = 80, R = 6371000;
-// Default view: the school campus (approximate); the map zooms to the data once there is some.
-const CAMPUS_CENTER = [32.494, 34.984];
+// Default view: Alonei Yitzhak (Wikipedia: 32°30′36″N 35°0′19″E); the map zooms to the data once there is some.
+const CAMPUS_CENTER = [32.51, 35.00528];
 
 let nodes = [], edges = [], rooms = [];
-let editMode = false, firstPick = null;
+let editMode = false, firstPick = null, selectedRoom = null, loaded = false;
 
 // ---------- CSV
 function parseCsv(text) {
@@ -99,7 +115,7 @@ function parseCsv(text) {
       if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
       else if (c === '"') q = false;
       else cell += c;
-    } else if (c === '"') q = true;
+    } else if (c === '"' && cell === '') q = true;   // a quote opens only at the start of a field (ביה"ס stays as is)
     else if (c === ',') { row.push(cell); cell = ''; }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && text[i + 1] === '\n') i++;
@@ -120,8 +136,10 @@ const toCsv = (header, rows) => [header.join(','), ...rows.map(r => r.map(csvCel
 function setData(n, e, r) {
   nodes = n.map(x => ({ id: +x.id, lat: +x.lat, lng: +x.lng, kind: x.kind, label: x.label || '' }));
   edges = e.map(x => ({ from: +x.from_id, to: +x.to_id }));
-  rooms = r.map(x => ({ number: x.number, name: x.name, entrance: x.entrance_node_id === '' ? null : +x.entrance_node_id }));
+  rooms = r.map(x => ({ number: x.number, name: x.name || '', owner: x.owner || '', planYear: x.plan_year || '',
+    entrance: x.entrance_node_id === '' || x.entrance_node_id === undefined ? null : +x.entrance_node_id }));
   draw(true);
+  offerDraft();
 }
 
 // ---------- geometry (SDD 9.2, same as campus.py and Node.java)
@@ -240,12 +258,16 @@ function draw(fit) {
     ul.appendChild(li);
   }
 
+  renderUnmapped();
+  saveDraft();
+
   if (fit && nodes.length) map.fitBounds(nodes.map(n => [n.lat, n.lng]), { padding: [30, 30], maxZoom: 19 });
 }
 
 // ---------- editing
 function onNodeClick(n) {
   if (!editMode) return;
+  if (selectedRoom !== null) { linkRoom(selectedRoom, n); return; }
   if (firstPick === null) { firstPick = n.id; draw(); return; }
   if (firstPick !== n.id) {
     const i = edges.findIndex(e => (e.from === firstPick && e.to === n.id) || (e.from === n.id && e.to === firstPick));
@@ -258,9 +280,74 @@ map.on('click', ev => {
   if (!editMode) return;
   if (firstPick !== null) { firstPick = null; draw(); return; }
   const id = nodes.reduce((m, n) => Math.max(m, n.id), 0) + 1;
-  nodes.push({ id, lat: +ev.latlng.lat.toFixed(7), lng: +ev.latlng.lng.toFixed(7), kind: 'junction', label: '' });
+  const node = { id, lat: +ev.latlng.lat.toFixed(7), lng: +ev.latlng.lng.toFixed(7), kind: 'junction', label: '' };
+  nodes.push(node);
+  if (selectedRoom !== null) { linkRoom(selectedRoom, node); return; }
   draw();
 });
+
+// ---------- rooms
+function linkRoom(number, node) {
+  const room = rooms.find(r => r.number === number);
+  if (room) room.entrance = node.id;
+  node.kind = 'entrance';
+  const here = rooms.filter(r => r.entrance === node.id).map(r => r.number);
+  node.label = 'כניסה ' + here.join(' ');
+  selectedRoom = null;
+  draw();
+}
+
+function renderUnmapped() {
+  const box = document.getElementById('unmapped');
+  const unmapped = rooms.filter(r => r.entrance === null);
+  document.getElementById('unmappedCount').textContent = `(${unmapped.length})`;
+  box.innerHTML = '';
+  for (const r of unmapped) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (selectedRoom === r.number ? ' on' : '');
+    b.innerHTML = `<b></b> <small></small>`;
+    b.firstChild.textContent = r.number;
+    b.lastChild.textContent = r.name;
+    b.onclick = () => {
+      selectedRoom = selectedRoom === r.number ? null : r.number;
+      if (selectedRoom !== null && !editMode) document.getElementById('edit').click();
+      firstPick = null;
+      draw();
+    };
+    box.appendChild(b);
+  }
+}
+
+// ---------- draft in the browser (survives a refresh or a closed tab)
+const DRAFT_KEY = 'aloney-campus-draft';
+function saveDraft() {
+  if (!loaded) return;
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ nodes, edges, rooms, savedAt: new Date().toISOString() }));
+  } catch (e) { /* storage unavailable: no draft */ }
+}
+function offerDraft() {
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
+  const same = draft && JSON.stringify([draft.nodes, draft.edges, draft.rooms]) === JSON.stringify([nodes, edges, rooms]);
+  if (draft && !same) {
+    const mapped = draft.rooms.filter(r => r.entrance !== null).length;
+    document.getElementById('draftText').textContent =
+      `נמצאה טיוטה מ-${new Date(draft.savedAt).toLocaleString('he-IL')}: ${draft.nodes.length} נקודות, ${draft.edges.length} שבילים, ${mapped} חדרים ממופים.`;
+    document.getElementById('draft').style.display = 'block';
+    document.getElementById('draftRestore').onclick = () => {
+      nodes = draft.nodes; edges = draft.edges; rooms = draft.rooms;
+      document.getElementById('draft').style.display = 'none';
+      loaded = true; draw(true);
+    };
+    document.getElementById('draftDiscard').onclick = () => {
+      document.getElementById('draft').style.display = 'none';
+      loaded = true; saveDraft();
+    };
+  } else {
+    loaded = true;
+  }
+}
 
 function makeDraggable(marker, n) {
   marker.on('mousedown', ev => {
@@ -282,14 +369,28 @@ function openEditor(n, marker) {
   div.innerHTML = `<b>נקודה ${n.id}</b>
     <label>סוג <select><option value="junction">צומת</option><option value="entrance">כניסה</option></select></label>
     <label>תווית <input type="text"></label>
+    <label>חדרים מאחורי הכניסה (מספרים מופרדים ברווח) <input type="text" dir="ltr"></label>
+    <div class="hint"></div>
     <div class="row"><button class="primary">שמירה</button><button>מחיקת הנקודה</button></div>`;
-  const [sel] = div.getElementsByTagName('select'), [inp] = div.getElementsByTagName('input');
+  const [sel] = div.getElementsByTagName('select'), [inp, roomsInp] = div.getElementsByTagName('input');
   const [save, del] = div.getElementsByTagName('button');
+  const warn = div.querySelector('.hint');
   sel.value = n.kind; inp.value = n.label;
-  save.onclick = () => { n.kind = sel.value; n.label = inp.value.trim(); map.closePopup(); draw(); };
+  roomsInp.value = rooms.filter(r => r.entrance === n.id).map(r => r.number).join(' ');
+  save.onclick = () => {
+    const wanted = roomsInp.value.split(/[\s,]+/).filter(Boolean);
+    const unknown = wanted.filter(w => !rooms.some(r => r.number === w));
+    if (unknown.length) { warn.textContent = 'לא קיימים ב-rooms.csv: ' + unknown.join(', '); return; }
+    rooms.forEach(r => { if (r.entrance === n.id && !wanted.includes(r.number)) r.entrance = null; });
+    rooms.forEach(r => { if (wanted.includes(r.number)) r.entrance = n.id; });
+    n.kind = wanted.length ? 'entrance' : sel.value;
+    n.label = inp.value.trim();
+    map.closePopup(); draw();
+  };
   del.onclick = () => {
     nodes = nodes.filter(x => x !== n);
     edges = edges.filter(e => e.from !== n.id && e.to !== n.id);
+    rooms.forEach(r => { if (r.entrance === n.id) r.entrance = null; });
     map.closePopup(); draw();
   };
   L.popup().setLatLng(marker.getLatLng()).setContent(div).openOn(map);
@@ -309,13 +410,21 @@ function download(name, text) {
   a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-document.getElementById('dlNodes').onclick = () =>
+const downloadNodes = () =>
   download('nodes.csv', toCsv(['id', 'lat', 'lng', 'kind', 'label'],
     [...nodes].sort((a, b) => a.id - b.id).map(n => [n.id, n.lat.toFixed(7), n.lng.toFixed(7), n.kind, n.label])));
-document.getElementById('dlEdges').onclick = () => {
+const downloadEdges = () => {
   const byId = new Map(nodes.map(n => [n.id, n]));
   download('edges.csv', toCsv(['from_id', 'to_id', 'length_m'],
     edges.map(e => [e.from, e.to, byId.get(e.from) && byId.get(e.to) ? dist(byId.get(e.from), byId.get(e.to)).toFixed(1) : ''])));
+};
+const downloadRooms = () =>
+  download('rooms.csv', toCsv(['number', 'name', 'owner', 'entrance_node_id', 'plan_year'],
+    rooms.map(r => [r.number, r.name, r.owner, r.entrance === null ? '' : r.entrance, r.planYear])));
+document.getElementById('dlAll').onclick = () => {
+  downloadNodes();
+  setTimeout(downloadEdges, 400);
+  setTimeout(downloadRooms, 800);
 };
 
 // ---------- loading
@@ -330,6 +439,8 @@ document.getElementById('files').onchange = async ev => {
   setData(got['nodes.csv'] || [], got['edges.csv'] || [], got['rooms.csv'] || []);
 };
 loadServed().catch(() => { document.getElementById('loader').style.display = 'block'; draw(); });
+// leaving with unsaved edits: the draft is kept, but remind to download
+window.addEventListener('beforeunload', ev => { if (loaded && nodes.length) { ev.preventDefault(); ev.returnValue = ''; } });
 </script>
 </body>
 </html>
