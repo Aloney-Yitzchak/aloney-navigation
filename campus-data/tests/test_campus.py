@@ -126,6 +126,15 @@ class CheckTest(unittest.TestCase):
         rep = self.run_check(nodes=GOOD_NODES.replace("junction,צומת\n    2", "door,צומת\n    2"))
         self.assertTrue(any("kind" in e for e in rep.errors))
 
+    def test_hebrew_gershayim_in_names(self):
+        # ביה"ס and נעל"ה must survive a load and a save
+        with tempfile.TemporaryDirectory() as d:
+            write(d, GOOD_NODES, GOOD_EDGES, '    7,"מחסן מזכירות ביה""ס",,,tashpaz\n')
+            data = campus.load(d)
+            self.assertEqual(data.rooms[0].name, 'מחסן מזכירות ביה"ס')
+            campus.save_rooms(data.rooms, d)
+            self.assertEqual(campus.load(d).rooms[0].name, 'מחסן מזכירות ביה"ס')
+
     def test_wrong_header(self):
         with tempfile.TemporaryDirectory() as d:
             write(d, GOOD_NODES, GOOD_EDGES, GOOD_ROOMS)
