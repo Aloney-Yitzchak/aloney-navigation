@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Staff screen (T24-T26). Two states in one activity:
+     admin_login_state (docs/design/admin-login.png; no "remember me" / "forgot password", finding 9)
+     admin_rooms_state (docs/design/admin.png, behind the edit sheet: sheet_room_edit.xml).
+     No bottom bar, as in the design: the staff tab opens it and the back arrow returns. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:layoutDirection="rtl"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:navigationContentDescription="@string/action_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/text_primary"
+        app:title="@string/admin_login_screen" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- ============ state 1: sign in -->
+        <ScrollView
+            android:id="@+id/admin_login_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_screen">
+
+                <FrameLayout
+                    android:layout_width="@dimen/hero_circle"
+                    android:layout_height="@dimen/hero_circle"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:background="@drawable/bg_circle_primary_container">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_forest"
+                        app:tint="@color/primary" />
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/bg_circle_primary"
+                        android:importantForAccessibility="no"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_shield" />
+                </FrameLayout>
+
+                <TextView
+                    style="@style/Text.Display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="@string/admin_login_title" />
+
+                <TextView
+                    style="@style/Text.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:gravity="center"
+                    android:text="@string/admin_login_subtitle"
+                    android:textSize="@dimen/text_body" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_large"
+                    android:background="@drawable/bg_rounded_card"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_medium">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_circle_primary_container"
+                        android:importantForAccessibility="no"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_badge"
+                        app:tint="@color/primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Text.Label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/admin_login_notice_title" />
+
+                        <TextView
+                            style="@style/Text.Secondary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/admin_login_notice_text" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Text.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_large"
+                    android:labelFor="@id/admin_email"
+                    android:text="@string/admin_email" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/admin_email_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    app:hintEnabled="false"
+                    app:startIconDrawable="@drawable/ic_mail">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/admin_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="emailAddress"
+                        android:gravity="start|center_vertical"
+                        android:hint="@string/admin_email_hint"
+                        android:inputType="textEmailAddress"
+                        android:paddingVertical="16dp"
+                        android:textDirection="ltr" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    style="@style/Text.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:labelFor="@id/admin_password"
+                    android:text="@string/admin_password" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/admin_password_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    app:endIconMode="password_toggle"
+                    app:hintEnabled="false"
+                    app:startIconDrawable="@drawable/ic_lock">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/admin_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="password"
+                        android:gravity="start|center_vertical"
+                        android:inputType="textPassword"
+                        android:paddingVertical="16dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/admin_login_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:textColor="@color/error"
+                    android:textSize="@dimen/text_secondary"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/admin_login_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_large"
+                    android:text="@string/admin_login_button"
+                    app:icon="@drawable/ic_login" />
+
+                <TextView
+                    style="@style/Text.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:drawablePadding="@dimen/spacing_tiny"
+                    android:gravity="center_vertical"
+                    android:text="@string/admin_login_secure"
+                    app:drawableStartCompat="@drawable/ic_lock"
+                    app:drawableTint="@color/primary" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="@dimen/spacing_medium" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/admin_back"
+                    style="@style/Widget.Aloney.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_back_to_students"
+                    app:icon="@drawable/ic_arrow_forward"
+                    app:iconGravity="textEnd" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- ============ state 2: the rooms (after sign-in with the staff claim) -->
+        <LinearLayout
+            android:id="@+id/admin_rooms_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin_screen"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_medium">
+
+                <TextView
+                    android:id="@+id/admin_map_title"
+                    style="@style/Text.Subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/spacing_small"
+                    android:gravity="center_vertical|start"
+                    app:drawableStartCompat="@drawable/ic_school"
+                    app:drawableTint="@color/primary"
+                    tools:text="מפת בית הספר תשפ״ז" />
+
+                <TextView
+                    android:id="@+id/admin_map_info"
+                    style="@style/Text.Secondary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    tools:text="64 חדרים · גרסה 3" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/admin_update_map"
+                    style="@style/Widget.Aloney.Button.Tonal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/admin_update_map"
+                    app:icon="@drawable/ic_edit_location" />
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/admin_search_layout"
+                style="@style/Widget.Aloney.TextInput.Search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/margin_screen"
+                app:endIconMode="clear_text"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/ic_search">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/admin_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="start|center_vertical"
+                    android:hint="@string/admin_search_hint"
+                    android:inputType="text"
+                    android:paddingVertical="14dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/admin_rooms"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:padding="@dimen/margin_screen"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_room" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

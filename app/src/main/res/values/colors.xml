@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design language, design guide section 2. T30 completes the full palette. -->
+<!-- Design language, design guide section 2.
+     Green = the app and selected state. Orange is kept for the route, the arrow and the destination only (finding 8). -->
 <resources>
     <color name="primary">#2E7D32</color>
+    <color name="primary_dark">#1B5E20</color>
+    <color name="primary_container">#E8F5E9</color>
     <color name="accent">#F57C00</color>
+    <color name="accent_container">#FFE7D1</color>
     <color name="background">#FFFFFF</color>
     <color name="surface_card">#F5F5F5</color>
+    <color name="outline">#DADCE0</color>
     <color name="text_primary">#1C1B1F</color>
     <color name="text_secondary">#5F6368</color>
     <color name="error">#C62828</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <!-- dark panels on top of the camera image -->
+    <color name="overlay_dark">#E62B2B2E</color>
+    <color name="overlay_chip">#B3000000</color>
+    <!-- placeholder fill where osmdroid (T29) and CameraX (T16) will draw -->
+    <color name="map_placeholder">#E4EFDF</color>
+    <color name="camera_placeholder">#3A3F3A</color>
 </resources>

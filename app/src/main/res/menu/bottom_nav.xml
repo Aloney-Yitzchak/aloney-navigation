@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared by search, map, AR and staff (finding 1) -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_search" android:icon="@drawable/ic_search" android:title="@string/nav_search" />
+    <item android:id="@+id/nav_map" android:icon="@drawable/ic_map" android:title="@string/nav_map" />
+    <item android:id="@+id/nav_ar" android:icon="@drawable/ic_view_in_ar" android:title="@string/nav_ar" />
+    <item android:id="@+id/nav_staff" android:icon="@drawable/ic_staff" android:title="@string/nav_staff" />
+</menu>

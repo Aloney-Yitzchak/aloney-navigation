@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arrival (docs/design/arrival-dialog.png). No door-sign photo (finding 10). -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Aloney.Card.White"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/spacing_large"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_large">
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Aloney.Chip.Green"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/arrival_badge"
+            app:chipIcon="@drawable/ic_check_circle" />
+
+        <FrameLayout
+            android:layout_width="@dimen/hero_circle"
+            android:layout_height="@dimen/hero_circle"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="@drawable/bg_circle_primary_container">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_circle"
+                app:tint="@color/primary" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/Text.Display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/arrival_title" />
+
+        <TextView
+            android:id="@+id/arrival_room"
+            style="@style/Text.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:gravity="center"
+            tools:text="חדר 42 — מתמטיקה" />
+
+        <TextView
+            android:id="@+id/arrival_detail"
+            style="@style/Text.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:gravity="center"
+            android:textSize="@dimen/text_body"
+            tools:text="רכזת שכבה ט'" />
+
+        <TextView
+            android:id="@+id/arrival_summary"
+            style="@style/Text.Secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="@drawable/bg_rounded_card"
+            android:drawablePadding="@dimen/spacing_small"
+            android:gravity="center"
+            android:padding="12dp"
+            app:drawableStartCompat="@drawable/ic_walk_green"
+            tools:text="זמן הליכה: 2 דקות · 120 מטר" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/arrival_new_destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:text="@string/arrival_new_destination"
+            app:icon="@drawable/ic_explore" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/arrival_close"
+            style="@style/Widget.Aloney.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/action_close" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,10 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- All the text in the app is Hebrew and lives here (finding 5). Values shown only in the
+     layout preview (a room name, a distance) are tools:text in the layout, not strings. -->
 <resources>
     <string name="app_name">ניווט אלוני יצחק</string>
-    <string name="splash_subtitle">מגיעים לכל כיתה בקמפוס</string>
-    <string name="splash_why_location">מיקום: כדי לחשב מסלול מהמקום שבו אתם עומדים</string>
-    <string name="splash_why_camera">מצלמה: כדי להציג חץ ניווט על התמונה מהמצלמה</string>
-    <string name="splash_start">התחלה</string>
+
+    <!-- shared -->
+    <string name="nav_search">חיפוש יעד</string>
+    <string name="nav_map">מפה ומסלול</string>
+    <string name="nav_ar">מצלמה AR</string>
+    <string name="nav_staff">ניהול צוות</string>
+    <string name="action_search">חיפוש</string>
+    <string name="action_account">כניסת צוות</string>
+    <string name="action_back">חזרה</string>
+    <string name="action_close">סגירה</string>
+    <string name="action_cancel">ביטול</string>
+    <string name="action_favorite">הוספה למועדפים</string>
+    <string name="action_open">פתח</string>
+    <string name="room_badge_description">חדר %1$s</string>
+    <string name="room_floor">קומה %1$s</string>
+
+    <!-- splash -->
+    <string name="splash_subtitle">קמפוס כפר הנוער אלוני יצחק</string>
+    <string name="splash_status_ok">מערכת פעילה</string>
+    <string name="splash_status_network">בדיקת רשת</string>
+    <string name="splash_loading">טוען את מפת הקמפוס…</string>
+    <string name="splash_green">כפר נוער ירוק ומקיף</string>
+    <string name="splash_version">גרסה %1$s</string>
+
+    <!-- permissions (second state of the splash screen) -->
+    <string name="permissions_title">הרשאות לניווט בקמפוס</string>
+    <string name="permissions_intro">כדי לנווט ביעילות ובדיוק ברחבי בית הספר, האפליקציה צריכה את ההרשאות האלה:</string>
+    <string name="permissions_location_title">מיקום מדויק</string>
+    <string name="splash_why_location">כדי לדעת איפה אתם בקמפוס ולחשב מסלול מהמקום שבו אתם עומדים.</string>
+    <string name="permissions_location_badge">חובה לניווט</string>
+    <string name="permissions_camera_title">מצלמה לחץ ניווט</string>
+    <string name="splash_why_camera">כדי להציג חץ ניווט על התמונה מהמצלמה.</string>
+    <string name="permissions_camera_badge">רשות</string>
+    <string name="permissions_privacy_title">פרטיות</string>
+    <string name="permissions_privacy_text">המיקום והתמונה מהמצלמה נשארים בטלפון. הם לא נשמרים ולא נשלחים לשום שרת.</string>
+    <string name="splash_start">אישור והמשך</string>
+    <string name="permissions_skip">דלג בינתיים (ניווט במפה בלבד)</string>
 
     <string name="permission_missing_title">חלק מההרשאות לא אושרו</string>
     <string name="permission_missing_location">בלי הרשאת מיקום אפשר לחפש חדרים ולראות את המפה, אבל לא לנווט. אפשר לאשר את ההרשאה בהגדרות הטלפון.</string>
@@ -12,6 +47,99 @@
     <string name="permission_missing_both">בלי הרשאות מיקום ומצלמה אפשר לחפש חדרים ולראות את המפה, אבל לא לנווט ולא לראות חץ על המצלמה. אפשר לאשר את ההרשאות בהגדרות הטלפון.</string>
     <string name="permission_continue">המשך</string>
 
-    <string name="search_placeholder">מסך החיפוש ייבנה במטלה T09</string>
-    <string name="search_local_data">בטלפון: %1$d חדרים (גרסה %2$d).\nמסך החיפוש ייבנה במטלה T09.</string>
+    <!-- search -->
+    <string name="search_screen">חיפוש יעד</string>
+    <string name="search_title">לאן הולכים?</string>
+    <string name="search_hint">מספר חדר, שם או מורה</string>
+    <string name="search_local_data">%1$d חדרים · גרסה %2$d</string>
+    <string name="search_favorites">מועדפים</string>
+    <string name="search_favorites_edit">עריכה</string>
+    <string name="search_recent">חיפושים אחרונים</string>
+    <string name="search_results">תוצאות עבור \"%1$s\"</string>
+    <string name="search_results_all">כל החדרים</string>
+    <string name="search_ar_title">מצלמה AR</string>
+    <string name="search_ar_text">חץ ניווט על התמונה מהמצלמה</string>
+    <string name="room_distance">%1$d מ\' · %2$d דק\'</string>
+
+    <!-- map -->
+    <string name="map_screen">מפה ומסלול</string>
+    <string name="map_placeholder">כאן תוצג מפת הקמפוס (T29)</string>
+    <string name="map_wrong_location">המיקום שגוי?</string>
+    <string name="map_floor">ק\' %1$d</string>
+    <string name="map_my_location">המיקום שלי</string>
+    <string name="map_start_ar">ניווט במצלמה (AR)</string>
+    <string name="map_route_details">פרטי מסלול והנחיות</string>
+
+    <!-- AR -->
+    <string name="ar_screen">מצלמה AR</string>
+    <string name="ar_destination">ניווט אל: %1$s</string>
+    <string name="ar_sound">השמעת הנחיות</string>
+    <string name="ar_flash">פנס</string>
+    <string name="ar_arrow">חץ הניווט</string>
+    <string name="ar_step">שלב %1$d/%2$d</string>
+    <string name="ar_end">סיים ניווט</string>
+    <string name="ar_calibrate">כיול כיוון</string>
+    <string name="ar_show_map">הצגת המפה</string>
+    <string name="ar_gps_accuracy">דיוק GPS: ±%1$d מ\'</string>
+
+    <!-- arrival -->
+    <string name="arrival_badge">המסלול הושלם</string>
+    <string name="arrival_title">הגעת!</string>
+    <string name="arrival_summary">זמן הליכה: %1$d דקות · %2$d מטר</string>
+    <string name="arrival_new_destination">יעד חדש</string>
+
+    <!-- calibration -->
+    <string name="calibration_title">איפה אתם עומדים?</string>
+    <string name="calibration_subtitle">געו במפה במקום שבו אתם נמצאים</string>
+    <string name="calibration_warning_title">דיוק GPS נמוך כרגע (±%1$d מ\')</string>
+    <string name="calibration_warning_text">סימון ידני ישפר את הדיוק של החץ ושל המסלול</string>
+    <string name="calibration_known_places">מקומות מוכרים:</string>
+    <string name="calibration_drag_hint">גררו את הסימן או געו במפה</string>
+    <string name="calibration_selected">המיקום שנבחר:</string>
+    <string name="calibration_confirm">אישור והמשך ניווט</string>
+
+    <!-- staff -->
+    <string name="admin_login_screen">כניסת צוות</string>
+    <string name="admin_login_title">כניסת צוות</string>
+    <string name="admin_login_subtitle">עדכון החדרים והמפה של הקמפוס</string>
+    <string name="admin_login_notice_title">גישה לצוות בלבד</string>
+    <string name="admin_login_notice_text">מורים, רכזים והנהלה שקיבלו הרשאה מצוות האפליקציה.</string>
+    <string name="admin_email">כתובת מייל</string>
+    <string name="admin_email_hint">name@a-y.org.il</string>
+    <string name="admin_password">סיסמה</string>
+    <string name="admin_login_button">כניסה</string>
+    <string name="admin_login_secure">החיבור מוצפן</string>
+    <string name="admin_back_to_students">חזרה לניווט</string>
+    <string name="admin_rooms_screen">ניהול חדרים</string>
+    <string name="admin_rooms_subtitle">מחובר: %1$s</string>
+    <string name="admin_logout">יציאה</string>
+    <string name="admin_map_title">מפת בית הספר %1$s</string>
+    <string name="admin_map_info">%1$d חדרים · גרסה %2$d</string>
+    <string name="admin_update_map">התאמת מפה שנתית</string>
+    <string name="admin_search_hint">חיפוש חדר לעריכה</string>
+
+    <!-- room edit sheet -->
+    <string name="room_edit_title">עריכת חדר %1$s</string>
+    <string name="room_edit_name">שם החדר</string>
+    <string name="room_edit_name_help">מוצג בחיפוש ובמסך הניווט</string>
+    <string name="room_edit_owner">אחראי החדר</string>
+    <string name="room_edit_notes">הערה לניווט</string>
+    <string name="room_edit_sync_note">השינוי נשמר בשרת ומגיע לכל הטלפונות בפתיחה הבאה של האפליקציה.</string>
+    <string name="room_edit_save">שמירה</string>
+
+    <!-- yearly map alignment -->
+    <string name="alignment_title">התאמת מפת %1$s</string>
+    <string name="alignment_step">שלב %1$d מתוך %2$d</string>
+    <string name="alignment_hint">גררו נקודת עיגון כדי להזיז את התרשים</string>
+    <string name="alignment_compass">צפון למעלה</string>
+    <string name="alignment_layers">שכבות</string>
+    <string name="alignment_zoom_in">הגדלה</string>
+    <string name="alignment_zoom_out">הקטנה</string>
+    <string name="alignment_opacity">שקיפות התרשים</string>
+    <string name="alignment_opacity_map">מפה בלבד</string>
+    <string name="alignment_opacity_plan">תרשים בלבד</string>
+    <string name="alignment_add_anchor">נקודת עיגון</string>
+    <string name="alignment_here">אני עומד כאן</string>
+    <string name="alignment_next_note">בשלב הבא: שיוך החדרים לכניסות</string>
+    <string name="alignment_save">שמירה והמשך לשלב %1$d</string>
 </resources>

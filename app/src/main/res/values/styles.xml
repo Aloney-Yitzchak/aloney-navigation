@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============ text: titles 22sp, body 16sp, secondary 14sp in #5F6368 (finding 11) -->
+    <style name="TextAppearance.Aloney.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:textSize">@dimen/text_secondary</item>
+        <!-- Material's letter spacing is for Latin text; Hebrew letters stay together -->
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:textSize">@dimen/text_secondary</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Aloney.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- plain TextViews -->
+    <style name="Text" />
+    <style name="Text.Display">
+        <item name="android:textSize">@dimen/text_display</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="Text.Title">
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="Text.Subtitle">
+        <item name="android:textSize">@dimen/text_subtitle</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="Text.Body">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="Text.Body.Bold">
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="Text.Secondary">
+        <item name="android:textSize">@dimen/text_secondary</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    <style name="Text.Label">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- ============ buttons: 56dp high, fully rounded (28dp) -->
+    <style name="Widget.Aloney.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="android:textSize">@dimen/text_subtitle</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/spacing_small</item>
+    </style>
+    <style name="Widget.Aloney.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="iconGravity">textStart</item>
+    </style>
+    <style name="Widget.Aloney.Button.Text.Grey">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="iconTint">@color/text_secondary</item>
+    </style>
+    <style name="Widget.Aloney.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="iconGravity">textStart</item>
+    </style>
+    <style name="Widget.Aloney.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="strokeColor">@color/outline</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconTint">@color/primary</item>
+    </style>
+    <style name="Widget.Aloney.IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="iconTint">@color/text_secondary</item>
+        <item name="iconSize">@dimen/icon_medium</item>
+    </style>
+    <!-- floor switch on the map: the chosen floor light green -->
+    <style name="Widget.Aloney.FloorButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minWidth">@dimen/touch_target</item>
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">@color/floor_button_background</item>
+        <item name="android:textColor">@color/floor_button_text</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+    <!-- round dark buttons on top of the camera image -->
+    <style name="Widget.Aloney.OverlayButton" parent="Widget.Material3.Button.IconButton.Filled">
+        <item name="backgroundTint">@color/overlay_chip</item>
+        <item name="iconTint">@color/white</item>
+        <item name="iconSize">@dimen/icon_medium</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+    </style>
+    <!-- round white buttons floating on the map -->
+    <style name="Widget.Aloney.MapButton" parent="Widget.Material3.FloatingActionButton.Surface">
+        <item name="fabSize">normal</item>
+        <item name="backgroundTint">@color/white</item>
+        <item name="tint">@color/primary</item>
+        <item name="elevation">2dp</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Aloney.Circle</item>
+    </style>
+    <style name="ShapeAppearance.Aloney.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- ============ cards: 12dp corners, light grey, flat -->
+    <style name="Widget.Aloney.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">@dimen/radius_card</item>
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+    <style name="Widget.Aloney.Card.Green">
+        <item name="cardBackgroundColor">@color/primary_container</item>
+    </style>
+    <style name="Widget.Aloney.Card.White" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/radius_sheet</item>
+        <item name="cardBackgroundColor">@color/background</item>
+        <item name="cardElevation">6dp</item>
+    </style>
+
+    <!-- ============ chips: information, not filters, unless the layout says otherwise -->
+    <style name="Widget.Aloney.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/surface_card</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipIconTint">@color/primary</item>
+        <item name="chipIconSize">18dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_secondary</item>
+        <item name="chipMinHeight">36dp</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Aloney.Circle</item>
+    </style>
+    <style name="Widget.Aloney.Chip.Green">
+        <item name="chipBackgroundColor">@color/primary_container</item>
+        <item name="android:textColor">@color/primary_dark</item>
+    </style>
+    <style name="Widget.Aloney.Chip.Overlay">
+        <item name="chipBackgroundColor">@color/overlay_chip</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="chipIconTint">@color/white</item>
+    </style>
+    <!-- favourites and known places: tappable shortcuts -->
+    <style name="Widget.Aloney.Chip.Shortcut" parent="Widget.Material3.Chip.Suggestion">
+        <item name="chipBackgroundColor">@color/surface_card</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipIconTint">@color/primary</item>
+        <item name="chipIconVisible">true</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="chipMinHeight">@dimen/touch_target</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Aloney.Circle</item>
+    </style>
+
+    <!-- ============ text fields: filled grey, 12dp corners, no underline -->
+    <style name="Widget.Aloney.TextInput" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@color/surface_card</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxCornerRadiusTopStart">@dimen/radius_card</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_card</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_card</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_card</item>
+        <item name="startIconTint">@color/text_secondary</item>
+        <item name="endIconTint">@color/text_secondary</item>
+        <item name="helperTextTextColor">@color/text_secondary</item>
+    </style>
+    <style name="Widget.Aloney.TextInput.Search">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_button</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_button</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_button</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_button</item>
+        <item name="startIconTint">@color/primary</item>
+    </style>
+
+    <!-- ============ bars -->
+    <style name="Widget.Aloney.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:minHeight">64dp</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Aloney.TitleLarge</item>
+        <item name="titleTextColor">@color/text_primary</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.Aloney.BodySmall</item>
+        <item name="subtitleTextColor">@color/text_secondary</item>
+        <item name="android:background">@color/background</item>
+        <item name="android:elevation">2dp</item>
+    </style>
+    <!-- the main screens: the app name in green, the screen name under it in Hebrew (finding 5) -->
+    <style name="Widget.Aloney.Toolbar.Main">
+        <item name="titleTextColor">@color/primary</item>
+        <item name="logo">@drawable/ic_logo_app</item>
+        <item name="menu">@menu/app_bar</item>
+    </style>
+    <style name="Widget.Aloney.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_item</item>
+        <item name="itemTextColor">@color/bottom_nav_item</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Aloney.BottomNav.Indicator</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="backgroundTint">@color/background</item>
+        <item name="android:elevation">8dp</item>
+    </style>
+    <style name="Widget.Aloney.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/primary_container</item>
+    </style>
+</resources>

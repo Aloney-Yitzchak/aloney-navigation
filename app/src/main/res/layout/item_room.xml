@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One room in the search results (docs/design/search.png). -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="88dp"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp"
+        android:paddingStart="@dimen/spacing_medium"
+        android:paddingEnd="@dimen/spacing_small">
+
+        <!-- the room number; filled green for an exact match -->
+        <TextView
+            android:id="@+id/room_number"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_primary_container"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_subtitle"
+            android:textStyle="bold"
+            app:autoSizeMaxTextSize="@dimen/text_subtitle"
+            app:autoSizeMinTextSize="12sp"
+            app:autoSizeTextType="uniform"
+            tools:text="34" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/room_name"
+                style="@style/Text.Subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="מזכירות פדגוגית" />
+
+            <TextView
+                android:id="@+id/room_owner"
+                style="@style/Text.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="@dimen/text_body"
+                tools:text="רכזת בגרויות ורישום" />
+
+            <!-- distance and walking time, once the route is known (T11) -->
+            <TextView
+                android:id="@+id/room_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:drawablePadding="@dimen/spacing_tiny"
+                android:gravity="center_vertical"
+                android:textColor="@color/primary"
+                android:textSize="@dimen/text_secondary"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_walk_green"
+                tools:text="110 מ' · 2 דק'"
+                tools:visibility="visible" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/room_favorite"
+            style="@style/Widget.Aloney.IconButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:contentDescription="@string/action_favorite"
+            app:icon="@drawable/ic_star" />
+
+        <ImageView
+            android:layout_width="@dimen/icon_medium"
+            android:layout_height="@dimen/icon_medium"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/text_secondary" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
