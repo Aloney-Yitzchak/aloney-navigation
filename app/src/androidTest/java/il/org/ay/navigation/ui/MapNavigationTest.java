@@ -157,7 +157,8 @@ public class MapNavigationTest {
         NavigationManager nav = nav();
         TestGps.at(32.08, 34.78);                          // kilometres away
         assertTrue(nav.isOffCampus());
-        onView(withText(R.string.map_off_campus)).check(matches(isDisplayed()));
+        // the sheet says so (a snackbar with the same words may be showing too)
+        onView(withId(R.id.map_time)).check(matches(withText(R.string.map_off_campus)));
 
         // T23 / AT-08: open the calibration, put the pin on path 1–2, confirm
         scenario.onActivity(MapActivity::openCalibrationForTest);
@@ -174,8 +175,10 @@ public class MapNavigationTest {
                 () -> dialog.get().moveTo(new il.org.ay.navigation.model.LatLng(32.51150, 35.00410)));
         SystemClock.sleep(1500);
         screenshot("14-calibration");
-        onView(withId(R.id.calibration_confirm)).perform(androidx.test.espresso.action.ViewActions.click());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        // pressed directly: Espresso would wait for the map's animations to stop first
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> dialog.get().requireView().findViewById(R.id.calibration_confirm).performClick());
+        SystemClock.sleep(500);
 
         assertTrue(!nav.isOffCampus());
         assertNotNull("a route from the marked point", nav.getRoute());
