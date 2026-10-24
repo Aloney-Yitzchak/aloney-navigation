@@ -70,7 +70,7 @@
                 android:textSize="@dimen/text_subtitle" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- favourites: hidden until T10 fills them -->
+        <!-- favourites (T10): shown when there is at least one -->
         <LinearLayout
             android:id="@+id/favorites_header"
             android:visibility="gone"
@@ -107,6 +107,35 @@
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/favorites_chips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="@dimen/spacing_small"
+            app:singleLine="true" />
+    </HorizontalScrollView>
+
+    <!-- recent searches: the last rooms chosen, while the box is empty -->
+    <TextView
+        android:id="@+id/recent_header"
+        style="@style/Text.Subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:paddingHorizontal="@dimen/margin_screen"
+        android:paddingBottom="@dimen/spacing_small"
+        android:text="@string/search_recent"
+        android:visibility="gone" />
+
+    <HorizontalScrollView
+        android:id="@+id/recent_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/margin_screen"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/recent_chips"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:chipSpacingHorizontal="@dimen/spacing_small"

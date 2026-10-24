@@ -10,7 +10,9 @@ import androidx.annotation.NonNull;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -18,6 +20,8 @@ import java.util.concurrent.Executors;
 
 import il.org.ay.navigation.logic.RoomSearch;
 import il.org.ay.navigation.model.CampusRoom;
+import il.org.ay.navigation.model.Favorite;
+import il.org.ay.navigation.model.Recent;
 
 /**
  * The one place screens get campus data from (SDD 4, data layer).
@@ -56,6 +60,7 @@ public class CampusRepository {
     private final SharedPreferences prefs;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Executor main;
+    private long lastStamp;
     private final List<Runnable> changeListeners = new CopyOnWriteArrayList<>();
 
     CampusRepository(AppDatabase db, CampusRemote remote, SharedPreferences prefs, Executor main) {
@@ -164,6 +169,50 @@ public class CampusRepository {
     /** All rooms, for a quick count or a list. */
     public void allRooms(@NonNull Listener<List<CampusRoom>> listener) {
         io.execute(() -> deliver(listener, db.roomDao().getAll()));
+    }
+
+    // ------------------------------------------------------------ favourites and recent (T10, FR-02)
+
+    /** The starred rooms, newest first. */
+    public void favorites(@NonNull Listener<List<CampusRoom>> listener) {
+        io.execute(() -> deliver(listener, db.favoriteDao().getRooms()));
+    }
+
+    /** The numbers of the starred rooms. */
+    public void favoriteNumbers(@NonNull Listener<Set<String>> listener) {
+        io.execute(() -> deliver(listener, new HashSet<>(db.favoriteDao().getNumbers())));
+    }
+
+    /** Stars the room, or removes its star. The listener gets true when it is now a favourite. */
+    public void toggleFavorite(@NonNull String number, @NonNull Listener<Boolean> listener) {
+        io.execute(() -> {
+            boolean starred = db.favoriteDao().isFavorite(number);
+            if (starred) {
+                db.favoriteDao().remove(new Favorite(number, 0));
+            } else {
+                db.favoriteDao().add(new Favorite(number, stamp()));
+            }
+            deliver(listener, !starred);
+        });
+    }
+
+    /** The rooms chosen lately, latest first, at most {@link RecentDao#MAX_RECENT}. */
+    public void recents(@NonNull Listener<List<CampusRoom>> listener) {
+        io.execute(() -> deliver(listener, db.recentDao().getRooms()));
+    }
+
+    /** Remembers that this room was chosen as a destination; then calls {@code done}. */
+    public void addRecent(@NonNull String number, @NonNull Runnable done) {
+        io.execute(() -> {
+            db.recentDao().add(new Recent(number, stamp()));
+            main.execute(done);
+        });
+    }
+
+    /** A time for ordering; never the same twice, so two quick taps keep their order. */
+    private synchronized long stamp() {
+        lastStamp = Math.max(System.currentTimeMillis(), lastStamp + 1);
+        return lastStamp;
     }
 
     private <T> void deliver(Listener<T> listener, T value) {

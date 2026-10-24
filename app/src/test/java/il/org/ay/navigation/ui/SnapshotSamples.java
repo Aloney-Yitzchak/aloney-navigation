@@ -43,12 +43,40 @@ final class SnapshotSamples {
         text(v, R.id.results_count, "3");
         v.findViewById(R.id.results_count).setVisibility(View.VISIBLE);
         RecyclerView list = v.findViewById(R.id.search_results);
-        RoomAdapter adapter = new RoomAdapter(room -> { });
+        RoomAdapter adapter = new RoomAdapter(room -> { }, room -> { });
         list.setAdapter(adapter);
         adapter.show(java.util.Arrays.asList(
                 new CampusRoom("מז", "מזכירות ראשית", "קבלת קהל ושירותי תלמידים", 1, "תשפ\"ז"),
                 new CampusRoom("34", "מזכירות פדגוגית", "רכזת בגרויות ורישום", 2, "תשפ\"ז"),
                 new CampusRoom("12", null, "ליד מזכירות שכבת י'", 3, "תשפ\"ז")), "מז", null);
+        selectTab(v, R.id.nav_search);
+    }
+
+    /** The empty box: favourites, recent searches and all the rooms (T10). */
+    static void fillSearchStart(View v) {
+        text(v, R.id.search_status, "64 חדרים · גרסה 3");
+        v.findViewById(R.id.favorites_header).setVisibility(View.VISIBLE);
+        v.findViewById(R.id.favorites_scroll).setVisibility(View.VISIBLE);
+        ChipGroup favorites = v.findViewById(R.id.favorites_chips);
+        addShortcut(favorites, "מזכירות ראשית", R.drawable.ic_star_filled);
+        addShortcut(favorites, "ספרייה", R.drawable.ic_star_filled);
+        v.findViewById(R.id.recent_header).setVisibility(View.VISIBLE);
+        v.findViewById(R.id.recent_scroll).setVisibility(View.VISIBLE);
+        ChipGroup recent = v.findViewById(R.id.recent_chips);
+        addShortcut(recent, "מתמטיקה", R.drawable.ic_schedule);
+        addShortcut(recent, "מעבדת ביולוגיה", R.drawable.ic_schedule);
+        addShortcut(recent, "חדר 12", R.drawable.ic_schedule);
+        text(v, R.id.results_count, "64");
+        v.findViewById(R.id.results_count).setVisibility(View.VISIBLE);
+        RecyclerView list = v.findViewById(R.id.search_results);
+        RoomAdapter adapter = new RoomAdapter(room -> { }, room -> { });
+        list.setAdapter(adapter);
+        adapter.show(java.util.Arrays.asList(
+                new CampusRoom("1", "חדר מורים", null, 1, "תשפ\"ז"),
+                new CampusRoom("2", "אולם ספורט", "צוות חינוך גופני", 1, "תשפ\"ז"),
+                new CampusRoom("12", null, "ליד מזכירות שכבת י'", 3, "תשפ\"ז"),
+                new CampusRoom("20", "ספרייה", null, 2, "תשפ\"ז")), "", null);
+        adapter.setFavorites(java.util.Collections.singleton("20"));
         selectTab(v, R.id.nav_search);
     }
 
