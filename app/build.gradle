@@ -26,7 +26,10 @@ android {
             }
         }
         // every emulator test starts from a fresh install: no data, no permissions
-        testInstrumentationRunnerArguments clearPackageData: 'true'
+        testInstrumentationRunnerArguments clearPackageData: 'true',
+                // a stuck emulator test fails after 2 minutes, with where it was stuck,
+                // instead of silently using up the whole CI job
+                timeout_msec: '120000'
     }
 
     // One signing key for every build: Android Studio, CI and the GitHub releases. A phone
