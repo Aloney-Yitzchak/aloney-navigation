@@ -36,6 +36,10 @@
             android:name=".ui.SearchActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.MapActivity"
+            android:exported="false" />
+
         <!-- T11: the position while navigating. Bound only, so it stops with the screens (NFR-08) -->
         <service
             android:name=".logic.LocationService"

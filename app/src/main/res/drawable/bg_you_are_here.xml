@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "You are here" on the map: a blue dot with a white ring (the familiar map convention) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="22dp" android:height="22dp">
+        <shape android:shape="oval"><solid android:color="@color/white" /></shape>
+    </item>
+    <item android:width="16dp" android:height="16dp" android:gravity="center">
+        <shape android:shape="oval"><solid android:color="#1A73E8" /></shape>
+    </item>
+</layer-list>
