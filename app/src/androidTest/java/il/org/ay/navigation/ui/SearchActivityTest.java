@@ -5,14 +5,18 @@ import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
 import android.os.SystemClock;
 import android.os.ParcelFileDescriptor;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +42,7 @@ import il.org.ay.navigation.model.Node;
 
 /**
  * AT-01 (FR-01) on the emulator: search by number, name and owner, best match first.
+ * AT-02 (FR-02): a favourite and a recent search are still there after the app is closed.
  * Each test starts from a fresh install (clearPackageData) with four sample rooms.
  */
 @RunWith(AndroidJUnit4.class)
@@ -110,6 +115,74 @@ public class SearchActivityTest {
         screenshot("07-search-nothing");
         onView(withId(R.id.search_text)).perform(clearText());
         waitForCount(4);
+    }
+
+    @Test
+    public void favorite_isStillThereAfterClosingTheApp() {
+        type("42");
+        waitForCount(2);
+        clickInRow(0, R.id.room_favorite);
+        waitForChips(R.id.favorites_chips, 1);
+        onView(withId(R.id.favorites_header)).check(matches(isDisplayed()));
+
+        // AT-02: close the app and open it again
+        scenario.close();
+        scenario = ActivityScenario.launch(SearchActivity.class);
+        waitForChips(R.id.favorites_chips, 1);
+        // the chip, not the row with the same name in the list below it
+        onView(allOf(withText("מתמטיקה"), isDescendantOfA(withId(R.id.favorites_chips))))
+                .check(matches(isDisplayed()));
+        screenshot("08-search-favorite");
+
+        // and the star in its row is filled
+        type("42");
+        waitForCount(2);
+        scenario.onActivity(a -> {
+            RecyclerView list = a.findViewById(R.id.search_results);
+            View star = list.findViewHolderForAdapterPosition(0).itemView.findViewById(R.id.room_favorite);
+            assertEquals(a.getString(R.string.action_unfavorite), star.getContentDescription());
+        });
+    }
+
+    @Test
+    public void choosingARoom_addsItToRecentSearches_andTheyStayAfterClosing() {
+        type("ספרי");
+        waitForCount(1);
+        clickInRow(0, 0);
+        onView(withId(R.id.search_text)).perform(clearText());
+        waitForCount(4);
+        waitForChips(R.id.recent_chips, 1);
+        onView(withId(R.id.recent_header)).check(matches(isDisplayed()));
+
+        scenario.close();
+        scenario = ActivityScenario.launch(SearchActivity.class);
+        waitForChips(R.id.recent_chips, 1);
+        screenshot("09-search-recent");
+    }
+
+    /** Clicks a view inside a result row; {@code id} 0 clicks the row itself. */
+    private void clickInRow(int position, int id) {
+        scenario.onActivity(a -> {
+            RecyclerView list = a.findViewById(R.id.search_results);
+            View row = list.findViewHolderForAdapterPosition(position).itemView;
+            (id == 0 ? row : row.findViewById(id)).performClick();
+        });
+    }
+
+    private void waitForChips(int groupId, int expected) {
+        long end = SystemClock.uptimeMillis() + WAIT_MS;
+        int count = -1;
+        while (SystemClock.uptimeMillis() < end) {
+            AtomicReference<Integer> n = new AtomicReference<>();
+            scenario.onActivity(a -> n.set(((ViewGroup) a.findViewById(groupId)).getChildCount()));
+            count = n.get();
+            if (count == expected) {
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+                return;
+            }
+            SystemClock.sleep(50);
+        }
+        assertEquals("number of chips", expected, count);
     }
 
     private void type(String text) {

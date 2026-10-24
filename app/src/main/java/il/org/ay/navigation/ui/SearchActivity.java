@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -14,6 +15,9 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
@@ -27,6 +31,10 @@ import il.org.ay.navigation.model.CampusRoom;
  * Destination search (T09, FR-01, AT-01). The list updates while typing: by number,
  * name or owner, best match first (RoomSearch). With an empty box it shows all rooms.
  * The rooms come from the copy in Room, so search works without a network (AT-09).
+ *
+ * <p>Favourites and recent searches (T10, FR-02, AT-02) are shortcuts above the list:
+ * the star in a row adds a favourite, choosing a room adds it to the recent searches.
+ * Both are saved in Room, so they are still there after the app is closed.
  */
 public class SearchActivity extends BaseActivity {
 
@@ -48,6 +56,17 @@ public class SearchActivity extends BaseActivity {
     private TextView resultsCount;
     private TextView status;
 
+    private ChipGroup favoriteChips;
+    private ChipGroup recentChips;
+    private View favoritesHeader;
+    private View favoritesScroll;
+    private View recentHeader;
+    private View recentScroll;
+    private MaterialButton favoritesEdit;
+    private boolean editingFavorites;
+    private boolean hasRecents;
+    private String currentQuery = "";
+
     /** Counts searches; a result that arrives after a newer search started is dropped. */
     private int generation;
 
@@ -66,7 +85,16 @@ public class SearchActivity extends BaseActivity {
         resultsCount = findViewById(R.id.results_count);
         status = findViewById(R.id.search_status);
 
-        adapter = new RoomAdapter(this::onRoomChosen);
+        favoriteChips = findViewById(R.id.favorites_chips);
+        recentChips = findViewById(R.id.recent_chips);
+        favoritesHeader = findViewById(R.id.favorites_header);
+        favoritesScroll = findViewById(R.id.favorites_scroll);
+        recentHeader = findViewById(R.id.recent_header);
+        recentScroll = findViewById(R.id.recent_scroll);
+        favoritesEdit = findViewById(R.id.favorites_edit);
+        favoritesEdit.setOnClickListener(v -> setEditingFavorites(!editingFavorites));
+
+        adapter = new RoomAdapter(this::onRoomChosen, this::onStarClicked);
         results.setAdapter(adapter);
 
         input.addTextChangedListener(new TextWatcher() {
@@ -106,6 +134,7 @@ public class SearchActivity extends BaseActivity {
 
         search();
         showStatus();
+        loadShortcuts();
     }
 
     @Override
@@ -130,6 +159,7 @@ public class SearchActivity extends BaseActivity {
     private void onCampusChanged() {
         search();
         showStatus();
+        loadShortcuts();  // a room that left the campus data took its favourite with it
     }
 
     private void search() {
@@ -144,6 +174,8 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void showResults(List<CampusRoom> rooms, String query, String typed) {
+        currentQuery = query;
+        showRecentSection();
         resultsTitle.setText(query.isEmpty() ? getString(R.string.search_results_all)
                 : getString(R.string.search_results, typed));
         resultsCount.setText(String.valueOf(rooms.size()));
@@ -169,10 +201,75 @@ public class SearchActivity extends BaseActivity {
 
     private void onRoomChosen(CampusRoom room) {
         hideKeyboard();
-        // T10 saves it to the recent searches; T11 opens the map with the route
+        repo.addRecent(room.number, this::loadShortcuts);
+        // T11 opens the map with the route
         Snackbar.make(results, getString(R.string.search_chosen,
                 RoomAdapter.displayName(results, room)), Snackbar.LENGTH_SHORT)
                 .setAnchorView(R.id.bottom_nav).show();
+    }
+
+    // ------------------------------------------------------------ favourites and recent (T10)
+
+    private void onStarClicked(CampusRoom room) {
+        CharSequence name = RoomAdapter.displayName(results, room);
+        repo.toggleFavorite(room.number, starred -> {
+            loadShortcuts();
+            Snackbar.make(results, getString(starred ? R.string.favorite_added : R.string.favorite_removed, name),
+                    Snackbar.LENGTH_SHORT).setAnchorView(R.id.bottom_nav).show();
+        });
+    }
+
+    /** Reads favourites and recent searches from Room and redraws the two chip rows and the stars. */
+    private void loadShortcuts() {
+        repo.favorites(rooms -> {
+            fillChips(favoriteChips, rooms, R.drawable.ic_star_filled, true);
+            boolean any = !rooms.isEmpty();
+            favoritesHeader.setVisibility(any ? View.VISIBLE : View.GONE);
+            favoritesScroll.setVisibility(any ? View.VISIBLE : View.GONE);
+            if (!any) {
+                setEditingFavorites(false);
+            }
+        });
+        repo.favoriteNumbers(adapter::setFavorites);
+        repo.recents(rooms -> {
+            fillChips(recentChips, rooms, R.drawable.ic_schedule, false);
+            hasRecents = !rooms.isEmpty();
+            showRecentSection();
+        });
+    }
+
+    /** Recent searches only while the box is empty: once typing starts, the results need the room. */
+    private void showRecentSection() {
+        int v = hasRecents && currentQuery.isEmpty() ? View.VISIBLE : View.GONE;
+        recentHeader.setVisibility(v);
+        recentScroll.setVisibility(v);
+    }
+
+    private void fillChips(ChipGroup group, List<CampusRoom> rooms, int icon, boolean favorites) {
+        group.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (CampusRoom room : rooms) {
+            Chip chip = (Chip) inflater.inflate(R.layout.item_shortcut_chip, group, false);
+            chip.setText(RoomAdapter.displayName(group, room));
+            chip.setChipIconResource(icon);
+            chip.setTag(room.number);
+            chip.setOnClickListener(v -> onRoomChosen(room));
+            if (favorites) {
+                chip.setCloseIconVisible(editingFavorites);
+                chip.setCloseIconContentDescription(getString(R.string.action_unfavorite));
+                chip.setOnCloseIconClickListener(v -> onStarClicked(room));
+            }
+            group.addView(chip);
+        }
+    }
+
+    /** "עריכה": each favourite gets an × that removes it. */
+    private void setEditingFavorites(boolean editing) {
+        editingFavorites = editing;
+        favoritesEdit.setText(editing ? R.string.search_favorites_done : R.string.search_favorites_edit);
+        for (int i = 0; i < favoriteChips.getChildCount(); i++) {
+            ((Chip) favoriteChips.getChildAt(i)).setCloseIconVisible(editing);
+        }
     }
 
     private void comingSoon() {

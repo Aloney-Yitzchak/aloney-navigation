@@ -115,6 +115,90 @@ public class CampusRepositoryTest {
         assertEquals(1, search("חדר 20").size());
     }
 
+    // ------------------------------------------------------------ T10, FR-02
+
+    /** Runs a repository call and waits for its answer. */
+    private <T> T await(java.util.function.Consumer<CampusRepository.Listener<T>> call) throws InterruptedException {
+        AtomicReference<T> result = new AtomicReference<>();
+        CountDownLatch done = new CountDownLatch(1);
+        call.accept(r -> { result.set(r); done.countDown(); });
+        done.await(5, TimeUnit.SECONDS);
+        return result.get();
+    }
+
+    private Boolean toggle(String number) throws InterruptedException {
+        return this.<Boolean>await(l -> repo.toggleFavorite(number, l));
+    }
+
+    private void addRecent(String number) throws InterruptedException {
+        CountDownLatch done = new CountDownLatch(1);
+        repo.addRecent(number, done::countDown);
+        done.await(5, TimeUnit.SECONDS);
+    }
+
+    private static List<String> numbers(List<CampusRoom> rooms) {
+        List<String> out = new java.util.ArrayList<>();
+        for (CampusRoom r : rooms) out.add(r.number);
+        return out;
+    }
+
+    /** Version 1 of the campus with twelve rooms, 1..12, all at node 1. */
+    private void syncTwelveRooms(long version) throws InterruptedException {
+        CampusSnapshot s = CampusSnapshotTest.good(version);
+        s.rooms.clear();
+        for (int i = 1; i <= 12; i++) {
+            s.rooms.add(new CampusRoom(String.valueOf(i), "חדר " + i, null, 1, "tashpaz"));
+        }
+        remote.version = version;
+        remote.snapshot = s;
+        assertEquals(CampusRepository.SyncResult.UPDATED, sync());
+    }
+
+    @Test
+    public void toggleFavorite_addsThenRemoves_newestFirst() throws Exception {
+        syncTwelveRooms(1);
+        assertEquals(Boolean.TRUE, toggle("3"));
+        assertEquals(Boolean.TRUE, toggle("7"));
+        assertEquals(java.util.Arrays.asList("7", "3"), numbers(await(repo::favorites)));
+        assertEquals(new java.util.HashSet<>(java.util.Arrays.asList("3", "7")), await(repo::favoriteNumbers));
+
+        assertEquals(Boolean.FALSE, toggle("3"));
+        assertEquals(java.util.Collections.singletonList("7"), numbers(await(repo::favorites)));
+    }
+
+    @Test
+    public void recents_latestFirst_noDuplicates_atMostTen() throws Exception {
+        syncTwelveRooms(1);
+        for (int i = 1; i <= 12; i++) {
+            addRecent(String.valueOf(i));
+        }
+        addRecent("5");  // chosen again: moves to the top, not a second row
+        List<String> recent = numbers(await(repo::recents));
+        assertEquals(10, recent.size());
+        assertEquals(java.util.Arrays.asList("5", "12", "11", "10", "9", "8", "7", "6", "4", "3"), recent);
+    }
+
+    @Test
+    public void favorites_surviveANewVersion_unlessTheirRoomIsGone() throws Exception {
+        syncTwelveRooms(1);
+        toggle("2");
+        toggle("12");
+        addRecent("12");
+
+        // version 2: room 12 is no longer on the campus
+        CampusSnapshot v2 = CampusSnapshotTest.good(2);
+        v2.rooms.clear();
+        for (int i = 1; i <= 11; i++) {
+            v2.rooms.add(new CampusRoom(String.valueOf(i), "חדר " + i, null, 1, "tashpaz"));
+        }
+        remote.version = 2;
+        remote.snapshot = v2;
+        assertEquals(CampusRepository.SyncResult.UPDATED, sync());
+
+        assertEquals(java.util.Collections.singletonList("2"), numbers(await(repo::favorites)));
+        assertEquals(0, await(repo::recents).size());
+    }
+
     @Test
     public void sameVersion_doesNotDownloadAgain() throws Exception {
         remote.version = 1;

@@ -7,6 +7,7 @@ import androidx.room.Transaction;
 
 import java.util.List;
 
+import il.org.ay.navigation.model.CampusRoom;
 import il.org.ay.navigation.model.Recent;
 
 @Dao
@@ -27,6 +28,11 @@ public abstract class RecentDao {
 
     @Query("SELECT * FROM recent ORDER BY timestamp DESC")
     public abstract List<Recent> getAll();
+
+    /** The recently chosen rooms themselves, latest first (JOIN recent -> rooms). */
+    @Query("SELECT r.* FROM rooms r JOIN recent c ON c.room_number = r.number " +
+           "ORDER BY c.timestamp DESC")
+    public abstract List<CampusRoom> getRooms();
 
     /** Saves a search (or moves it to the top) and keeps only the latest {@link #MAX_RECENT}. */
     @Transaction

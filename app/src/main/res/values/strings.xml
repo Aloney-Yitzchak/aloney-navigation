@@ -55,6 +55,10 @@
     <string name="search_favorites">מועדפים</string>
     <string name="search_favorites_edit">עריכה</string>
     <string name="search_recent">חיפושים אחרונים</string>
+    <string name="search_favorites_done">סיום</string>
+    <string name="favorite_added">%1$s נוסף למועדפים</string>
+    <string name="favorite_removed">%1$s הוסר מהמועדפים</string>
+    <string name="action_unfavorite">הסרה מהמועדפים</string>
     <string name="search_results">תוצאות עבור \"%1$s\"</string>
     <string name="search_results_all">כל החדרים</string>
     <string name="search_empty">לא נמצא חדר עבור \"%1$s\"</string>
