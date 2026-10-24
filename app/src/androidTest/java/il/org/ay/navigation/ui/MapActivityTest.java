@@ -83,10 +83,11 @@ public class MapActivityTest {
 
     private void waitForPaths() {
         long end = SystemClock.uptimeMillis() + WAIT_MS;
-        while (SystemClock.uptimeMillis() < end && count(Polyline.class) < 3) {
+        while (SystemClock.uptimeMillis() < end && count(Polyline.class) < 5) {
             SystemClock.sleep(100);
         }
-        assertEquals("2 paths + the route line", 3, count(Polyline.class));
+        // each path is a grey edge and a white line, plus the route line
+        assertEquals("2 paths × 2 + the route", 5, count(Polyline.class));
     }
 
     @Test

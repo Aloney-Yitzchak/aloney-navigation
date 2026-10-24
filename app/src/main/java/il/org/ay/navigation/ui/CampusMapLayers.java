@@ -68,6 +68,7 @@ public class CampusMapLayers {
     private final CopyrightOverlay credit;
     private boolean planShown;
     private boolean positionShown;
+    private boolean destinationShown;
 
     /**
      * osmdroid settings, once per app start, before the MapView is created: our own
@@ -127,13 +128,9 @@ public class CampusMapLayers {
         for (int[] s : graph.segments()) {
             Node a = graph.node(s[0]);
             Node b = graph.node(s[1]);
-            Polyline line = new Polyline();
-            line.setPoints(java.util.Arrays.asList(geo(a.lat, a.lng), geo(b.lat, b.lng)));
-            line.getOutlinePaint().setColor(Color.WHITE);
-            line.getOutlinePaint().setStrokeWidth(dp(4));
-            line.getOutlinePaint().setStrokeCap(Paint.Cap.ROUND);
-            line.setInfoWindow(null);
-            paths.add(line);
+            // a grey edge under a white line, so the path stands out from OSM's white roads
+            paths.add(pathLine(a, b, 0xFF80868B, 6));
+            paths.add(pathLine(a, b, Color.WHITE, 3.5f));
         }
         BoundingBox box = bounds(graph);
         if (box != null) {
@@ -141,6 +138,42 @@ public class CampusMapLayers {
                     box.getLonEast() + MARGIN_DEG, box.getLatSouth() - MARGIN_DEG, box.getLonWest() - MARGIN_DEG));
         }
         rebuild();
+    }
+
+    private Polyline pathLine(Node a, Node b, int color, float widthDp) {
+        Polyline line = new Polyline();
+        line.setPoints(java.util.Arrays.asList(geo(a.lat, a.lng), geo(b.lat, b.lng)));
+        line.getOutlinePaint().setColor(color);
+        line.getOutlinePaint().setStrokeWidth(dp(widthDp));
+        line.getOutlinePaint().setStrokeCap(Paint.Cap.ROUND);
+        line.setInfoWindow(null);
+        return line;
+    }
+
+    /** Moves the map to a point, keeping the zoom (the "my location" button). */
+    public void centerOn(@NonNull LatLng p) {
+        map.getController().animateTo(geo(p));
+    }
+
+    /** Shows the whole route, with room around it. Call after the map has its size. */
+    public void zoomToRoute(@NonNull Route r) {
+        List<GeoPoint> points = new ArrayList<>();
+        for (Node n : r.nodes()) {
+            points.add(geo(n.lat, n.lng));
+        }
+        if (points.size() > 1) {
+            map.zoomToBoundingBox(BoundingBox.fromGeoPointsSafe(points), true, (int) dp(64));
+        } else if (points.size() == 1) {
+            map.getController().animateTo(points.get(0), 19.0, 500L);
+        }
+    }
+
+    /** Puts the destination marker before there is a route (no position yet). */
+    public void showDestination(@NonNull LatLng p) {
+        destination.setPosition(geo(p));
+        destinationShown = true;
+        destination.setVisible(true);
+        map.invalidate();
     }
 
     /** Shows the whole campus. Call after the map has its size (MapView.post). */
@@ -179,7 +212,8 @@ public class CampusMapLayers {
             destination.setPosition(geo(end.lat, end.lng));
         }
         route.setPoints(points);
-        destination.setVisible(r != null);
+        destinationShown = r != null || destinationShown;
+        destination.setVisible(destinationShown);
         map.invalidate();
     }
 
@@ -222,9 +256,7 @@ public class CampusMapLayers {
         o.add(destination);
         o.add(here);
         o.add(credit);
-        if (route.getActualPoints().isEmpty()) {
-            destination.setVisible(false);
-        }
+        destination.setVisible(destinationShown);
         here.setVisible(positionShown);
         hereAccuracy.setVisible(positionShown);
         map.invalidate();
