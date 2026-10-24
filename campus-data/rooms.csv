@@ -1,65 +1,65 @@
 number,name,owner,entrance_node_id,plan_year
-1,רכזת בוגרים ובגרויות,רכזת בוגרים ובגרויות,,tashpaz
-2,חדר מחשבים,,,tashpaz
-3,"י נעל""ה - כיתת עברית",,,tashpaz
-4,רכזת שכבה ח',רכזת שכבה ח',,tashpaz
-5,רכזת שכבה ט',רכזת שכבה ט',,tashpaz
-6,רכז שכבה ז',רכז שכבה ז',,tashpaz
-7,"מחסן מזכירות ביה""ס",,,tashpaz
-8,חדר מחשבים,,,tashpaz
-ש9,ט4,,,tashpaz
-10-11,שירותים,,,tashpaz
-12,ז3,,,tashpaz
-ש13,ז1,,,tashpaz
-14,ט2,,,tashpaz
-ש15,ח3,,,tashpaz
-ש16,ח2,,,tashpaz
-ש17,ח1,,,tashpaz
-ש18,ז4,,,tashpaz
-19,ז2,,,tashpaz
-20,ספרייה,,,tashpaz
-21,חדר הכלה,,,tashpaz
-22,חדר אנגלית,,,tashpaz
-23,"חדר מורים ומזכירות ביה""ס",,,tashpaz
-24,צוות אנגלית,,,tashpaz
-25,צוות מתמטיקה,,,tashpaz
-27,חדר שהייה,,,tashpaz
-28,יא2,,,tashpaz
-29,"מנהלת חט""ע","מנהלת חט""ע",,tashpaz
-30,אולפן,,,tashpaz
-31,יא6,,,tashpaz
-32,יועצת,יועצת,,tashpaz
-33,רכזת שכבה יא',רכזת שכבה יא',,tashpaz
-ש34,יא1,,,tashpaz
-ש36,י1,,,tashpaz
-38,מעבדת מדעים,,,tashpaz
-40,י4,,,tashpaz
-41,י3,,,tashpaz
-42,י5,,,tashpaz
-43,רכז שכבה י',רכז שכבה י',,tashpaz
-44,התאמות והערכה ומדידה,,,tashpaz
-45,יועצת,יועצת,,tashpaz
-ש46,י2,,,tashpaz
-47,י6,,,tashpaz
-48,יא3,,,tashpaz
-50,רכזות פדגוגיות,רכזות פדגוגיות,,tashpaz
-ש51,ט1,,,tashpaz
-53,ט3,,,tashpaz
-55,יא5,,,tashpaz
-ש56,יב5,,,tashpaz
-57,יב2,,,tashpaz
-58,סגנית שש-שנתי,סגנית שש-שנתי,,tashpaz
-59,יועצת,יועצת,,tashpaz
-ש60,יב3,,,tashpaz
-61,יא4,,,tashpaz
-62,חינוך חברתי,,,tashpaz
-63,רכז שכבה יב',רכז שכבה יב',,tashpaz
-64,שירותי בנות,,,tashpaz
-65,שירותי בנים,,,tashpaz
-66,יב4,,,tashpaz
-67,יב6,,,tashpaz
-70,מתחם הווילות,,,tashpaz
-71,מתחם הווילות,,,tashpaz
-72,יב1,,,tashpaz
-73,עריכה,,,tashpaz
-74,עריכה,,,tashpaz
+1,רכזת בוגרים ובגרויות,רכזת בוגרים ובגרויות,1,tashpaz
+2,חדר מחשבים,,2,tashpaz
+3,"י נעל""ה - כיתת עברית",,4,tashpaz
+4,רכזת שכבה ח',רכזת שכבה ח',6,tashpaz
+5,רכזת שכבה ט',רכזת שכבה ט',7,tashpaz
+6,רכז שכבה ז',רכז שכבה ז',8,tashpaz
+7,"מחסן מזכירות ביה""ס",,9,tashpaz
+8,חדר מחשבים,,3,tashpaz
+ש9,ט4,,5,tashpaz
+10-11,שירותים,,10,tashpaz
+12,ז3,,11,tashpaz
+ש13,ז1,,12,tashpaz
+14,ט2,,13,tashpaz
+ש15,ח3,,14,tashpaz
+ש16,ח2,,15,tashpaz
+ש17,ח1,,16,tashpaz
+ש18,ז4,,17,tashpaz
+19,ז2,,18,tashpaz
+20,ספרייה,,19,tashpaz
+21,חדר הכלה,,20,tashpaz
+22,חדר אנגלית,,21,tashpaz
+23,"חדר מורים ומזכירות ביה""ס",,22,tashpaz
+24,צוות אנגלית,,23,tashpaz
+25,צוות מתמטיקה,,24,tashpaz
+27,חדר שהייה,,25,tashpaz
+28,יא2,,26,tashpaz
+29,"מנהלת חט""ע","מנהלת חט""ע",27,tashpaz
+30,אולפן,,28,tashpaz
+31,יא6,,29,tashpaz
+32,יועצת,יועצת,30,tashpaz
+33,רכזת שכבה יא',רכזת שכבה יא',31,tashpaz
+ש34,יא1,,32,tashpaz
+ש36,י1,,33,tashpaz
+38,מעבדת מדעים,,34,tashpaz
+40,י4,,35,tashpaz
+41,י3,,36,tashpaz
+42,י5,,37,tashpaz
+43,רכז שכבה י',רכז שכבה י',38,tashpaz
+44,התאמות והערכה ומדידה,,39,tashpaz
+45,יועצת,יועצת,40,tashpaz
+ש46,י2,,41,tashpaz
+47,י6,,42,tashpaz
+48,יא3,,43,tashpaz
+50,רכזות פדגוגיות,רכזות פדגוגיות,44,tashpaz
+ש51,ט1,,45,tashpaz
+53,ט3,,46,tashpaz
+55,יא5,,47,tashpaz
+ש56,יב5,,48,tashpaz
+57,יב2,,49,tashpaz
+58,סגנית שש-שנתי,סגנית שש-שנתי,50,tashpaz
+59,יועצת,יועצת,51,tashpaz
+ש60,יב3,,52,tashpaz
+61,יא4,,53,tashpaz
+62,חינוך חברתי,,54,tashpaz
+63,רכז שכבה יב',רכז שכבה יב',55,tashpaz
+64,שירותי בנות,,56,tashpaz
+65,שירותי בנים,,57,tashpaz
+66,יב4,,58,tashpaz
+67,יב6,,59,tashpaz
+70,מתחם הווילות,,60,tashpaz
+71,מתחם הווילות,,61,tashpaz
+72,יב1,,62,tashpaz
+73,עריכה,,63,tashpaz
+74,עריכה,,64,tashpaz

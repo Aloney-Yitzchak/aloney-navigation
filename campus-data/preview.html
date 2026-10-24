@@ -89,7 +89,7 @@
   </div>
 
   <div class="legend hint">
-    <div><i style="background:var(--accent)"></i>כניסה &nbsp; <i style="background:#455A64"></i>צומת &nbsp; <i style="background:var(--error)"></i>מנותקת מהשאר</div>
+    <div><i style="background:var(--accent)"></i>כניסה &nbsp; <i style="background:#455A64"></i>צומת &nbsp; <i style="background:var(--error)"></i>עוד לא מחוברת לרשת השבילים</div>
     <div>קו אדום מקווקו: שביל ארוך מ-80 מ'</div>
   </div>
 </aside>
@@ -186,7 +186,9 @@ function check() {
     if (d > LONG_EDGE_M) warn(`קשת ${pair(e.from, e.to)}: ${d.toFixed(0)} מ' — אולי חסר צומת`, a);
   }
   const parts = components();
-  parts.slice(1).forEach(p => err(`${p.length} נקודות מנותקות מהשאר (${p.slice(0, 6).join(', ')})`, byId.get(p[0])));
+  // Until there is at least one path, every point is "cut off": nothing to report yet.
+  const cut = edges.length ? parts.slice(1).flat() : [];
+  if (cut.length) err(`${cut.length} נקודות עוד לא מחוברות לרשת השבילים (${cut.slice(0, 8).join(', ')}${cut.length > 8 ? '…' : ''})`, byId.get(cut[0]));
   let unmapped = 0;
   for (const r of rooms) {
     if (r.entrance === null) { unmapped++; continue; }
@@ -199,12 +201,14 @@ function check() {
 }
 
 // ---------- map
-const map = L.map('map', { doubleClickZoom: false }).setView(CAMPUS_CENTER, 17);
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  { maxZoom: 20, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+const map = L.map('map', { doubleClickZoom: false, maxZoom: 21 }).setView(CAMPUS_CENTER, 17);
+// Satellite first: mapping is done on the imagery. The street map is CARTO (OpenStreetMap data),
+// because tile.openstreetmap.org refuses pages opened directly from a file (no Referer).
 const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { maxZoom: 20, maxNativeZoom: 19, attribution: 'Imagery &copy; Esri' });
-L.control.layers({ 'מפה': osm, 'לוויין': sat }).addTo(map);
+  { maxZoom: 21, maxNativeZoom: 18, attribution: 'Imagery &copy; Esri' }).addTo(map);  // Esri has no zoom 19 over the campus
+const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+  { maxZoom: 21, maxNativeZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' });
+L.control.layers({ 'לוויין': sat, 'מפה': streets }).addTo(map);
 const layer = L.layerGroup().addTo(map);
 
 function draw(fit) {
@@ -226,7 +230,7 @@ function draw(fit) {
   rooms.forEach(r => { if (r.entrance !== null) roomsAt.set(r.entrance, [...(roomsAt.get(r.entrance) || []), r]); });
 
   for (const n of nodes) {
-    const isolated = parts.length > 1 && !main.has(n.id);
+    const isolated = edges.length > 0 && parts.length > 1 && !main.has(n.id);
     const color = isolated ? '#C62828' : n.kind === 'entrance' ? '#F57C00' : '#455A64';
     const m = L.circleMarker([n.lat, n.lng], { radius: n.kind === 'entrance' ? 7 : 5, color, fillColor: color, fillOpacity: .9, weight: 2 })
       .bindTooltip(`${n.id} · ${n.kind}${n.label ? ' · ' + n.label : ''}`).addTo(layer);
