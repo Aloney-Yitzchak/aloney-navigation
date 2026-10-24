@@ -22,6 +22,14 @@ ml/dataset/
 __pycache__/
 *.pyc
 
-# Node packages and tool logs (never committed)
+# Firebase service account keys — never in git (T06)
+*service-account*.json
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+# Firebase CLI / emulator
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 node_modules/
 *-debug.log

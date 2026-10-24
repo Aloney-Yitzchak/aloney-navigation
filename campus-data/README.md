@@ -14,8 +14,10 @@
 | `preview.html` | מפה לבדיקה ועריכה של הנקודות והשבילים | T05 |
 | `tests/` | בדיקות יחידה: `python -m unittest -v` | T05 |
 | `plans/<שנה>/plan.png` | תרשים בית הספר של אותה שנה, מתפרסם ב-GitHub Pages | T28 |
-| `upload_to_firestore.py` | העלאת הנתונים ל-Firestore | T06 |
+| `upload_to_firestore.py` | העלאת הנתונים ל-Firestore (`--dry-run`, `--allow-unmapped`, `--only`) | T06 |
+| `set_staff_claim.py` | הרשאת כתיבה לאיש צוות | T06 |
+| `requirements.txt` | `firebase-admin`, לשני הסקריפטים של T06 | T06 |
 
-הסקריפטים משתמשים רק בספרייה הסטנדרטית של Python ‏(3.10 ומעלה).
+הסקריפטים של T05 משתמשים רק בספרייה הסטנדרטית של Python ‏(3.10 ומעלה). הסקריפטים של T06 צריכים את `firebase-admin` ומפתח של חשבון שירות, **שנשמר מחוץ למאגר**.
 
 </div>
