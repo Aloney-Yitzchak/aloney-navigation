@@ -129,7 +129,8 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
                 layers.centerOn(lastPosition);
             }
         });
-        findViewById(R.id.map_start_ar).setOnClickListener(v -> comingSoon());   // T16
+        findViewById(R.id.map_start_ar).setOnClickListener(v ->
+                startActivity(ArNavActivity.navigateTo(this, room != null ? room.number : null)));
         favorite.setOnClickListener(v -> toggleFavorite());
 
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
@@ -137,6 +138,8 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
         nav.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_search) {
                 openSearch();
+            } else if (item.getItemId() == R.id.nav_ar) {
+                startActivity(ArNavActivity.navigateTo(this, room != null ? room.number : null));
             } else if (item.getItemId() != R.id.nav_map) {
                 comingSoon();
             }

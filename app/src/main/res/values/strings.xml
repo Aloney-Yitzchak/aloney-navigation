@@ -94,6 +94,9 @@
     <string name="ar_arrow">חץ הניווט</string>
     <string name="ar_step">שלב %1$d/%2$d</string>
     <string name="ar_end">סיים ניווט</string>
+    <string name="ar_choose_destination">בחרו יעד בחיפוש כדי לקבל חץ ניווט</string>
+    <string name="ar_no_camera_title">אין גישה למצלמה</string>
+    <string name="ar_open_map">ניווט במפה</string>
     <string name="ar_calibrate">כיול כיוון</string>
     <string name="ar_show_map">הצגת המפה</string>
     <string name="ar_gps_accuracy">דיוק GPS: ±%1$d מ\'</string>

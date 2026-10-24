@@ -40,6 +40,12 @@
             android:name=".ui.MapActivity"
             android:exported="false" />
 
+        <!-- T16: the camera screen, upright only: the arrow is drawn for a phone held up -->
+        <activity
+            android:name=".ui.ArNavActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
         <!-- T11: the position while navigating. Bound only, so it stops with the screens (NFR-08) -->
         <service
             android:name=".logic.LocationService"
