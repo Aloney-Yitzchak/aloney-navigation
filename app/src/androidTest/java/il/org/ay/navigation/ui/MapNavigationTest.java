@@ -64,6 +64,7 @@ public class MapNavigationTest {
     /** The GPS of this test. */
     static class TestGps implements PositionSource {
         static Callback callback;
+        static long clock;
 
         @Override
         public void start(@NonNull Callback cb) {
@@ -81,7 +82,9 @@ public class MapNavigationTest {
                 SystemClock.sleep(50);
             }
             assertNotNull("the map did not start the GPS", callback);
-            Fix fix = new Fix(lat, lng, 4f, System.currentTimeMillis());
+            // one fix a second, as a phone sends them: the smoother expects time between fixes
+            clock = clock == 0 ? System.currentTimeMillis() : clock + 1000;
+            Fix fix = new Fix(lat, lng, 4f, clock);
             InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> callback.onFix(fix));
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         }
@@ -197,9 +200,8 @@ public class MapNavigationTest {
         TestGps.at(32.51150, 35.00400);
         TestGps.at(32.51200, 35.00450);              // on path 2–3, 33 m before the door
         assertTrue(!nav.isArrived());
-        // standing at the door: the test's fixes come milliseconds apart, so the smoother
-        // needs a few of them to settle there (on a phone they come once a second)
-        for (int i = 0; i < 15 && !nav.isArrived(); i++) {
+        // standing at the door for a few seconds
+        for (int i = 0; i < 10 && !nav.isArrived(); i++) {
             TestGps.at(32.51229, 35.00450);          // 1 m from room 42's entrance
         }
         assertTrue(nav.isArrived());                 // FR-06
