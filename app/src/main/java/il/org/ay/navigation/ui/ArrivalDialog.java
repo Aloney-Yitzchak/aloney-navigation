@@ -65,7 +65,10 @@ public class ArrivalDialog extends DialogFragment {
         // a dialog window wraps its content by default, which squeezed the card; the card
         // keeps its own 24 dp margins inside the full width
         if (getDialog() != null && getDialog().getWindow() != null) {
-            getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            android.view.Window w = getDialog().getWindow();
+            w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            int margin = getResources().getDimensionPixelSize(R.dimen.spacing_large);
+            w.getDecorView().setPadding(margin, 0, margin, 0);   // the card's side margins
         }
     }
 
@@ -82,7 +85,8 @@ public class ArrivalDialog extends DialogFragment {
         owner.setVisibility(o == null || o.isEmpty() ? View.GONE : View.VISIBLE);
         TextView summary = v.findViewById(R.id.arrival_summary);
         int minutes = a.getInt(ARG_MINUTES);
-        summary.setText(getString(R.string.arrival_summary, Math.max(1, minutes), a.getInt(ARG_METRES)));
+        minutes = Math.max(1, minutes);
+        summary.setText(getResources().getQuantityString(R.plurals.arrival_summary, minutes, minutes, a.getInt(ARG_METRES)));
         // SDD 4: onDone()
         v.findViewById(R.id.arrival_new_destination).setOnClickListener(x -> newDestination());
         v.findViewById(R.id.arrival_close).setOnClickListener(x -> dismiss());

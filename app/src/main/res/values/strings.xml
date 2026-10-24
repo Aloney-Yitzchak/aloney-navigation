@@ -127,7 +127,12 @@
     <!-- arrival -->
     <string name="arrival_badge">המסלול הושלם</string>
     <string name="arrival_title">הגעת!</string>
-    <string name="arrival_summary">זמן הליכה: %1$d דקות · %2$d מטר</string>
+    <plurals name="arrival_summary">
+        <item quantity="one">זמן הליכה: דקה אחת · %2$d מטר</item>
+        <item quantity="two">זמן הליכה: שתי דקות · %2$d מטר</item>
+        <item quantity="many">זמן הליכה: %1$d דקות · %2$d מטר</item>
+        <item quantity="other">זמן הליכה: %1$d דקות · %2$d מטר</item>
+    </plurals>
     <string name="arrival_new_destination">יעד חדש</string>
 
     <!-- calibration -->
