@@ -14,8 +14,9 @@ android {
         applicationId 'il.org.ay.navigation'
         minSdk 26
         targetSdk 35
-        versionCode 1
-        versionName '0.1'
+        // CI sets these from the build number (release.yml); local builds stay 1 / 0.1-dev
+        versionCode = (System.getenv('VERSION_CODE') ?: '1').toInteger()
+        versionName = System.getenv('VERSION_NAME') ?: '0.1-dev'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         // Room writes the schema of every database version to app/schemas (kept in git)
@@ -28,8 +29,26 @@ android {
         testInstrumentationRunnerArguments clearPackageData: 'true'
     }
 
+    // One signing key for every build: Android Studio, CI and the GitHub releases. A phone
+    // only installs an update signed with the same key as the app already on it, so with a
+    // fresh debug key per machine every release would need an uninstall first.
+    // This is a debug key with the standard public password, NOT a secret, and it can not
+    // be used for Google Play. A store release would need its own key, kept out of git.
+    signingConfigs {
+        shared {
+            storeFile file('shared-debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.shared
+        }
         release {
+            signingConfig signingConfigs.shared
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

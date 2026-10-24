@@ -1,0 +1,68 @@
+name: Release
+
+# A merged pull request that changes the app becomes a GitHub Release with the APK,
+# so the newest version can be installed on a phone straight from GitHub.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths: ['app/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradle/**', '.github/workflows/release.yml']
+
+permissions:
+  contents: write   # to create the tag and the release
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      # each run is one step newer: v0.1, v0.2, …
+      VERSION_CODE: ${{ github.run_number }}
+      VERSION_NAME: 0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The real Firebase config lives in a repository secret, never in git.
+      # Without it the app is built with the placeholder and cannot sync.
+      - name: Firebase config
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+            echo "FIREBASE_NOTE=" >> "$GITHUB_ENV"
+          else
+            cp app/google-services.ci.json app/google-services.json
+            echo "FIREBASE_NOTE=⚠️ נבנה בלי קובץ ההגדרות של Firebase (הסוד GOOGLE_SERVICES_JSON חסר), ולכן הגרסה לא מסתנכרנת עם נתוני הקמפוס." >> "$GITHUB_ENV"
+          fi
+
+      - name: Build the APK
+        run: ./gradlew assembleRelease
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk="aloney-navigation-v${VERSION_NAME}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$apk"
+          {
+            echo "**${PR_TITLE}** — [PR #${PR_NUMBER}](${PR_URL})"
+            echo
+            echo "להתקנה בטלפון: מורידים את קובץ ה-APK מהטלפון, פותחים אותו ומאשרים התקנה ממקור לא ידוע."
+            echo "גרסה חדשה מותקנת מעל הקודמת, בלי למחוק את המועדפים."
+            if [ -n "$FIREBASE_NOTE" ]; then echo; echo "$FIREBASE_NOTE"; fi
+          } > notes.md
+          gh release create "v${VERSION_NAME}" "$apk" \
+            --target "${{ github.event.pull_request.merge_commit_sha }}" \
+            --title "v${VERSION_NAME} · ${PR_TITLE}" \
+            --notes-file notes.md
