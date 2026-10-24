@@ -1,6 +1,7 @@
 package il.org.ay.navigation.ui;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
@@ -148,7 +149,8 @@ public class SearchActivityTest {
     public void choosingARoom_addsItToRecentSearches_andTheyStayAfterClosing() {
         type("ספרי");
         waitForCount(1);
-        clickInRow(0, 0);
+        clickInRow(0, 0);                 // opens the map with the route (T15)
+        pressBack();                      // back to search
         onView(withId(R.id.search_text)).perform(clearText());
         waitForCount(4);
         waitForChips(R.id.recent_chips, 1);

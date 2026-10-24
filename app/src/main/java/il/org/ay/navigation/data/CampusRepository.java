@@ -168,6 +168,16 @@ public class CampusRepository {
         changeListeners.remove(listener);
     }
 
+    /** One room by number, or null when it is not on the phone (T15: the map's destination). */
+    public void findRoom(@NonNull String number, @NonNull Listener<CampusRoom> listener) {
+        io.execute(() -> deliver(listener, db.roomDao().findByNumber(number)));
+    }
+
+    /** Is this room starred? */
+    public void isFavorite(@NonNull String number, @NonNull Listener<Boolean> listener) {
+        io.execute(() -> deliver(listener, db.favoriteDao().isFavorite(number)));
+    }
+
     /** The path graph from the copy in Room, for route finding (T13, SDD 4: load()). */
     public void loadGraph(@NonNull Listener<CampusGraph> listener) {
         io.execute(() -> deliver(listener,

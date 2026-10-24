@@ -74,6 +74,12 @@ public class LocationService extends Service {
     static PositionSource.Factory sourceFactory = FusedPositionSource::new;
     static GraphLoader graphLoader = (context, listener) -> CampusRepository.get(context).loadGraph(listener);
 
+    /** For emulator tests: positions from the test instead of the GPS. Null = the real GPS. */
+    @androidx.annotation.VisibleForTesting
+    public static void useSourceForTesting(@Nullable PositionSource.Factory factory) {
+        sourceFactory = factory != null ? factory : FusedPositionSource::new;
+    }
+
     private final IBinder binder = new LocalBinder();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final LocationSmoother smoother = new LocationSmoother();
