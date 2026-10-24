@@ -152,6 +152,42 @@ public class MapNavigationTest {
         screenshot("13-map-recalculated");
     }
 
+    @Test
+    public void atHome_offCampus_thenMarkingThePosition_givesARoute() {
+        NavigationManager nav = nav();
+        TestGps.at(32.08, 34.78);                          // kilometres away
+        assertTrue(nav.isOffCampus());
+        onView(withText(R.string.map_off_campus)).check(matches(isDisplayed()));
+
+        // T23 / AT-08: open the calibration, put the pin on path 1–2, confirm
+        scenario.onActivity(MapActivity::openCalibrationForTest);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        AtomicReference<CalibrationDialog> dialog = new AtomicReference<>();
+        long end = SystemClock.uptimeMillis() + 5_000;
+        while (dialog.get() == null && SystemClock.uptimeMillis() < end) {
+            scenario.onActivity(a -> dialog.set(a.calibrationDialog()));
+            SystemClock.sleep(100);
+        }
+        assertNotNull("the calibration did not open", dialog.get());
+        SystemClock.sleep(1500);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> dialog.get().moveTo(new il.org.ay.navigation.model.LatLng(32.51150, 35.00410)));
+        SystemClock.sleep(1500);
+        screenshot("14-calibration");
+        onView(withId(R.id.calibration_confirm)).perform(androidx.test.espresso.action.ViewActions.click());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        assertTrue(!nav.isOffCampus());
+        assertNotNull("a route from the marked point", nav.getRoute());
+        assertEquals(2, nav.getRoute().nodes().get(1).id);
+
+        // the GPS at home moves on, and the position moves with it, on campus
+        TestGps.at(32.08, 34.78005);
+        assertTrue(!nav.isOffCampus());
+        SystemClock.sleep(2000);
+        screenshot("15-calibrated");
+    }
+
     private static void screenshot(String name) {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         shell("mkdir -p /sdcard/Pictures/aloney");

@@ -113,6 +113,12 @@
     <string name="calibration_drag_hint">גררו את הסימן או געו במפה</string>
     <string name="calibration_selected">המיקום שנבחר:</string>
     <string name="calibration_confirm">אישור והמשך ניווט</string>
+    <string name="calibration_near">ליד %1$s</string>
+    <string name="calibration_from">%1$d מ\' מ%2$s</string>
+    <string name="calibration_point">נקודה על המפה</string>
+    <string name="map_off_campus">נראה שאתה מחוץ לקמפוס</string>
+    <string name="map_mark_location">סימון המיקום שלי</string>
+    <string name="map_calibrated">המיקום עודכן. המסלול חושב מהנקודה שסימנת</string>
 
     <!-- staff -->
     <string name="admin_login_screen">כניסת צוות</string>

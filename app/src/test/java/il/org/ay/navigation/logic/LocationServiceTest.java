@@ -161,4 +161,21 @@ public class LocationServiceTest {
         assertEquals(1, late.size());
         assertNotNull(service.getLast());
     }
+
+    @Test
+    public void afterCalibration_laterFixesMoveFromTheMark() {
+        allowLocation();
+        ServiceController<LocationService> controller = Robolectric.buildService(LocationService.class).create();
+        LocationService service = bind(controller);
+        gps.send(5000, 0, 5, 0);                        // the GPS says: 5 km away (at home)
+        service.calibrate(at(40, 0));                   // the user: "I am here, on the path"
+        assertTrue(service.isCalibrated());
+        gps.send(5010, 0, 5, 1);                        // walked 10 m east at home
+        LatLng p = received.get(received.size() - 1).smoothed;
+        assertTrue("still near the mark: " + p.distanceTo(at(40, 0)), p.distanceTo(at(40, 0)) < 12);
+        assertTrue(p.distanceTo(at(5000, 0)) > 4000);
+
+        service.clearCalibration();
+        assertFalse(service.isCalibrated());
+    }
 }

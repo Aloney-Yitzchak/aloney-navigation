@@ -89,6 +89,16 @@ public class LocationService extends Service {
     @Nullable
     private Position last;
     private boolean running;
+    /** The last raw fix, before any correction. */
+    @Nullable
+    private PositionSource.Fix lastRaw;
+    /**
+     * After a manual calibration: how far the GPS is from where the user really is, in
+     * degrees. Added to every later fix, so the correction moves along with the user.
+     */
+    private double offsetLat;
+    private double offsetLng;
+    private boolean calibrated;
 
     /** Starts the service if needed and binds to it; unbind with {@code context.unbindService}. */
     public static boolean bind(@NonNull Context context, @NonNull android.content.ServiceConnection connection) {
@@ -147,7 +157,11 @@ public class LocationService extends Service {
                 == PackageManager.PERMISSION_GRANTED;
     }
 
-    private void onFix(@NonNull PositionSource.Fix fix) {
+    private void onFix(@NonNull PositionSource.Fix raw) {
+        lastRaw = raw;
+        PositionSource.Fix fix = calibrated
+                ? new PositionSource.Fix(raw.lat + offsetLat, raw.lng + offsetLng, raw.accuracy, raw.timeMs)
+                : raw;
         LatLng smoothed = smooth(fix);
         if (smoothed != null) {
             publish(smoothed);
@@ -168,11 +182,38 @@ public class LocationService extends Service {
         return snap == null ? p : snap.projection.point;
     }
 
-    /** SDD 4: calibrate(LatLng). The user marked where they are (FR-08, T23). */
+    /**
+     * SDD 4: calibrate(LatLng). The user marked where they are (FR-08, T23, SDD 9.5).
+     *
+     * <p>The marked point wins over the GPS: the gap between the last GPS fix and the mark
+     * is remembered and added to every later fix while this service runs. Near a building
+     * this corrects a GPS that is 20 m off; walking on, the position moves from the mark.
+     */
     public void calibrate(@NonNull LatLng p) {
+        if (lastRaw != null) {
+            offsetLat = p.lat - lastRaw.lat;
+            offsetLng = p.lng - lastRaw.lng;
+        } else {
+            offsetLat = 0;
+            offsetLng = 0;
+        }
+        calibrated = true;
         // wall-clock time, like Location.getTime() on the fixes that follow
         smoother.calibrate(p, System.currentTimeMillis());
         publish(p);
+    }
+
+    /** Back to the plain GPS, without the manual correction. */
+    public void clearCalibration() {
+        calibrated = false;
+        offsetLat = 0;
+        offsetLng = 0;
+        smoother.reset();
+    }
+
+    /** True while a manual calibration corrects the GPS. */
+    public boolean isCalibrated() {
+        return calibrated;
     }
 
     private void publish(@NonNull LatLng smoothed) {

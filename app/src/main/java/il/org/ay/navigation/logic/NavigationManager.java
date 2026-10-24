@@ -26,9 +26,16 @@ public class NavigationManager {
      */
     public static final int OFF_ROUTE_FIXES = 2;
 
+    /** Farther than this from every path = not on the campus: no route is planned (T23). */
+    public static final double OFF_CAMPUS_M = 150;
+
     /** Told when the route changes, so the screen can redraw it. */
     public interface Listener {
         void onRouteChanged(@NonNull Route route, boolean recalculated);
+
+        /** The user left the campus, or came back. */
+        default void onOffCampus(boolean offCampus) {
+        }
     }
 
     private final CampusGraph graph;
@@ -41,6 +48,7 @@ public class NavigationManager {
     private LatLng position;
     private int offRouteFixes;
     private int recalculations;
+    private boolean offCampus;
 
     public NavigationManager(@NonNull CampusGraph graph, int destinationId, @Nullable Listener listener) {
         this.graph = graph;
@@ -54,6 +62,9 @@ public class NavigationManager {
      */
     public void update(@NonNull LatLng p) {
         position = p;
+        if (setOffCampus(isOffCampus(p))) {
+            return;  // far from every path (at home, say): routing from there means nothing
+        }
         if (route == null) {
             setRoute(graph.findPath(p, destinationId), false);
             return;
@@ -67,6 +78,41 @@ public class NavigationManager {
         } else {
             offRouteFixes = 0;
         }
+    }
+
+    /**
+     * The user marked where they are (FR-08, AT-08): plan again from there at once,
+     * without waiting for positions off the route.
+     */
+    public void relocate(@NonNull LatLng p) {
+        position = p;
+        if (setOffCampus(isOffCampus(p))) {
+            return;
+        }
+        recalculations++;
+        setRoute(graph.findPath(p, destinationId), true);
+    }
+
+    private boolean isOffCampus(LatLng p) {
+        CampusGraph.Snap snap = graph.snapToPath(p);
+        return snap != null && snap.projection.distance > OFF_CAMPUS_M;
+    }
+
+    /** Records the new state, tells the listener when it changed, and returns it. */
+    private boolean setOffCampus(boolean value) {
+        if (value != offCampus) {
+            offCampus = value;
+            offRouteFixes = 0;
+            if (listener != null) {
+                listener.onOffCampus(value);
+            }
+        }
+        return value;
+    }
+
+    /** True while the last position was far from every campus path. */
+    public boolean isOffCampus() {
+        return offCampus;
     }
 
     private void setRoute(@Nullable Route newRoute, boolean recalculated) {
