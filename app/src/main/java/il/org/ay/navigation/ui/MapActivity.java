@@ -182,7 +182,9 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
     @Override
     public void onPosition(@NonNull LocationService.Position p) {
         lastPosition = p.smoothed;
-        layers.showPosition(p.smoothed, p.accuracy);
+        // on a path (SDD 9.3) when close to one; where the GPS says when clearly off the paths
+        LatLng shown = p.fromPath <= NavigationManager.OFF_ROUTE_M ? p.onPath : p.smoothed;
+        layers.showPosition(shown, p.accuracy);
         myLocation.setVisibility(View.VISIBLE);
         if (nav != null) {
             nav.update(p.smoothed);
