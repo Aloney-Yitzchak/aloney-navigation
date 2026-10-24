@@ -43,6 +43,7 @@ final class SnapshotSamples {
         addShortcut(favorites, "חדר 42", R.drawable.ic_meeting_room);
         text(v, R.id.results_title, v.getContext().getString(R.string.search_results, "מז"));
         text(v, R.id.results_count, "3");
+        v.findViewById(R.id.results_count).setVisibility(View.VISIBLE);
         RecyclerView list = v.findViewById(R.id.search_results);
         list.setAdapter(new RoomsAdapter(new String[][]{
                 {"מז", "מזכירות ראשית", "קבלת קהל ושירותי תלמידים", "65 מ' · 1 דק'"},

@@ -137,7 +137,9 @@
             android:paddingVertical="2dp"
             android:textColor="@color/text_primary"
             android:textSize="@dimen/text_secondary"
-            tools:text="3" />
+            android:visibility="gone"
+            tools:text="3"
+            tools:visibility="visible" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
