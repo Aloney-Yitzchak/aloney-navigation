@@ -73,10 +73,11 @@
 
     <!-- map -->
     <string name="map_screen">מפה ומסלול</string>
-    <string name="map_placeholder">כאן תוצג מפת הקמפוס (T29)</string>
+    <string name="map_placeholder">טוען את מפת הקמפוס…</string>
     <string name="map_wrong_location">המיקום שגוי?</string>
     <string name="map_floor">ק\' %1$d</string>
     <string name="map_my_location">המיקום שלי</string>
+    <string name="map_you_are_here">אתה כאן</string>
     <string name="map_start_ar">ניווט במצלמה (AR)</string>
     <string name="map_route_details">פרטי מסלול והנחיות</string>
 

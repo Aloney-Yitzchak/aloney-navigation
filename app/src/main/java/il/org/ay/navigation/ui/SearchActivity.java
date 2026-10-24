@@ -1,5 +1,6 @@
 package il.org.ay.navigation.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -125,10 +126,13 @@ public class SearchActivity extends BaseActivity {
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
         nav.setSelectedItemId(R.id.nav_search);
         nav.setOnItemSelectedListener(item -> {
-            if (item.getItemId() != R.id.nav_search) {
+            if (item.getItemId() == R.id.nav_map) {
+                startActivity(new Intent(this, MapActivity.class));
+                overridePendingTransition(0, 0);
+            } else if (item.getItemId() != R.id.nav_search) {
                 comingSoon();
             }
-            return false;  // stay on the search tab until the other screens exist
+            return false;  // this screen stays the search tab
         });
         findViewById(R.id.search_ar_open).setOnClickListener(v -> comingSoon());
 

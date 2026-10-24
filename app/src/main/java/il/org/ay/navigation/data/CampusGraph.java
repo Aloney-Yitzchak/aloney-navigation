@@ -85,6 +85,12 @@ public final class CampusGraph {
         return Collections.unmodifiableCollection(nodes.values());
     }
 
+    /** Every path segment once, as {from id, to id}: for drawing the paths on the map. */
+    @NonNull
+    public List<int[]> segments() {
+        return Collections.unmodifiableList(segments);
+    }
+
     /** The node closest to a point (straight line), or null for an empty graph. */
     @Nullable
     public Node nearestNode(double lat, double lng) {
