@@ -21,3 +21,7 @@ ml/dataset/
 # Python
 __pycache__/
 *.pyc
+
+# Node packages and tool logs (never committed)
+node_modules/
+*-debug.log
