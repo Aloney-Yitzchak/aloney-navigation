@@ -1,0 +1,24 @@
+name: Campus data
+
+on:
+  pull_request:
+    paths: ['campus-data/**', '.github/workflows/campus-data.yml']
+  push:
+    branches: [main]
+    paths: ['campus-data/**', '.github/workflows/campus-data.yml']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: campus-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest -v
+      - name: Validate the data (report only until the campus walk is done)
+        run: python validate.py || true

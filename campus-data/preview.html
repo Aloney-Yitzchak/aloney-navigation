@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מפת נתוני הקמפוס</title>
+<!-- T05: checks campus-data/*.csv on a map, and edits nodes and edges.
+     Run from this folder:  python -m http.server 8000   then open http://localhost:8000/preview.html
+     (or open the file directly and pick the three CSV files). -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --primary: #2E7D32; --accent: #F57C00; --error: #C62828; --warn: #B26A00;
+    --ink: #1C1B1F; --quiet: #5F6368; --line: #DADCE0; --card: #F5F5F5; --bg: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font: 14px/1.45 system-ui, "Segoe UI", Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  body { display: grid; grid-template-columns: 340px 1fr; }
+  aside { overflow-y: auto; border-inline-end: 1px solid var(--line); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  #map { height: 100%; }
+  h1 { font-size: 18px; margin: 0; color: var(--primary); }
+  h2 { font-size: 13px; margin: 0 0 6px; color: var(--quiet); font-weight: 600; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat { background: var(--card); border-radius: 8px; padding: 8px 10px; }
+  .stat b { display: block; font-size: 18px; }
+  .stat span { color: var(--quiet); font-size: 12px; }
+  ul.problems { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 40vh; overflow-y: auto; }
+  ul.problems li { padding: 6px 8px; border-radius: 6px; background: var(--card); cursor: pointer; }
+  ul.problems li.err { border-inline-start: 3px solid var(--error); }
+  ul.problems li.warn { border-inline-start: 3px solid var(--warn); }
+  .ok { color: var(--primary); font-weight: 600; }
+  button, .file { font: inherit; border: 1px solid var(--line); background: var(--bg); border-radius: 18px; padding: 6px 14px; cursor: pointer; }
+  button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .hint { color: var(--quiet); font-size: 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-inline-end: 4px; vertical-align: middle; }
+  .room-label { background: rgba(255,255,255,.9); border: 1px solid var(--accent); border-radius: 4px; padding: 0 4px; font-size: 11px; white-space: nowrap; box-shadow: none; }
+  .room-label::before { display: none; }
+  .popup label { display: block; margin: 4px 0; }
+  .popup input, .popup select { font: inherit; width: 100%; }
+  #loader { display: none; }
+  #draft { display: none; background: #FFF3E0; border-radius: 8px; padding: 8px 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; max-height: 26vh; overflow-y: auto; }
+  .chip { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--bg); border-radius: 14px; padding: 2px 9px; cursor: pointer; }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip small { color: var(--quiet); }
+  .chip.on small { color: #fff; }
+  @media (max-width: 760px) { body { grid-template-columns: 1fr; grid-template-rows: auto 60vh; } aside { border: 0; max-height: 50vh; } }
+</style>
+</head>
+<body>
+<aside>
+  <h1>מפת נתוני הקמפוס</h1>
+
+  <div id="loader">
+    <h2>טעינת הקבצים</h2>
+    <p class="hint">הדף נפתח ישירות מהקובץ, ולכן צריך לבחור את nodes.csv, edges.csv ו-rooms.csv מהתיקייה campus-data.</p>
+    <label class="file">בחירת קבצים<input id="files" type="file" accept=".csv" multiple hidden></label>
+  </div>
+
+  <div id="draft">
+    <div id="draftText"></div>
+    <div class="row" style="margin-top:6px"><button id="draftRestore" class="primary">שחזור הטיוטה</button><button id="draftDiscard">מחיקה</button></div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div>
+    <h2>בדיקות</h2>
+    <div id="summary"></div>
+    <ul class="problems" id="problems"></ul>
+  </div>
+
+  <div>
+    <h2>עריכה</h2>
+    <div class="row">
+      <button id="edit">מצב עריכה</button>
+      <button id="dlAll" class="primary">הורדת 3 הקבצים</button>
+    </div>
+    <p class="hint">במצב עריכה: לחיצה על המפה מוסיפה צומת; לחיצה על נקודה ואחריה על נקודה אחרת מוסיפה או מוחקת שביל ביניהן; גרירה מזיזה נקודה; לחיצה כפולה על נקודה פותחת עריכה: סוג, תווית והחדרים שמאחורי הכניסה. כל שינוי נשמר אוטומטית בדפדפן כטיוטה. בסוף מורידים את שלושת הקבצים, מחליפים אותם בתיקייה ומריצים <code>python validate.py --write --complete</code>.</p>
+  </div>
+
+  <div>
+    <h2>חדרים בלי כניסה <span id="unmappedCount"></span></h2>
+    <p class="hint">בוחרים חדר, ואז לוחצים על המפה במקום הכניסה שלו (נוצרת נקודת כניסה) או על נקודת כניסה קיימת (חדר נוסף מאחורי אותה דלת). כדאי לעבור לשכבת "לוויין".</p>
+    <div class="chips" id="unmapped"></div>
+  </div>
+
+  <div class="legend hint">
+    <div><i style="background:var(--accent)"></i>כניסה &nbsp; <i style="background:#455A64"></i>צומת &nbsp; <i style="background:var(--error)"></i>עוד לא מחוברת לרשת השבילים</div>
+    <div>קו אדום מקווקו: שביל ארוך מ-80 מ'</div>
+  </div>
+</aside>
+<div id="map"></div>
+
+<script>
+'use strict';
+const LONG_EDGE_M = 80, R = 6371000;
+// Default view: Alonei Yitzhak (Wikipedia: 32°30′36″N 35°0′19″E); the map zooms to the data once there is some.
+const CAMPUS_CENTER = [32.51, 35.00528];
+
+let nodes = [], edges = [], rooms = [];
+let editMode = false, firstPick = null, selectedRoom = null, loaded = false;
+
+// ---------- CSV
+function parseCsv(text) {
+  const rows = [];
+  let row = [], cell = '', q = false;
+  text = text.replace(/^﻿/, '');
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') q = false;
+      else cell += c;
+    } else if (c === '"' && cell === '') q = true;   // a quote opens only at the start of a field (ביה"ס stays as is)
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell); cell = '';
+      if (row.some(v => v.trim() !== '')) rows.push(row);
+      row = [];
+    } else cell += c;
+  }
+  row.push(cell);
+  if (row.some(v => v.trim() !== '')) rows.push(row);
+  const [head, ...body] = rows;
+  return body.map(r => Object.fromEntries(head.map((h, i) => [h.trim(), (r[i] || '').trim()])));
+}
+const csvCell = v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+const pair = (a, b) => `\u2066${a}–${b}\u2069`;  // keeps "3–4" left-to-right inside Hebrew text
+const toCsv = (header, rows) => [header.join(','), ...rows.map(r => r.map(csvCell).join(','))].join('\n') + '\n';
+
+function setData(n, e, r) {
+  nodes = n.map(x => ({ id: +x.id, lat: +x.lat, lng: +x.lng, kind: x.kind, label: x.label || '' }));
+  edges = e.map(x => ({ from: +x.from_id, to: +x.to_id }));
+  rooms = r.map(x => ({ number: x.number, name: x.name || '', owner: x.owner || '', planYear: x.plan_year || '',
+    entrance: x.entrance_node_id === '' || x.entrance_node_id === undefined ? null : +x.entrance_node_id }));
+  draw(true);
+  offerDraft();
+}
+
+// ---------- geometry (SDD 9.2, same as campus.py and Node.java)
+function dist(a, b) {
+  const p1 = a.lat * Math.PI / 180, p2 = b.lat * Math.PI / 180;
+  const x = (b.lng - a.lng) * Math.PI / 180 * Math.cos((p1 + p2) / 2);
+  return R * Math.hypot(x, p2 - p1);
+}
+
+function components() {
+  const nb = new Map(nodes.map(n => [n.id, []]));
+  edges.forEach(e => { if (nb.has(e.from) && nb.has(e.to)) { nb.get(e.from).push(e.to); nb.get(e.to).push(e.from); } });
+  const seen = new Set(), parts = [];
+  for (const n of nodes) {
+    if (seen.has(n.id)) continue;
+    const part = [], queue = [n.id];
+    seen.add(n.id);
+    while (queue.length) {
+      const c = queue.shift(); part.push(c);
+      for (const m of nb.get(c)) if (!seen.has(m)) { seen.add(m); queue.push(m); }
+    }
+    parts.push(part);
+  }
+  return parts.sort((a, b) => b.length - a.length);
+}
+
+// ---------- checks (the main ones from validate.py)
+function check() {
+  const out = [], byId = new Map();
+  const err = (text, at) => out.push({ level: 'err', text, at });
+  const warn = (text, at) => out.push({ level: 'warn', text, at });
+  for (const n of nodes) {
+    if (byId.has(n.id)) err(`נקודה ${n.id} מופיעה פעמיים`, n);
+    byId.set(n.id, n);
+    if (n.kind !== 'entrance' && n.kind !== 'junction') err(`נקודה ${n.id}: kind לא חוקי ('${n.kind}')`, n);
+  }
+  const pairs = new Set();
+  for (const e of edges) {
+    const a = byId.get(e.from), b = byId.get(e.to), key = [e.from, e.to].sort((x, y) => x - y).join('-');
+    if (!a || !b) { err(`קשת ${pair(e.from, e.to)}: נקודה לא קיימת`); continue; }
+    if (pairs.has(key)) err(`קשת ${pair(e.from, e.to)} מופיעה פעמיים`, a);
+    pairs.add(key);
+    const d = dist(a, b);
+    if (d > LONG_EDGE_M) warn(`קשת ${pair(e.from, e.to)}: ${d.toFixed(0)} מ' — אולי חסר צומת`, a);
+  }
+  const parts = components();
+  // Until there is at least one path, every point is "cut off": nothing to report yet.
+  const cut = edges.length ? parts.slice(1).flat() : [];
+  if (cut.length) err(`${cut.length} נקודות עוד לא מחוברות לרשת השבילים (${cut.slice(0, 8).join(', ')}${cut.length > 8 ? '…' : ''})`, byId.get(cut[0]));
+  let unmapped = 0;
+  for (const r of rooms) {
+    if (r.entrance === null) { unmapped++; continue; }
+    const n = byId.get(r.entrance);
+    if (!n) err(`חדר ${r.number}: נקודה ${r.entrance} לא קיימת`);
+    else if (n.kind !== 'entrance') err(`חדר ${r.number}: נקודה ${n.id} אינה כניסה`, n);
+  }
+  if (unmapped) warn(`${unmapped} חדרים בלי נקודת כניסה`);
+  return { problems: out, parts };
+}
+
+// ---------- map
+const map = L.map('map', { doubleClickZoom: false, maxZoom: 21 }).setView(CAMPUS_CENTER, 17);
+// Satellite first: mapping is done on the imagery. The street map is CARTO (OpenStreetMap data),
+// because tile.openstreetmap.org refuses pages opened directly from a file (no Referer).
+const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { maxZoom: 21, maxNativeZoom: 18, attribution: 'Imagery &copy; Esri' }).addTo(map);  // Esri has no zoom 19 over the campus
+const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+  { maxZoom: 21, maxNativeZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' });
+L.control.layers({ 'לוויין': sat, 'מפה': streets }).addTo(map);
+const layer = L.layerGroup().addTo(map);
+
+function draw(fit) {
+  layer.clearLayers();
+  const { problems, parts } = check();
+  const main = new Set(parts[0] || []);
+  const byId = new Map(nodes.map(n => [n.id, n]));
+
+  for (const e of edges) {
+    const a = byId.get(e.from), b = byId.get(e.to);
+    if (!a || !b) continue;
+    const d = dist(a, b), long = d > LONG_EDGE_M;
+    L.polyline([[a.lat, a.lng], [b.lat, b.lng]],
+      { color: long ? '#C62828' : '#78909C', weight: 4, dashArray: long ? '6 6' : null })
+      .bindTooltip(`${e.from}–${e.to}: ${d.toFixed(1)} מ'`).addTo(layer);
+  }
+
+  const roomsAt = new Map();
+  rooms.forEach(r => { if (r.entrance !== null) roomsAt.set(r.entrance, [...(roomsAt.get(r.entrance) || []), r]); });
+
+  for (const n of nodes) {
+    const isolated = edges.length > 0 && parts.length > 1 && !main.has(n.id);
+    const color = isolated ? '#C62828' : n.kind === 'entrance' ? '#F57C00' : '#455A64';
+    const m = L.circleMarker([n.lat, n.lng], { radius: n.kind === 'entrance' ? 7 : 5, color, fillColor: color, fillOpacity: .9, weight: 2 })
+      .bindTooltip(`${n.id} · ${n.kind}${n.label ? ' · ' + n.label : ''}`).addTo(layer);
+    if (firstPick === n.id) m.setStyle({ color: '#000', weight: 3 });
+    m.on('click', ev => { L.DomEvent.stopPropagation(ev); onNodeClick(n); });
+    m.on('dblclick', ev => { L.DomEvent.stopPropagation(ev); if (editMode) openEditor(n, m); });
+    if (editMode) makeDraggable(m, n);
+    const here = roomsAt.get(n.id);
+    if (here) L.tooltip({ permanent: true, direction: 'top', offset: [0, -8], className: 'room-label' })
+      .setLatLng([n.lat, n.lng]).setContent(here.map(r => `${r.number} ${r.name}`).join(' · ')).addTo(layer);
+  }
+
+  // side panel
+  const total = edges.reduce((s, e) => { const a = byId.get(e.from), b = byId.get(e.to); return s + (a && b ? dist(a, b) : 0); }, 0);
+  const mapped = rooms.filter(r => r.entrance !== null).length;
+  document.getElementById('stats').innerHTML = [
+    [nodes.length, 'נקודות'], [edges.length, 'שבילים'],
+    [`${mapped}/${rooms.length}`, 'חדרים ממופים'], [`${Math.round(total)} מ'`, 'אורך השבילים']
+  ].map(([v, t]) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`).join('');
+  const errs = problems.filter(p => p.level === 'err').length;
+  document.getElementById('summary').innerHTML = errs ? `<span style="color:var(--error)">${errs === 1 ? 'שגיאה אחת' : errs + ' שגיאות'}</span>` :
+    nodes.length ? '<span class="ok">אין שגיאות</span>' : '<span class="hint">אין עדיין נקודות</span>';
+  const ul = document.getElementById('problems');
+  ul.innerHTML = '';
+  for (const p of problems) {
+    const li = document.createElement('li');
+    li.className = p.level; li.textContent = p.text;
+    if (p.at) li.onclick = () => map.setView([p.at.lat, p.at.lng], 19);
+    ul.appendChild(li);
+  }
+
+  renderUnmapped();
+  saveDraft();
+
+  if (fit && nodes.length) map.fitBounds(nodes.map(n => [n.lat, n.lng]), { padding: [30, 30], maxZoom: 19 });
+}
+
+// ---------- editing
+function onNodeClick(n) {
+  if (!editMode) return;
+  if (selectedRoom !== null) { linkRoom(selectedRoom, n); return; }
+  if (firstPick === null) { firstPick = n.id; draw(); return; }
+  if (firstPick !== n.id) {
+    const i = edges.findIndex(e => (e.from === firstPick && e.to === n.id) || (e.from === n.id && e.to === firstPick));
+    if (i >= 0) edges.splice(i, 1); else edges.push({ from: firstPick, to: n.id });
+  }
+  firstPick = null; draw();
+}
+
+map.on('click', ev => {
+  if (!editMode) return;
+  if (firstPick !== null) { firstPick = null; draw(); return; }
+  const id = nodes.reduce((m, n) => Math.max(m, n.id), 0) + 1;
+  const node = { id, lat: +ev.latlng.lat.toFixed(7), lng: +ev.latlng.lng.toFixed(7), kind: 'junction', label: '' };
+  nodes.push(node);
+  if (selectedRoom !== null) { linkRoom(selectedRoom, node); return; }
+  draw();
+});
+
+// ---------- rooms
+function linkRoom(number, node) {
+  const room = rooms.find(r => r.number === number);
+  if (room) room.entrance = node.id;
+  node.kind = 'entrance';
+  const here = rooms.filter(r => r.entrance === node.id).map(r => r.number);
+  node.label = 'כניסה ' + here.join(' ');
+  selectedRoom = null;
+  draw();
+}
+
+function renderUnmapped() {
+  const box = document.getElementById('unmapped');
+  const unmapped = rooms.filter(r => r.entrance === null);
+  document.getElementById('unmappedCount').textContent = `(${unmapped.length})`;
+  box.innerHTML = '';
+  for (const r of unmapped) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (selectedRoom === r.number ? ' on' : '');
+    b.innerHTML = `<b></b> <small></small>`;
+    b.firstChild.textContent = r.number;
+    b.lastChild.textContent = r.name;
+    b.onclick = () => {
+      selectedRoom = selectedRoom === r.number ? null : r.number;
+      if (selectedRoom !== null && !editMode) document.getElementById('edit').click();
+      firstPick = null;
+      draw();
+    };
+    box.appendChild(b);
+  }
+}
+
+// ---------- draft in the browser (survives a refresh or a closed tab)
+const DRAFT_KEY = 'aloney-campus-draft';
+function saveDraft() {
+  if (!loaded) return;
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ nodes, edges, rooms, savedAt: new Date().toISOString() }));
+  } catch (e) { /* storage unavailable: no draft */ }
+}
+function offerDraft() {
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
+  const same = draft && JSON.stringify([draft.nodes, draft.edges, draft.rooms]) === JSON.stringify([nodes, edges, rooms]);
+  if (draft && !same) {
+    const mapped = draft.rooms.filter(r => r.entrance !== null).length;
+    document.getElementById('draftText').textContent =
+      `נמצאה טיוטה מ-${new Date(draft.savedAt).toLocaleString('he-IL')}: ${draft.nodes.length} נקודות, ${draft.edges.length} שבילים, ${mapped} חדרים ממופים.`;
+    document.getElementById('draft').style.display = 'block';
+    document.getElementById('draftRestore').onclick = () => {
+      nodes = draft.nodes; edges = draft.edges; rooms = draft.rooms;
+      document.getElementById('draft').style.display = 'none';
+      loaded = true; draw(true);
+    };
+    document.getElementById('draftDiscard').onclick = () => {
+      document.getElementById('draft').style.display = 'none';
+      loaded = true; saveDraft();
+    };
+  } else {
+    loaded = true;
+  }
+}
+
+function makeDraggable(marker, n) {
+  marker.on('mousedown', ev => {
+    map.dragging.disable();
+    let moved = false;
+    const move = e => { moved = true; marker.setLatLng(e.latlng); };
+    const up = e => {
+      map.off('mousemove', move); map.off('mouseup', up); map.dragging.enable();
+      if (moved) { n.lat = +e.latlng.lat.toFixed(7); n.lng = +e.latlng.lng.toFixed(7); firstPick = null; draw(); }
+    };
+    map.on('mousemove', move); map.on('mouseup', up);
+    L.DomEvent.stopPropagation(ev);
+  });
+}
+
+function openEditor(n, marker) {
+  const div = document.createElement('div');
+  div.className = 'popup';
+  div.innerHTML = `<b>נקודה ${n.id}</b>
+    <label>סוג <select><option value="junction">צומת</option><option value="entrance">כניסה</option></select></label>
+    <label>תווית <input type="text"></label>
+    <label>חדרים מאחורי הכניסה (מספרים מופרדים ברווח) <input type="text" dir="ltr"></label>
+    <div class="hint"></div>
+    <div class="row"><button class="primary">שמירה</button><button>מחיקת הנקודה</button></div>`;
+  const [sel] = div.getElementsByTagName('select'), [inp, roomsInp] = div.getElementsByTagName('input');
+  const [save, del] = div.getElementsByTagName('button');
+  const warn = div.querySelector('.hint');
+  sel.value = n.kind; inp.value = n.label;
+  roomsInp.value = rooms.filter(r => r.entrance === n.id).map(r => r.number).join(' ');
+  save.onclick = () => {
+    const wanted = roomsInp.value.split(/[\s,]+/).filter(Boolean);
+    const unknown = wanted.filter(w => !rooms.some(r => r.number === w));
+    if (unknown.length) { warn.textContent = 'לא קיימים ב-rooms.csv: ' + unknown.join(', '); return; }
+    rooms.forEach(r => { if (r.entrance === n.id && !wanted.includes(r.number)) r.entrance = null; });
+    rooms.forEach(r => { if (wanted.includes(r.number)) r.entrance = n.id; });
+    n.kind = wanted.length ? 'entrance' : sel.value;
+    n.label = inp.value.trim();
+    map.closePopup(); draw();
+  };
+  del.onclick = () => {
+    nodes = nodes.filter(x => x !== n);
+    edges = edges.filter(e => e.from !== n.id && e.to !== n.id);
+    rooms.forEach(r => { if (r.entrance === n.id) r.entrance = null; });
+    map.closePopup(); draw();
+  };
+  L.popup().setLatLng(marker.getLatLng()).setContent(div).openOn(map);
+}
+
+document.getElementById('edit').onclick = ev => {
+  editMode = !editMode; firstPick = null;
+  ev.target.classList.toggle('on', editMode);
+  ev.target.textContent = editMode ? 'סיום עריכה' : 'מצב עריכה';
+  map.getContainer().style.cursor = editMode ? 'crosshair' : '';
+  draw();
+};
+
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const downloadNodes = () =>
+  download('nodes.csv', toCsv(['id', 'lat', 'lng', 'kind', 'label'],
+    [...nodes].sort((a, b) => a.id - b.id).map(n => [n.id, n.lat.toFixed(7), n.lng.toFixed(7), n.kind, n.label])));
+const downloadEdges = () => {
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  download('edges.csv', toCsv(['from_id', 'to_id', 'length_m'],
+    edges.map(e => [e.from, e.to, byId.get(e.from) && byId.get(e.to) ? dist(byId.get(e.from), byId.get(e.to)).toFixed(1) : ''])));
+};
+const downloadRooms = () =>
+  download('rooms.csv', toCsv(['number', 'name', 'owner', 'entrance_node_id', 'plan_year'],
+    rooms.map(r => [r.number, r.name, r.owner, r.entrance === null ? '' : r.entrance, r.planYear])));
+document.getElementById('dlAll').onclick = () => {
+  downloadNodes();
+  setTimeout(downloadEdges, 400);
+  setTimeout(downloadRooms, 800);
+};
+
+// ---------- loading
+async function loadServed() {
+  const get = async f => { const r = await fetch(f, { cache: 'no-store' }); if (!r.ok) throw new Error(f); return parseCsv(await r.text()); };
+  const [n, e, r] = await Promise.all(['nodes.csv', 'edges.csv', 'rooms.csv'].map(get));
+  setData(n, e, r);
+}
+document.getElementById('files').onchange = async ev => {
+  const got = {};
+  for (const f of ev.target.files) got[f.name.replace(/\s*\(\d+\)/, '')] = parseCsv(await f.text());
+  setData(got['nodes.csv'] || [], got['edges.csv'] || [], got['rooms.csv'] || []);
+};
+loadServed().catch(() => { document.getElementById('loader').style.display = 'block'; draw(); });
+// leaving with unsaved edits: the draft is kept, but remind to download
+window.addEventListener('beforeunload', ev => { if (loaded && nodes.length) { ev.preventDefault(); ev.returnValue = ''; } });
+</script>
+</body>
+</html>
