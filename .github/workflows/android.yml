@@ -17,6 +17,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Firebase config (placeholder; the real google-services.json is never in git)
+        run: test -f app/google-services.json || cp app/google-services.ci.json app/google-services.json
       - name: Build and unit tests
         run: ./gradlew assembleDebug testDebugUnitTest
       - name: Upload APK

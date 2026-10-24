@@ -14,12 +14,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.Map;
 
 import il.org.ay.navigation.R;
+import il.org.ay.navigation.data.CampusRepository;
 import il.org.ay.navigation.logic.PermissionState;
 
 /**
  * Opening screen (T07, FR-12). Explains why location and camera are needed,
  * asks for them, and continues to search whatever the user answered (AT-12).
- * Campus data sync (syncCampusData) is added in T08.
+ * Starts the campus data sync in the background (T08); the app never waits for it.
  */
 public class SplashActivity extends BaseActivity {
 
@@ -38,6 +39,15 @@ public class SplashActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         findViewById(R.id.button_start).setOnClickListener(v -> requestPermissions());
+        syncCampusData();
+    }
+
+    /**
+     * Copies a newer campus version from Firestore to Room. Without a network
+     * this fails quietly and the app keeps working from the copy in Room (AT-09).
+     */
+    private void syncCampusData() {
+        CampusRepository.get(this).sync(result -> { /* the search screen reads Room either way */ });
     }
 
     private void requestPermissions() {
