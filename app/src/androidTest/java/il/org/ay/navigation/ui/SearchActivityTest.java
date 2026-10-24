@@ -5,9 +5,11 @@ import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
@@ -127,7 +129,9 @@ public class SearchActivityTest {
         scenario.close();
         scenario = ActivityScenario.launch(SearchActivity.class);
         waitForChips(R.id.favorites_chips, 1);
-        onView(withText("מתמטיקה")).check(matches(isDisplayed()));
+        // the chip, not the row with the same name in the list below it
+        onView(allOf(withText("מתמטיקה"), isDescendantOfA(withId(R.id.favorites_chips))))
+                .check(matches(isDisplayed()));
         screenshot("08-search-favorite");
 
         // and the star in its row is filled

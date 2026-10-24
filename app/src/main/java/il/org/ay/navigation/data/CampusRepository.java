@@ -132,11 +132,13 @@ public class CampusRepository {
             try {
                 db.graphDao().replaceCampus(snapshot.nodes, snapshot.edges, snapshot.rooms);
                 prefs.edit().putLong(KEY_VERSION, snapshot.version).apply();
-                deliver(listener, SyncResult.UPDATED);
+                // open screens first, then the caller: once sync() reports UPDATED,
+                // every open screen has already been told
                 main.execute(() -> {
                     for (Runnable r : changeListeners) {
                         r.run();
                     }
+                    listener.onResult(SyncResult.UPDATED);
                 });
             } catch (RuntimeException e) {
                 Log.w(TAG, "saving version " + snapshot.version + " failed", e);
