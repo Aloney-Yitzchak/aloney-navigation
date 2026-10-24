@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AR navigation (docs/design/ar-nav.png). The camera image fills the area (finding 6):
+     camera_preview becomes a CameraX PreviewView in T16, and the arrow turns in T17.
+     The destination bar is a real TextView with the chosen destination (finding 7). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:layoutDirection="rtl"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.Aloney.Toolbar.Main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:subtitle="@string/ar_screen"
+        app:title="@string/app_name" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:id="@+id/camera_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/camera_placeholder" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- destination bar -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_overlay"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/touch_target"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/spacing_medium">
+
+                <TextView
+                    android:id="@+id/ar_destination"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_body"
+                    android:textStyle="bold"
+                    tools:text="ניווט אל: חדר 42 — מתמטיקה" />
+
+                <TextView
+                    android:id="@+id/ar_destination_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_body"
+                    tools:text="45 מ'" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/ar_detected"
+                    style="@style/Widget.Aloney.Chip.Overlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="invisible"
+                    app:chipIcon="@drawable/ic_check_circle"
+                    app:chipIconTint="@color/primary_container"
+                    tools:text="מבנה ט' זוהה"
+                    tools:visibility="visible" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ar_sound"
+                    style="@style/Widget.Aloney.OverlayButton"
+                    android:layout_width="@dimen/touch_target"
+                    android:layout_height="@dimen/touch_target"
+                    android:contentDescription="@string/ar_sound"
+                    app:icon="@drawable/ic_volume_up" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ar_flash"
+                    style="@style/Widget.Aloney.OverlayButton"
+                    android:layout_width="@dimen/touch_target"
+                    android:layout_height="@dimen/touch_target"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:contentDescription="@string/ar_flash"
+                    app:icon="@drawable/ic_flash_off" />
+            </LinearLayout>
+
+            <!-- the navigation arrow; T17 rotates it towards the next point -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ar_arrow"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/ar_arrow"
+                    android:elevation="6dp"
+                    android:rotation="-45"
+                    android:src="@drawable/ic_ar_arrow"
+                    app:tint="@color/accent" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/ar_gps_accuracy"
+                    style="@style/Widget.Aloney.Chip.Overlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipIcon="@drawable/ic_my_location"
+                    tools:text="דיוק GPS: ±4 מ'" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/ar_heading"
+                    style="@style/Widget.Aloney.Chip.Overlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipIcon="@drawable/ic_explore"
+                    tools:text="צפון-מערב" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- the next step -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_screen"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:background="@drawable/bg_rounded_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/ar_turn_icon"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_rounded_accent"
+            android:importantForAccessibility="no"
+            android:padding="12dp"
+            android:src="@drawable/ic_turn_left" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/ar_instruction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="פנו שמאלה בעוד 15 מ'" />
+
+            <TextView
+                android:id="@+id/ar_instruction_detail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/outline"
+                android:textSize="@dimen/text_secondary"
+                tools:text="חדר 42 · 120 מ' (כ-2 דק')" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ar_step"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/accent"
+            android:textSize="@dimen/text_secondary"
+            android:textStyle="bold"
+            tools:text="שלב 2/4" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_screen"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ar_end"
+            style="@style/Widget.Aloney.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/surface_card"
+            android:text="@string/ar_end"
+            android:textColor="@color/text_primary"
+            app:icon="@drawable/ic_close"
+            app:iconTint="@color/error" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ar_calibrate"
+            style="@style/Widget.Aloney.Button.Text.Grey"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/ar_calibrate"
+            app:icon="@drawable/ic_straighten" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/ar_show_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/ar_show_map"
+            app:backgroundTint="@color/primary"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Aloney.Circle"
+            app:srcCompat="@drawable/ic_map"
+            app:tint="@color/white" />
+    </LinearLayout>
+
+    <!-- the destination -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_screen"
+        android:background="@drawable/bg_rounded_card"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/ar_room_number"
+            android:layout_width="@dimen/icon_circle"
+            android:layout_height="@dimen/icon_circle"
+            android:background="@drawable/bg_circle_primary_container"
+            android:gravity="center"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_body"
+            android:textStyle="bold"
+            tools:text="42" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/ar_room_name"
+                style="@style/Text.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="חדר 42 — מתמטיקה" />
+
+            <TextView
+                android:id="@+id/ar_room_owner"
+                style="@style/Text.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="רכזת שכבה ט'" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ar_time_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/spacing_tiny"
+            android:gravity="center_vertical"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_secondary"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_walk_green"
+            tools:text="2 דק'" />
+    </LinearLayout>
+
+    <include layout="@layout/view_bottom_nav" />
+</LinearLayout>

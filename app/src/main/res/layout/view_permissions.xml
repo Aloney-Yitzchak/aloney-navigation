@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Permission request (docs/design/permissions.png): the second state of SplashActivity (finding 4).
+     Ids used by SplashActivity and its emulator tests: button_start, splash_why_location. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/margin_screen">
+
+        <FrameLayout
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="@drawable/bg_circle_primary_container">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_logo_leaf"
+                app:tint="@color/primary" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/bg_circle_primary"
+                android:importantForAccessibility="no"
+                android:padding="10dp"
+                android:src="@drawable/ic_explore" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/Text.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/permissions_title"
+            android:textSize="@dimen/text_display" />
+
+        <TextView
+            style="@style/Text.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:gravity="center"
+            android:text="@string/permissions_intro"
+            android:textSize="@dimen/text_body" />
+
+        <!-- location -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_medium">
+
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_primary_container"
+                    android:importantForAccessibility="no"
+                    android:padding="14dp"
+                    android:src="@drawable/ic_near_me"
+                    app:tint="@color/primary" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Text.Subtitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/permissions_location_title" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_green"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:text="@string/permissions_location_badge"
+                            android:textColor="@color/primary_dark"
+                            android:textSize="@dimen/text_secondary" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/splash_why_location"
+                        style="@style/Text.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_tiny"
+                        android:text="@string/splash_why_location"
+                        android:textAlignment="viewStart" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- camera -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_medium">
+
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_primary_container"
+                    android:importantForAccessibility="no"
+                    android:padding="14dp"
+                    android:src="@drawable/ic_view_in_ar"
+                    app:tint="@color/primary" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Text.Subtitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/permissions_camera_title" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_grey"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:text="@string/permissions_camera_badge"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_secondary" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/splash_why_camera"
+                        style="@style/Text.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_tiny"
+                        android:text="@string/splash_why_camera"
+                        android:textAlignment="viewStart" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- privacy -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="@drawable/bg_rounded_card"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_medium">
+
+            <ImageView
+                android:layout_width="@dimen/icon_medium"
+                android:layout_height="@dimen/icon_medium"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_shield"
+                app:tint="@color/primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Text.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/permissions_privacy_title" />
+
+                <TextView
+                    style="@style/Text.Secondary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/permissions_privacy_text" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="@dimen/spacing_large" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/splash_start"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_skip"
+            style="@style/Widget.Aloney.Button.Text.Grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/permissions_skip" />
+    </LinearLayout>
+</ScrollView>

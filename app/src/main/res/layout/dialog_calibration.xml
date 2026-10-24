@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Manual calibration (docs/design/calibration-dialog.png), a full-screen dialog (T21).
+     calibration_map becomes an osmdroid map in T29; the pin stays in the middle and the map moves under it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:layoutDirection="rtl"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/margin_screen">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/Text.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calibration_title" />
+
+            <TextView
+                style="@style/Text.Secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calibration_subtitle"
+                android:textSize="@dimen/text_body" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/calibration_close"
+            style="@style/Widget.Aloney.IconButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:contentDescription="@string/action_close"
+            app:icon="@drawable/ic_close" />
+    </LinearLayout>
+
+    <!-- why calibrate now -->
+    <LinearLayout
+        android:id="@+id/calibration_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_screen"
+        android:background="@drawable/bg_rounded_warning"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <ImageView
+            android:layout_width="@dimen/icon_medium"
+            android:layout_height="@dimen/icon_medium"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_warning"
+            app:tint="@color/accent" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/calibration_warning_title"
+                style="@style/Text.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="דיוק GPS נמוך כרגע (±18 מ')" />
+
+            <TextView
+                style="@style/Text.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/calibration_warning_text"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- known places: one tap instead of finding the spot on the map -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/margin_screen">
+
+        <TextView
+            style="@style/Text.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:text="@string/calibration_known_places" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingEnd="@dimen/margin_screen"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/calibration_places"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true"
+                app:singleSelection="true" />
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/calibration_map"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:background="@color/map_placeholder">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="120dp"
+            android:background="@drawable/bg_pill_overlay"
+            android:drawablePadding="@dimen/spacing_small"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="@string/calibration_drag_hint"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_secondary"
+            app:drawableStartCompat="@drawable/ic_touch_app"
+            app:drawableTint="@color/white" />
+
+        <!-- the pin: its tip is the middle of the map -->
+        <ImageView
+            android:id="@+id/calibration_pin"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="28dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_location_on"
+            app:tint="@color/accent" />
+    </FrameLayout>
+
+    <!-- what will be saved -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_screen"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_rounded_green"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_circle_primary"
+            android:importantForAccessibility="no"
+            android:padding="8dp"
+            android:src="@drawable/ic_location_on" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/Text.Secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calibration_selected" />
+
+            <TextView
+                android:id="@+id/calibration_selected"
+                style="@style/Text.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary_dark"
+                android:textSize="@dimen/text_subtitle"
+                tools:text="בניין מדעים, כניסה ראשית" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/calibration_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_screen"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/calibration_confirm"
+        app:icon="@drawable/ic_check_circle"
+        app:iconGravity="textEnd" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/calibration_cancel"
+        style="@style/Widget.Aloney.Button.Text.Grey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginVertical="@dimen/spacing_small"
+        android:text="@string/action_cancel" />
+</LinearLayout>

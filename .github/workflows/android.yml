@@ -19,8 +19,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Firebase config (placeholder; the real google-services.json is never in git)
         run: test -f app/google-services.json || cp app/google-services.ci.json app/google-services.json
-      - name: Build and unit tests
-        run: ./gradlew assembleDebug testDebugUnitTest
+      # verifyPaparazziDebug runs all the unit tests, and also compares every layout with
+      # its snapshot in app/src/test/snapshots (T30). After an intended layout change:
+      # ./gradlew recordPaparazziDebug, look at the new images, and commit them.
+      - name: Build, unit tests and layout snapshots
+        run: ./gradlew assembleDebug verifyPaparazziDebug
+      - name: Upload layout differences
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layout-differences
+          path: app/build/paparazzi/failures
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

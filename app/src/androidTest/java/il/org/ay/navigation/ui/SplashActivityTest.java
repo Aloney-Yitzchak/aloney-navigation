@@ -2,6 +2,8 @@ package il.org.ay.navigation.ui;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -85,42 +87,61 @@ public class SplashActivityTest {
     }
 
     @Test
+    public void splash_thenPermissionsView() {
+        waitForStartButton();
+        screenshot("01b-permissions");
+        onView(withId(R.id.splash_why_location)).check(matches(isDisplayed()));
+    }
+
+    @Test
     public void allowBoth_opensSearch() {
-        onView(withId(R.id.button_start)).perform(click());
-        answerPrompts(ALLOW, ALLOW);
-        onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
+        startAndAnswer(ALLOW, ALLOW);
+        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
+        // Hebrew in the search field, next to its icon (the JVM snapshots cannot show this)
+        onView(withId(R.id.search_text)).perform(replaceText("מז"), closeSoftKeyboard());
         screenshot("02-search");
     }
 
     @Test
     public void denyCamera_explainsAndMapStillAvailable() {
-        onView(withId(R.id.button_start)).perform(click());
-        answerPrompts(ALLOW, DENY);
+        startAndAnswer(ALLOW, DENY);
         onView(withText(R.string.permission_missing_camera)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("03-camera-denied");
         assertDialogIsRightToLeft();
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
-        onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
     }
 
     @Test
     public void denyLocation_explainsAndSearchStillAvailable() {
-        onView(withId(R.id.button_start)).perform(click());
-        answerPrompts(DENY, ALLOW);
+        startAndAnswer(DENY, ALLOW);
         onView(withText(R.string.permission_missing_location)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("04-location-denied");
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
-        onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
     }
 
     @Test
     public void denyBoth_oneMessageAboutBoth() {
-        onView(withId(R.id.button_start)).perform(click());
-        answerPrompts(DENY, DENY);
+        startAndAnswer(DENY, DENY);
         onView(withText(R.string.permission_missing_both)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("05-both-denied");
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
-        onView(withId(R.id.search_placeholder)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
+    }
+
+    /** The permissions view replaces the splash after a moment. */
+    private void waitForStartButton() {
+        String pkg = InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+        assertNotNull("the permissions view did not appear",
+                device.wait(Until.findObject(By.res(pkg, "button_start")), TIMEOUT_MS));
+        device.waitForIdle();
+    }
+
+    private void startAndAnswer(Pattern location, Pattern camera) {
+        waitForStartButton();
+        onView(withId(R.id.button_start)).perform(click());
+        answerPrompts(location, camera);
     }
 
     /**

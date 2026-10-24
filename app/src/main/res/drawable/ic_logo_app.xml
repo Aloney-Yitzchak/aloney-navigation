@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app logo in the app bar: a green leaf in a light-green circle -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingMode="stack">
+    <item android:width="40dp" android:height="40dp">
+        <shape android:shape="oval"><solid android:color="@color/primary_container" /></shape>
+    </item>
+    <item android:width="24dp" android:height="24dp" android:gravity="center">
+        <inset android:drawable="@drawable/ic_logo_leaf_green" />
+    </item>
+</layer-list>

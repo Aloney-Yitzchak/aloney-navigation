@@ -1,14 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Design guide section 2: Heebo everywhere, green primary, orange accent -->
     <style name="Theme.AloneyNavigation" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/primary_dark</item>
         <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryContainer">@color/primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/primary_dark</item>
         <item name="colorError">@color/error</item>
+        <item name="colorSurface">@color/background</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorSurfaceContainerHighest">@color/surface_card</item>
+        <item name="colorSurfaceContainerHigh">@color/surface_card</item>
+        <item name="colorSurfaceContainer">@color/background</item>
+        <item name="colorOutline">@color/outline</item>
         <item name="android:colorBackground">@color/background</item>
-        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- white bars stay white: no green tint from elevation -->
+        <item name="elevationOverlayEnabled">false</item>
+
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Aloney.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Aloney.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Aloney.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Aloney.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Aloney.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Aloney.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Aloney.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Aloney.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Aloney.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Aloney.LabelSmall</item>
+
+        <item name="materialButtonStyle">@style/Widget.Aloney.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.Aloney.Card</item>
+        <item name="chipStyle">@style/Widget.Aloney.Chip</item>
+        <item name="textInputStyle">@style/Widget.Aloney.TextInput</item>
+        <item name="bottomNavigationStyle">@style/Widget.Aloney.BottomNav</item>
+        <item name="toolbarStyle">@style/Widget.Aloney.Toolbar</item>
     </style>
 
-    <style name="Theme.AloneyNavigation.Splash">
-        <item name="android:windowBackground">@color/primary</item>
+    <!-- Splash keeps the window white so nothing flashes before the layout (design: light background) -->
+    <style name="Theme.AloneyNavigation.Splash" />
+
+    <!-- Full-screen dialogs: arrival, calibration -->
+    <style name="Theme.AloneyNavigation.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:fontFamily">@font/heebo</item>
+        <item name="fontFamily">@font/heebo</item>
     </style>
 </resources>

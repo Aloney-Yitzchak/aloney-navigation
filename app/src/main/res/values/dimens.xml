@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 8dp grid, 16dp screen margins, 48dp touch targets (design guide section 2) -->
 <resources>
     <dimen name="margin_screen">16dp</dimen>
+    <dimen name="spacing_tiny">4dp</dimen>
     <dimen name="spacing_small">8dp</dimen>
     <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
     <dimen name="touch_target">48dp</dimen>
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="radius_card">12dp</dimen>
+    <dimen name="radius_button">28dp</dimen>
+    <dimen name="radius_sheet">28dp</dimen>
+    <dimen name="icon_small">20dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_circle">48dp</dimen>
+    <dimen name="hero_circle">104dp</dimen>
+    <dimen name="text_display">28sp</dimen>
     <dimen name="text_title">22sp</dimen>
+    <dimen name="text_subtitle">18sp</dimen>
     <dimen name="text_body">16sp</dimen>
     <dimen name="text_secondary">14sp</dimen>
 </resources>
