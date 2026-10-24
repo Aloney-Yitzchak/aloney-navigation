@@ -205,7 +205,7 @@ const map = L.map('map', { doubleClickZoom: false, maxZoom: 21 }).setView(CAMPUS
 // Satellite first: mapping is done on the imagery. The street map is CARTO (OpenStreetMap data),
 // because tile.openstreetmap.org refuses pages opened directly from a file (no Referer).
 const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { maxZoom: 21, maxNativeZoom: 19, attribution: 'Imagery &copy; Esri' }).addTo(map);
+  { maxZoom: 21, maxNativeZoom: 18, attribution: 'Imagery &copy; Esri' }).addTo(map);  // Esri has no zoom 19 over the campus
 const streets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
   { maxZoom: 21, maxNativeZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' });
 L.control.layers({ 'לוויין': sat, 'מפה': streets }).addTo(map);
