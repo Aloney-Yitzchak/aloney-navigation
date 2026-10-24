@@ -15,6 +15,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import il.org.ay.navigation.R;
+import il.org.ay.navigation.model.CampusRoom;
 
 /**
  * Sample content for the layout snapshots, the same as in the Figma designs, so a
@@ -34,22 +35,30 @@ final class SnapshotSamples {
         ((BottomNavigationView) root.findViewById(R.id.bottom_nav)).setSelectedItemId(item);
     }
 
+    /** The search screen as T09 runs it: the real adapter, "מז" typed, favourites still hidden (T10). */
     static void fillSearch(View v) {
         text(v, R.id.search_status, "64 חדרים · גרסה 3");
         text(v, R.id.search_text, "מז");
-        ChipGroup favorites = v.findViewById(R.id.favorites_chips);
-        addShortcut(favorites, "ספרייה", R.drawable.ic_library);
-        addShortcut(favorites, "מזכירות", R.drawable.ic_star_filled);
-        addShortcut(favorites, "חדר 42", R.drawable.ic_meeting_room);
         text(v, R.id.results_title, v.getContext().getString(R.string.search_results, "מז"));
         text(v, R.id.results_count, "3");
         v.findViewById(R.id.results_count).setVisibility(View.VISIBLE);
         RecyclerView list = v.findViewById(R.id.search_results);
-        list.setAdapter(new RoomsAdapter(new String[][]{
-                {"מז", "מזכירות ראשית", "קבלת קהל ושירותי תלמידים", "65 מ' · 1 דק'"},
-                {"34", "מזכירות פדגוגית", "רכזת בגרויות ורישום", "110 מ' · 2 דק'"},
-                {"12", "מחסן ציוד וספרי לימוד", "ליד מזכירות שכבת י'", "180 מ' · 3 דק'"},
-        }));
+        RoomAdapter adapter = new RoomAdapter(room -> { });
+        list.setAdapter(adapter);
+        adapter.show(java.util.Arrays.asList(
+                new CampusRoom("מז", "מזכירות ראשית", "קבלת קהל ושירותי תלמידים", 1, "תשפ\"ז"),
+                new CampusRoom("34", "מזכירות פדגוגית", "רכזת בגרויות ורישום", 2, "תשפ\"ז"),
+                new CampusRoom("12", null, "ליד מזכירות שכבת י'", 3, "תשפ\"ז")), "מז", null);
+        selectTab(v, R.id.nav_search);
+    }
+
+    /** No room matches what was typed. */
+    static void fillSearchEmpty(View v) {
+        text(v, R.id.search_status, "64 חדרים · גרסה 3");
+        text(v, R.id.search_text, "xyz");
+        text(v, R.id.results_title, v.getContext().getString(R.string.search_results, "xyz"));
+        v.findViewById(R.id.search_empty).setVisibility(View.VISIBLE);
+        text(v, R.id.search_empty_title, v.getContext().getString(R.string.search_empty, "xyz"));
         selectTab(v, R.id.nav_search);
     }
 
