@@ -11,10 +11,12 @@ import androidx.annotation.NonNull;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import il.org.ay.navigation.logic.RoomSearch;
 import il.org.ay.navigation.model.CampusRoom;
 
 /**
@@ -54,6 +56,7 @@ public class CampusRepository {
     private final SharedPreferences prefs;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Executor main;
+    private final List<Runnable> changeListeners = new CopyOnWriteArrayList<>();
 
     CampusRepository(AppDatabase db, CampusRemote remote, SharedPreferences prefs, Executor main) {
         this.db = db;
@@ -125,6 +128,11 @@ public class CampusRepository {
                 db.graphDao().replaceCampus(snapshot.nodes, snapshot.edges, snapshot.rooms);
                 prefs.edit().putLong(KEY_VERSION, snapshot.version).apply();
                 deliver(listener, SyncResult.UPDATED);
+                main.execute(() -> {
+                    for (Runnable r : changeListeners) {
+                        r.run();
+                    }
+                });
             } catch (RuntimeException e) {
                 Log.w(TAG, "saving version " + snapshot.version + " failed", e);
                 deliver(listener, SyncResult.REJECTED_INCOMPLETE);
@@ -134,7 +142,23 @@ public class CampusRepository {
 
     /** FR-01: rooms whose number, name or owner contains the text. */
     public void search(String text, @NonNull Listener<List<CampusRoom>> listener) {
-        io.execute(() -> deliver(listener, db.roomDao().search(text.trim())));
+        String query = RoomSearch.normalize(text);
+        io.execute(() -> {
+            List<CampusRoom> found = query.isEmpty() ? db.roomDao().getAll() : db.roomDao().search(query);
+            deliver(listener, RoomSearch.rank(found, query));
+        });
+    }
+
+    /**
+     * Called on the main thread after a sync saved a newer version, so a screen that
+     * is already open (search on the first launch) can show the new rooms.
+     */
+    public void addChangeListener(@NonNull Runnable listener) {
+        changeListeners.add(listener);
+    }
+
+    public void removeChangeListener(@NonNull Runnable listener) {
+        changeListeners.remove(listener);
     }
 
     /** All rooms, for a quick count or a list. */

@@ -95,6 +95,27 @@ public class CampusRepositoryTest {
     }
 
     @Test
+    public void openScreens_hearAboutANewVersion_butNotAboutNoChange() throws Exception {
+        int[] calls = {0};
+        Runnable listener = () -> calls[0]++;
+        repo.addChangeListener(listener);
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        sync();  // up to date: nothing new to show
+        assertEquals(1, calls[0]);
+        repo.removeChangeListener(listener);
+    }
+
+    @Test
+    public void search_theWordRoomIsIgnored() throws Exception {
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        assertEquals(1, search("חדר 20").size());
+    }
+
+    @Test
     public void sameVersion_doesNotDownloadAgain() throws Exception {
         remote.version = 1;
         remote.snapshot = CampusSnapshotTest.good(1);

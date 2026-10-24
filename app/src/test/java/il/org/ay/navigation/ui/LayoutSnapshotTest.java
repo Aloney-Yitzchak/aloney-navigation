@@ -71,6 +71,13 @@ public class LayoutSnapshotTest {
     }
 
     @Test
+    public void searchNothingFound() {
+        View v = inflate(R.layout.activity_search);
+        SnapshotSamples.fillSearchEmpty(v);
+        paparazzi.snapshot(v);
+    }
+
+    @Test
     public void permissions() {
         View v = inflate(R.layout.activity_splash);
         v.findViewById(R.id.splash_content).setVisibility(View.GONE);

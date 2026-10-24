@@ -70,9 +70,10 @@
                 android:textSize="@dimen/text_subtitle" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- favourites (T10) -->
+        <!-- favourites: hidden until T10 fills them -->
         <LinearLayout
             android:id="@+id/favorites_header"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_medium"
@@ -97,6 +98,7 @@
 
     <HorizontalScrollView
         android:id="@+id/favorites_scroll"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
@@ -142,17 +144,60 @@
             tools:visibility="visible" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/search_results"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingHorizontal="@dimen/margin_screen"
-        android:paddingTop="@dimen/spacing_small"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_room" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_results"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/margin_screen"
+            android:paddingTop="@dimen/spacing_small"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_room" />
+
+        <!-- nothing found, or no rooms on the phone yet -->
+        <LinearLayout
+            android:id="@+id/search_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="@dimen/spacing_xlarge"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_xlarge"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_search"
+                app:tint="@color/outline" />
+
+            <TextView
+                android:id="@+id/search_empty_title"
+                style="@style/Text.Subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:gravity="center"
+                tools:text="לא נמצא חדר עבור &quot;xyz&quot;" />
+
+            <TextView
+                android:id="@+id/search_empty_text"
+                style="@style/Text.Secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:gravity="center"
+                android:text="@string/search_empty_hint" />
+        </LinearLayout>
+    </FrameLayout>
 
     <!-- shortcut to the camera view -->
     <com.google.android.material.card.MaterialCardView
