@@ -121,7 +121,7 @@ final class SnapshotSamples {
     static void fillArrival(View v) {
         text(v, R.id.arrival_room, "חדר 42 — מתמטיקה");
         text(v, R.id.arrival_detail, "רכזת שכבה ט'");
-        text(v, R.id.arrival_summary, v.getContext().getString(R.string.arrival_summary, 2, 120));
+        text(v, R.id.arrival_summary, v.getResources().getQuantityString(R.plurals.arrival_summary, 2, 2, 120));
     }
 
     static void fillCalibration(View v) {

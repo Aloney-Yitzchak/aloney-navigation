@@ -33,6 +33,15 @@ public class NavigationManager {
     /** Average step length in metres, for moving along the route between GPS fixes (T17). */
     public static final double STEP_M = 0.7;
 
+    /** Within this of the destination's entrance = arrived (FR-06). */
+    public static final double ARRIVAL_M = 5;
+
+    /**
+     * Positions in a row within {@link #ARRIVAL_M} before "you have arrived": one jumpy fix
+     * should not announce it before the door (AT-06).
+     */
+    public static final int ARRIVAL_FIXES = 2;
+
     /** Farther than this from every path = not on the campus: no route is planned (T23). */
     public static final double OFF_CAMPUS_M = 150;
 
@@ -42,6 +51,10 @@ public class NavigationManager {
 
         /** The user left the campus, or came back. */
         default void onOffCampus(boolean offCampus) {
+        }
+
+        /** The state changed (SDD 6). */
+        default void onStateChanged(@NonNull NavState state) {
         }
     }
 
@@ -56,6 +69,11 @@ public class NavigationManager {
     private int offRouteFixes;
     private int recalculations;
     private boolean offCampus;
+    private NavState state = NavState.CALCULATING_ROUTE;   // created when a destination is chosen
+    private int arrivalFixes;
+    private long startMs;
+    private NavState calibrationReturn = NavState.NAVIGATING;
+    private double startDistance;
     private final HeadingFilter arrow = new HeadingFilter(0.25f);
     private float heading;
     private boolean hasHeading;
@@ -71,7 +89,14 @@ public class NavigationManager {
      * has been off it for {@link #OFF_ROUTE_FIXES} positions in a row.
      */
     public void update(@NonNull LatLng p) {
+        if (state == NavState.ARRIVED || state == NavState.WAITING_FOR_DESTINATION
+                || state == NavState.MANUAL_CALIBRATION) {
+            return;   // finished, cancelled, or the user is marking the position by hand
+        }
         position = p;
+        if (checkArrival(p)) {
+            return;
+        }
         if (setOffCampus(isOffCampus(p))) {
             return;  // far from every path (at home, say): routing from there means nothing
         }
@@ -95,7 +120,15 @@ public class NavigationManager {
      * without waiting for positions off the route.
      */
     public void relocate(@NonNull LatLng p) {
+        if (state == NavState.ARRIVED || state == NavState.WAITING_FOR_DESTINATION) {
+            return;
+        }
+        setState(NavState.CALCULATING_ROUTE);   // "position confirmed" in the diagram
         position = p;
+        arrivalFixes = ARRIVAL_FIXES - 1;        // a marked point is trusted: one is enough
+        if (checkArrival(p)) {
+            return;
+        }
         if (setOffCampus(isOffCampus(p))) {
             return;
         }
@@ -134,7 +167,7 @@ public class NavigationManager {
      * replaces this estimate.
      */
     public void onStep() {
-        if (route != null && position != null && !offCampus) {
+        if (route != null && position != null && !offCampus && state == NavState.NAVIGATING) {
             position = route.advance(position, STEP_M);
         }
     }
@@ -164,6 +197,81 @@ public class NavigationManager {
         return position;
     }
 
+    // ------------------------------------------------------------ T19: states and arrival
+
+    /**
+     * Arrived once {@link #ARRIVAL_FIXES} positions in a row are within {@link #ARRIVAL_M} of
+     * the entrance. Only real positions count: steps (onStep) never announce arrival.
+     */
+    private boolean checkArrival(@NonNull LatLng p) {
+        Node end = graph.node(destinationId);
+        if (end == null) {
+            return false;
+        }
+        if (p.distanceTo(LatLng.of(end)) <= ARRIVAL_M) {
+            arrivalFixes++;
+        } else {
+            arrivalFixes = 0;
+        }
+        if (arrivalFixes >= ARRIVAL_FIXES) {
+            setState(NavState.ARRIVED);
+            return true;
+        }
+        return false;
+    }
+
+    /** "Wrong location?": the user is marking the position; positions wait until {@link #relocate}. */
+    public void startCalibration() {
+        if (state == NavState.NAVIGATING || state == NavState.CALCULATING_ROUTE) {
+            calibrationReturn = state;
+            setState(NavState.MANUAL_CALIBRATION);
+        }
+    }
+
+    /** The calibration was closed without a point: carry on as before. */
+    public void cancelCalibration() {
+        if (state == NavState.MANUAL_CALIBRATION) {
+            setState(calibrationReturn);
+        }
+    }
+
+    /** "The user cancels": navigation ends without arriving. */
+    public void cancel() {
+        setState(NavState.WAITING_FOR_DESTINATION);
+    }
+
+    @NonNull
+    public NavState getState() {
+        return state;
+    }
+
+    /** SDD 4: isArrived(). */
+    public boolean isArrived() {
+        return state == NavState.ARRIVED;
+    }
+
+    /** Minutes since the first route was planned, at least 1. */
+    public int minutesWalked() {
+        if (startMs == 0) {
+            return 0;
+        }
+        return Math.max(1, Math.round((System.currentTimeMillis() - startMs) / 60_000f));
+    }
+
+    /** The length of the first route, in metres. */
+    public double startDistance() {
+        return startDistance;
+    }
+
+    private void setState(@NonNull NavState newState) {
+        if (newState != state) {
+            state = newState;
+            if (listener != null) {
+                listener.onStateChanged(newState);
+            }
+        }
+    }
+
     /** True while the last position was far from every campus path. */
     public boolean isOffCampus() {
         return offCampus;
@@ -172,9 +280,17 @@ public class NavigationManager {
     private void setRoute(@Nullable Route newRoute, boolean recalculated) {
         offRouteFixes = 0;
         if (newRoute == null) {
-            return;  // no way to the destination: keep the old route, if any
+            if (route == null) {
+                setState(NavState.WAITING_FOR_DESTINATION);   // "no route" in the diagram
+            }
+            return;  // no way from here: keep the old route, if any
+        }
+        if (route == null) {
+            startMs = System.currentTimeMillis();
+            startDistance = newRoute.totalDistance();
         }
         route = newRoute;
+        setState(NavState.NAVIGATING);
         if (listener != null) {
             listener.onRouteChanged(newRoute, recalculated);
         }

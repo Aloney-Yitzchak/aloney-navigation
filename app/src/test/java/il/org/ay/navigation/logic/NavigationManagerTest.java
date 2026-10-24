@@ -2,6 +2,7 @@ package il.org.ay.navigation.logic;
 
 import static il.org.ay.navigation.logic.PathMathTest.at;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -25,6 +26,7 @@ public class NavigationManagerTest {
 
     private final List<Boolean> changes = new ArrayList<>();
     private final List<Boolean> offCampus = new ArrayList<>();
+    private final List<NavState> states = new ArrayList<>();
 
     private static Node node(int id, double x, double y) {
         LatLng p = at(x, y);
@@ -44,6 +46,11 @@ public class NavigationManagerTest {
             @Override
             public void onOffCampus(boolean value) {
                 offCampus.add(value);
+            }
+
+            @Override
+            public void onStateChanged(NavState state) {
+                states.add(state);
             }
         });
     }
@@ -190,5 +197,91 @@ public class NavigationManagerTest {
         Guidance g = nav.getGuidance();
         assertEquals(Guidance.Action.LEFT, g.action);   // east, then north at node 2
         assertEquals(80, g.metres, 0.1);
+    }
+
+    // ------------------------------------------------------------ T19: SDD 6, the state diagram
+
+    @Test
+    public void destinationChosen_calculating_thenNavigating() {
+        NavigationManager nav = navigateTo(3);
+        assertEquals(NavState.CALCULATING_ROUTE, nav.getState());
+        nav.update(at(20, 0));
+        assertEquals(NavState.NAVIGATING, nav.getState());
+    }
+
+    @Test
+    public void noRoute_backToWaitingForADestination() {
+        NavigationManager nav = navigateTo(9);
+        nav.update(at(20, 0));
+        assertEquals(NavState.WAITING_FOR_DESTINATION, nav.getState());
+    }
+
+    @Test
+    public void twoFixesWithin5Metres_arrived_andThatIsFinal() {
+        NavigationManager nav = navigateTo(3);       // the entrance is node 3, at (100, 100)
+        nav.update(at(100, 50));
+        nav.update(at(100, 96));                     // 4 m away, once
+        assertEquals(NavState.NAVIGATING, nav.getState());
+        nav.update(at(101, 97));                     // and again
+        assertEquals(NavState.ARRIVED, nav.getState());
+        assertTrue(nav.isArrived());
+        nav.update(at(100, 20));                     // walking away does not undo it
+        assertEquals(NavState.ARRIVED, nav.getState());
+        assertEquals(Arrays.asList(NavState.NAVIGATING, NavState.ARRIVED), states);
+    }
+
+    @Test
+    public void sixMetresAway_isNotYetArrived() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(100, 50));
+        for (int i = 0; i < 5; i++) {
+            nav.update(at(100, 94));                 // AT-06: "at the door, not before"
+        }
+        assertFalse(nav.isArrived());
+    }
+
+    @Test
+    public void stepsAlone_neverAnnounceArrival() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(100, 80));
+        for (int i = 0; i < 100; i++) {
+            nav.onStep();                            // 70 m of steps: past the door on paper
+        }
+        assertFalse(nav.isArrived());
+    }
+
+    @Test
+    public void manualCalibration_pausesPositions_thenResumes() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        nav.startCalibration();
+        assertEquals(NavState.MANUAL_CALIBRATION, nav.getState());
+        nav.update(at(0, 60));                       // ignored while the user marks the spot
+        assertEquals(2, nav.getRoute().nodes().get(1).id);
+        nav.cancelCalibration();
+        assertEquals(NavState.NAVIGATING, nav.getState());
+
+        nav.startCalibration();
+        nav.relocate(at(0, 60));                     // "position confirmed"
+        assertEquals(NavState.NAVIGATING, nav.getState());
+        assertEquals(4, nav.getRoute().nodes().get(1).id);
+    }
+
+    @Test
+    public void markingThePositionAtTheDoor_arrivesAtOnce() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        nav.relocate(at(100, 97));                   // a marked point is trusted: no second fix
+        assertTrue(nav.isArrived());
+    }
+
+    @Test
+    public void userCancels_waitingForADestination() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        nav.cancel();
+        assertEquals(NavState.WAITING_FOR_DESTINATION, nav.getState());
+        nav.update(at(50, 0));                       // nothing more happens
+        assertEquals(NavState.WAITING_FOR_DESTINATION, nav.getState());
     }
 }
