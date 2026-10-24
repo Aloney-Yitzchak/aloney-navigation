@@ -129,7 +129,7 @@ TASKS = [
      "BuildingRecognizer מריץ את המודל כמה פעמים בשנייה, ו-NavigationManager מתקן את המיקום לפי זיהוי בטוח.",
      ["5 מבנים מזוהים והמיקום קופץ לשביל שמולם (AT-07)", "זיהוי של מבנה רחוק או בוודאות נמוכה נזנח"],
      "מסמך-תיכון-SDD", "open"),
-    ("T23", "כיול ידני", "M6", "feature", "FR-08", "should", 3,
+    ("T23", "כיול ידני", "M4", "feature", "FR-08", "should", 3,
      "CalibrationDialog: המשתמש מסמן את מיקומו במפה והמסלול מחושב מחדש.", ["AT-08 עובר"], "מסמך-דרישות-SRS", "open"),
     ("T24", "התחברות צוות ומסך עריכה", "M6", "feature", "FR-10", "should", 5,
      "AuthManager עם Firebase Authentication, ו-AdminActivity לעדכון שם ובעל תפקיד של חדר.",

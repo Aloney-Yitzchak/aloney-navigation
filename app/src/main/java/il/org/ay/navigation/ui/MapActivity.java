@@ -53,6 +53,9 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
     private TextView sheetTime;
     private MaterialButton favorite;
     private View myLocation;
+    private View wrongLocation;
+    private double lastAccuracy = -1;
+    private boolean calibrating;
 
     @Nullable
     private CampusGraph graph;
@@ -113,7 +116,12 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
         myLocation.setVisibility(View.GONE);
         findViewById(R.id.map_entrance).setVisibility(View.GONE);       // the data has no wings or floors
         findViewById(R.id.map_route_details).setVisibility(View.GONE);  // a step list is not planned
-        findViewById(R.id.map_wrong_location).setVisibility(View.GONE); // T23: calibration
+        wrongLocation = findViewById(R.id.map_wrong_location);         // shown when navigating
+        wrongLocation.setVisibility(View.GONE);
+        wrongLocation.setOnClickListener(v -> openCalibration());
+        getSupportFragmentManager().setFragmentResultListener(CalibrationDialog.RESULT, this,
+                (key, result) -> onCalibrated(new LatLng(result.getDouble(CalibrationDialog.LAT),
+                        result.getDouble(CalibrationDialog.LNG))));
         findViewById(R.id.map_floors).setVisibility(View.GONE);         // the campus data has no floors
 
         myLocation.setOnClickListener(v -> {
@@ -161,7 +169,18 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
             return;
         }
         room = r;
-        nav = new NavigationManager(graph, r.entranceNodeId, this::onRouteChanged);
+        nav = new NavigationManager(graph, r.entranceNodeId, new NavigationManager.Listener() {
+            @Override
+            public void onRouteChanged(@NonNull Route route, boolean recalculated) {
+                MapActivity.this.onRouteChanged(route, recalculated);
+            }
+
+            @Override
+            public void onOffCampus(boolean offCampus) {
+                MapActivity.this.onOffCampus(offCampus);
+            }
+        });
+        wrongLocation.setVisibility(View.VISIBLE);   // T23: mark the position by hand
         layers.showDestination(LatLng.of(graph.node(r.entranceNodeId)));
 
         sheet.setVisibility(View.VISIBLE);
@@ -182,6 +201,7 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
     @Override
     public void onPosition(@NonNull LocationService.Position p) {
         lastPosition = p.smoothed;
+        lastAccuracy = p.accuracy;
         // on a path (SDD 9.3) when close to one; where the GPS says when clearly off the paths
         LatLng shown = p.fromPath <= NavigationManager.OFF_ROUTE_M ? p.onPath : p.smoothed;
         layers.showPosition(shown, p.accuracy);
@@ -201,12 +221,65 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
             // the sheet covers the bottom of the map: keep the route and the user above it
             map.post(() -> layers.zoomToRoute(route, lastPosition, sheet.getHeight()));
         }
-        if (recalculated) {
+        if (recalculated && !calibrating) {
             showStatus(getString(R.string.map_route_recalculated));
         }
     }
 
+    /** Far from every path (at home, say): no route, and an offer to mark the position. */
+    private void onOffCampus(boolean offCampus) {
+        if (offCampus) {
+            layers.drawRoute(null);
+            sheetDistance.setVisibility(View.GONE);
+            sheetTime.setText(R.string.map_off_campus);
+            Snackbar.make(map, R.string.map_off_campus, Snackbar.LENGTH_LONG)
+                    .setAnchorView(R.id.bottom_nav)
+                    .setAction(R.string.map_mark_location, v -> openCalibration())
+                    .show();
+        }
+    }
+
+    // ------------------------------------------------------------ T23: manual calibration
+
+    private void openCalibration() {
+        if (getSupportFragmentManager().findFragmentByTag(CalibrationDialog.TAG) == null) {
+            CalibrationDialog.newInstance(lastPosition, lastAccuracy)
+                    .show(getSupportFragmentManager(), CalibrationDialog.TAG);
+        }
+    }
+
+    /** AT-08: the route is planned again from the marked point, and later GPS fixes move from it. */
+    private void onCalibrated(@NonNull LatLng p) {
+        if (nav != null) {
+            calibrating = true;      // a new route, but not because the user left the old one
+            nav.relocate(p);
+            calibrating = false;
+        }
+        if (location != null) {
+            location.calibrate(p);   // the listener gets p as the new position
+        } else {
+            lastPosition = p;        // no GPS (no permission): the mark is the position
+            layers.showPosition(p, 5);
+        }
+        showDistance();
+        showStatus(getString(R.string.map_calibrated));
+    }
+
+    @VisibleForTesting
+    @Nullable
+    CalibrationDialog calibrationDialog() {
+        return (CalibrationDialog) getSupportFragmentManager().findFragmentByTag(CalibrationDialog.TAG);
+    }
+
+    @VisibleForTesting
+    void openCalibrationForTest() {
+        openCalibration();
+    }
+
     private void showDistance() {
+        if (nav != null && nav.isOffCampus()) {
+            return;   // onOffCampus already said so
+        }
         if (nav == null || nav.getRoute() == null) {
             if (nav != null && lastPosition != null) {
                 sheetTime.setText(R.string.map_no_route);

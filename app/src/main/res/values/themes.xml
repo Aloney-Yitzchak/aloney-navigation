@@ -47,7 +47,13 @@
     <!-- Splash keeps the window white so nothing flashes before the layout (design: light background) -->
     <style name="Theme.AloneyNavigation.Splash" />
 
-    <!-- Full-screen dialogs: arrival, calibration -->
+    <!-- Full-screen dialogs: calibration (T23) -->
+    <style name="Theme.AloneyNavigation.FullScreenDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+
+    <!-- Card dialogs: arrival -->
     <style name="Theme.AloneyNavigation.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="android:fontFamily">@font/heebo</item>
         <item name="fontFamily">@font/heebo</item>
