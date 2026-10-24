@@ -36,6 +36,7 @@ def wiki_to_pandoc_markdown(text):
     text = re.sub(r"^\s*</?div[^>]*>\s*$", "", text, flags=re.M)              # dir wrappers
     text = re.sub(r"```math\n(.*?)\n```", lambda m: "$$\n" + m.group(1) + "\n$$", text, flags=re.S)
     text = re.sub(r"^<sub>(.*)</sub>\s*$", r"*\1*", text, flags=re.M)        # captions
+    text = re.sub(r"^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n", "", text, flags=re.M)  # GitHub alert marker; the quote stays
     text = re.sub(r"\]\((?!https?:|#|images/)([^)\s]+)\)", r"](https://github.com/Aloney-Yitzchak/aloney-navigation/wiki/\1)", text)
     return text
 
