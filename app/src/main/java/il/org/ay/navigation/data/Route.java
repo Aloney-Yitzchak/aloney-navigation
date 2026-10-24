@@ -55,6 +55,46 @@ public final class Route {
         return nodes.get(nearestSegment(p) + 1);
     }
 
+    /** The index in {@link #nodes()} of {@link #nextNode(LatLng)}. */
+    public int nextIndex(@NonNull LatLng p) {
+        return nodes.size() == 1 ? 0 : nearestSegment(p) + 1;
+    }
+
+    /**
+     * The node the arrow points at: the next node, or the one after it when the user is
+     * within {@code closeM} of the next one, so the arrow does not spin on top of a junction.
+     */
+    @NonNull
+    public Node lookAhead(@NonNull LatLng p, double closeM) {
+        int i = nextIndex(p);
+        if (i + 1 < nodes.size() && p.distanceTo(LatLng.of(nodes.get(i))) < closeM) {
+            i++;
+        }
+        return nodes.get(i);
+    }
+
+    /** The point {@code metres} further along the route from where {@code p} lands on it. */
+    @NonNull
+    public LatLng advance(@NonNull LatLng p, double metres) {
+        if (nodes.size() == 1) {
+            return LatLng.of(nodes.get(0));
+        }
+        int i = nearestSegment(p);
+        LatLng at = project(p, i).point;
+        double left = metres;
+        while (true) {
+            LatLng end = LatLng.of(nodes.get(i + 1));
+            double toEnd = at.distanceTo(end);
+            if (left <= toEnd || i + 2 >= nodes.size()) {
+                double t = toEnd == 0 ? 1 : Math.min(1, left / toEnd);
+                return new LatLng(at.lat + t * (end.lat - at.lat), at.lng + t * (end.lng - at.lng));
+            }
+            left -= toEnd;
+            at = end;
+            i++;
+        }
+    }
+
     /** How far {@code p} is from the route, in metres (more than 15 = off the route, SDD 9.3). */
     public double distanceFrom(@NonNull LatLng p) {
         if (nodes.size() == 1) {

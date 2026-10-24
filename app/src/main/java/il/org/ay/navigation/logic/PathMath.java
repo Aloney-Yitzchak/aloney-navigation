@@ -60,4 +60,17 @@ public final class PathMath {
         double dy = py - t * by;
         return new Projection(t, onPath, Math.sqrt(dx * dx + dy * dy));
     }
+
+    /**
+     * The direction from {@code from} to {@code to}, in degrees clockwise from true north
+     * (SDD 9.4): θ = atan2(sin Δλ · cos φ₂, cos φ₁ · sin φ₂ − sin φ₁ · cos φ₂ · cos Δλ).
+     */
+    public static float bearing(@NonNull LatLng from, @NonNull LatLng to) {
+        double phi1 = Math.toRadians(from.lat);
+        double phi2 = Math.toRadians(to.lat);
+        double dLambda = Math.toRadians(to.lng - from.lng);
+        double y = Math.sin(dLambda) * Math.cos(phi2);
+        double x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLambda);
+        return HeadingMath.normalize((float) Math.toDegrees(Math.atan2(y, x)));
+    }
 }

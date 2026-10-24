@@ -18,6 +18,10 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.GrantPermissionRule;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.Until;
 
 import org.junit.After;
 import org.junit.Before;
@@ -55,6 +59,13 @@ public class ArNavActivityTest {
                 Arrays.asList(new Node(1, 32.5115, 35.0037)), Arrays.asList(),
                 Arrays.asList(new CampusRoom("42", "מתמטיקה", "רכזת שכבה ט'", 1, "תשפ\"ז")));
         scenario = ActivityScenario.launch(ArNavActivity.navigateTo(context, "42"));
+        // a fresh install asks once for the step permission (T17, decision #13): not now
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiObject2 notNow = device.wait(Until.findObject(By.text(context.getString(R.string.steps_not_now))), 5_000);
+        if (notNow != null) {
+            notNow.click();
+            device.waitForIdle();
+        }
     }
 
     @After

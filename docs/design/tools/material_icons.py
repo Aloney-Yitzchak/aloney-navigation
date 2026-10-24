@@ -24,7 +24,7 @@ ICONS = {
     "view_in_ar": "view_in_ar", "map": "map", "staff": "manage_accounts", "shield": "verified_user",
     "schedule": "schedule", "straighten": "straighten", "walk": "directions_walk", "stairs": "stairs",
     "building": "apartment", "volume_up": "volume_up", "flash_off": "flash_off", "flash_on": "flash_on",
-    "turn_left": "turn_left",
+    "turn_left": "turn_left", "straight": "straight", "u_turn": "u_turn_left", "flag": "flag",
     "turn_right": "turn_right", "check_circle": "check_circle-fill", "warning": "warning", "info": "info",
     "mail": "mail", "lock": "lock", "visibility": "visibility", "logout": "logout", "login": "login",
     "save": "save", "person": "person", "notes": "sticky_note_2", "edit": "edit", "add": "add",

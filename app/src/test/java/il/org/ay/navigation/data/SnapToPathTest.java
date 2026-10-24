@@ -104,4 +104,22 @@ public class SnapToPathTest {
         assertEquals(20, r.distanceFrom(at(30, 20)), 0.02);
         assertEquals(25, r.distanceFrom(at(125, 50)), 0.02);
     }
+
+    // ------------------------------------------------------------ T17
+
+    @Test
+    public void lookAhead_pointsPastANodeTheUserIsStandingOn() {
+        Route r = square().findPath(1, 3);                     // 1 → 2 → 3
+        assertEquals(2, r.lookAhead(at(50, 0), 4).id);
+        assertEquals(3, r.lookAhead(at(97, 0), 4).id);         // 3 m before 2: already towards 3
+        assertEquals(3, r.lookAhead(at(100, 99), 4).id);       // the end stays the end
+    }
+
+    @Test
+    public void advance_movesAlongTheRoute_roundCorners() {
+        Route r = square().findPath(1, 3);
+        assertEquals(0, r.advance(at(10, 0), 30).distanceTo(at(40, 0)), 0.05);
+        assertEquals(0, r.advance(at(90, 0), 30).distanceTo(at(100, 20)), 0.05);   // 10 m east, 20 m north
+        assertEquals(0, r.advance(at(100, 90), 50).distanceTo(at(100, 100)), 0.05); // stops at the end
+    }
 }
