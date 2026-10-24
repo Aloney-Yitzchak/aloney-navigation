@@ -5,14 +5,21 @@ import androidx.annotation.NonNull;
 import java.util.Collections;
 import java.util.List;
 
+import il.org.ay.navigation.logic.PathMath;
+import il.org.ay.navigation.model.LatLng;
 import il.org.ay.navigation.model.Node;
 
 /**
  * A walk through the campus: the nodes in order, from the start to the destination's
  * entrance, and its length (SDD 4, class Route). Made by {@link CampusGraph#findPath}.
- * Which node comes next while walking ({@code nextNode}) needs path snapping: T14.
+ *
+ * <p>While walking, the position is projected on the route's own segments (SDD 9.3, T14)
+ * to know which node comes next, how far is left, and how far off the route the user is.
  */
 public final class Route {
+
+    /** Id of the first node when a route starts from a position rather than a node. */
+    public static final int START = -1;
 
     private final List<Node> nodes;
     private final double distance;
@@ -31,6 +38,64 @@ public final class Route {
     /** Length of the walk in metres. */
     public double totalDistance() {
         return distance;
+    }
+
+    /** The destination: the room's entrance. */
+    @NonNull
+    public Node destination() {
+        return nodes.get(nodes.size() - 1);
+    }
+
+    /** The node to walk towards from position {@code p}: the end of the route segment p is on. */
+    @NonNull
+    public Node nextNode(@NonNull LatLng p) {
+        if (nodes.size() == 1) {
+            return nodes.get(0);
+        }
+        return nodes.get(nearestSegment(p) + 1);
+    }
+
+    /** How far {@code p} is from the route, in metres (more than 15 = off the route, SDD 9.3). */
+    public double distanceFrom(@NonNull LatLng p) {
+        if (nodes.size() == 1) {
+            return p.distanceTo(LatLng.of(nodes.get(0)));
+        }
+        int i = nearestSegment(p);
+        return project(p, i).distance;
+    }
+
+    /** Metres still to walk from {@code p}, along the route, to the destination. */
+    public double distanceLeft(@NonNull LatLng p) {
+        if (nodes.size() == 1) {
+            return p.distanceTo(LatLng.of(nodes.get(0)));
+        }
+        int i = nearestSegment(p);
+        double left = project(p, i).point.distanceTo(LatLng.of(nodes.get(i + 1)));
+        for (int j = i + 1; j + 1 < nodes.size(); j++) {
+            left += nodes.get(j).distanceTo(nodes.get(j + 1));
+        }
+        return left;
+    }
+
+    /**
+     * Index of the route segment nearest to {@code p}. Searched from the end, so on a tie
+     * (standing exactly on a corner) the later segment wins and the user moves on.
+     */
+    private int nearestSegment(LatLng p) {
+        int best = nodes.size() - 2;
+        double bestDistance = Double.MAX_VALUE;
+        for (int i = nodes.size() - 2; i >= 0; i--) {
+            double d = project(p, i).distance;
+            if (d < bestDistance - 1e-6) {
+                bestDistance = d;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private PathMath.Projection project(LatLng p, int segment) {
+        return PathMath.project(p, LatLng.of(nodes.get(segment)), LatLng.of(nodes.get(segment + 1)));
     }
 
     /** Walking time in whole minutes, at least 1, at {@code metresPerMinute}. */

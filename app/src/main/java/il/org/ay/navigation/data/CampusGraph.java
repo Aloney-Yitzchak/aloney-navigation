@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import il.org.ay.navigation.logic.PathMath;
 import il.org.ay.navigation.model.Edge;
+import il.org.ay.navigation.model.LatLng;
 import il.org.ay.navigation.model.Node;
 
 /**
@@ -41,6 +43,9 @@ public final class CampusGraph {
 
     private final Map<Integer, Node> nodes = new HashMap<>();
     private final Map<Integer, List<Link>> adjacency = new HashMap<>();
+    /** Every path segment once, for snapping: {from id, to id}. */
+    private final List<int[]> segments = new ArrayList<>();
+    private final List<Double> segmentLengths = new ArrayList<>();
 
     /**
      * Builds the graph. An edge whose length is missing (0) gets the distance between its
@@ -61,6 +66,8 @@ public final class CampusGraph {
             double length = e.length > 0 ? e.length : a.distanceTo(b);
             adjacency.get(a.id).add(new Link(b.id, length));
             adjacency.get(b.id).add(new Link(a.id, length));  // paths are two-way
+            segments.add(new int[]{a.id, b.id});
+            segmentLengths.add(length);
         }
     }
 
@@ -137,6 +144,77 @@ public final class CampusGraph {
     @Nullable
     public Route findPath(@NonNull Node from, @NonNull Node to) {
         return findPath(from.id, to.id);
+    }
+
+    // ------------------------------------------------------------ snapping (T14, SDD 9.3)
+
+    /** Where a position lands on the path network. */
+    public static final class Snap {
+        /** The two ends of the nearest segment. */
+        public final int fromId;
+        public final int toId;
+        /** Length of that segment in metres. */
+        public final double length;
+        /** The projection: the point on the path, t along the segment, metres away. */
+        @NonNull
+        public final PathMath.Projection projection;
+
+        Snap(int fromId, int toId, double length, @NonNull PathMath.Projection projection) {
+            this.fromId = fromId;
+            this.toId = toId;
+            this.length = length;
+            this.projection = projection;
+        }
+    }
+
+    /**
+     * The point on a path closest to {@code p} (LocationService.snapToPath uses this, SDD 4),
+     * or null when the graph has no paths.
+     */
+    @Nullable
+    public Snap snapToPath(@NonNull LatLng p) {
+        Snap best = null;
+        for (int i = 0; i < segments.size(); i++) {
+            int[] s = segments.get(i);
+            PathMath.Projection pr = PathMath.project(p, LatLng.of(nodes.get(s[0])), LatLng.of(nodes.get(s[1])));
+            if (best == null || pr.distance < best.projection.distance) {
+                best = new Snap(s[0], s[1], segmentLengths.get(i), pr);
+            }
+        }
+        return best;
+    }
+
+    /**
+     * The shortest walk from a position to a node: the position is snapped to the nearest
+     * path, and the walk goes to whichever end of that segment gives the shorter total
+     * (no walking back to a junction behind you). The route starts with a node of id
+     * {@link Route#START} at the snapped point. Null when the destination cannot be reached.
+     */
+    @Nullable
+    public Route findPath(@NonNull LatLng from, int toId) {
+        Snap snap = snapToPath(from);
+        if (snap == null) {
+            Node only = nearestNode(from.lat, from.lng);
+            return only == null ? null : findPath(only.id, toId);
+        }
+        double toA = snap.projection.t * snap.length;
+        double toB = (1 - snap.projection.t) * snap.length;
+        Route viaA = findPath(snap.fromId, toId);
+        Route viaB = findPath(snap.toId, toId);
+        if (viaA == null && viaB == null) {
+            return null;
+        }
+        boolean useA = viaB == null
+                || (viaA != null && toA + viaA.totalDistance() <= toB + viaB.totalDistance());
+        Route rest = useA ? viaA : viaB;
+        double lead = useA ? toA : toB;
+        if (lead < 0.01) {
+            return rest;  // standing on the node itself
+        }
+        List<Node> path = new ArrayList<>();
+        path.add(new Node(Route.START, snap.projection.point.lat, snap.projection.point.lng));
+        path.addAll(rest.nodes());
+        return new Route(path, lead + rest.totalDistance());
     }
 
     /** Follows "previous" back from the destination to the start, then reverses. */
