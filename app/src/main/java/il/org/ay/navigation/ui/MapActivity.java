@@ -194,7 +194,7 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
     private void onRouteChanged(@NonNull Route route, boolean recalculated) {
         layers.drawRoute(route);
         showDistance();
-        if (!zoomedToRoute) {
+        if (!zoomedToRoute || recalculated) {   // the first route, and each new one
             zoomedToRoute = true;
             // the sheet covers the bottom of the map: keep the route and the user above it
             map.post(() -> layers.zoomToRoute(route, lastPosition, sheet.getHeight()));
