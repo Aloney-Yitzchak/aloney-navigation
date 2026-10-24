@@ -129,12 +129,14 @@ public class SearchActivity extends BaseActivity {
             if (item.getItemId() == R.id.nav_map) {
                 startActivity(new Intent(this, MapActivity.class));
                 overridePendingTransition(0, 0);
+            } else if (item.getItemId() == R.id.nav_ar) {
+                startActivity(ArNavActivity.navigateTo(this, null));
             } else if (item.getItemId() != R.id.nav_search) {
                 comingSoon();
             }
             return false;  // this screen stays the search tab
         });
-        findViewById(R.id.search_ar_open).setOnClickListener(v -> comingSoon());
+        findViewById(R.id.search_ar_open).setOnClickListener(v -> startActivity(ArNavActivity.navigateTo(this, null)));
 
         search();
         showStatus();

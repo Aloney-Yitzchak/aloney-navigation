@@ -77,6 +77,14 @@ dependencies {
     // OpenStreetMap map (T29): free, no API key or billing account (SDD 2.4)
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
 
+    // CameraX: the camera screen and the frames for the building model (T16)
+    def camerax_version = '1.4.1'
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    implementation "androidx.camera:camera-view:$camerax_version"
+    // CameraX hands back a Guava ListenableFuture; Firestore already brings Guava at run time
+    implementation 'com.google.guava:guava:33.3.1-android'
+
     // Firebase Firestore: the shared campus data (T08)
     implementation platform('com.google.firebase:firebase-bom:33.7.0')
     implementation 'com.google.firebase:firebase-firestore'

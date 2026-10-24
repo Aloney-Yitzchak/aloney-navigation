@@ -49,7 +49,8 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          # -camera-back emulated: a moving test pattern, so the camera tests get real frames (T16)
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back emulated
           # A freshly booted emulator sometimes shows "System UI isn't responding" or is slow to
           # give the app window focus: hide error dialogs, unlock, and retry the tests once.
           script: |
