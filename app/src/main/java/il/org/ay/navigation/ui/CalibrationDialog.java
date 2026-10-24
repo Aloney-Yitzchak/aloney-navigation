@@ -45,6 +45,8 @@ public class CalibrationDialog extends DialogFragment {
 
     public static final String TAG = "calibration";
     public static final String RESULT = "calibration_result";
+    /** Sent when the dialog closes without a confirmed point. */
+    public static final String CANCELLED = "calibration_cancelled";
     public static final String LAT = "lat";
     public static final String LNG = "lng";
     private static final String ARG_ACCURACY = "accuracy";
@@ -54,6 +56,7 @@ public class CalibrationDialog extends DialogFragment {
     /** Below this the GPS is fine, and the warning is not shown. */
     static final double POOR_ACCURACY_M = 10;
 
+    private boolean confirmed;
     private MapView map;
     private CampusMapLayers layers;
     private TextView selected;
@@ -216,6 +219,7 @@ public class CalibrationDialog extends DialogFragment {
         Bundle result = new Bundle();
         result.putDouble(LAT, c.lat);
         result.putDouble(LNG, c.lng);
+        confirmed = true;
         getParentFragmentManager().setFragmentResult(RESULT, result);
         dismiss();
     }
@@ -225,6 +229,14 @@ public class CalibrationDialog extends DialogFragment {
     void moveTo(@NonNull LatLng p) {
         map.getController().setCenter(new GeoPoint(p.lat, p.lng));
         describeCenter();
+    }
+
+    @Override
+    public void onDismiss(@NonNull android.content.DialogInterface dialog) {
+        if (!confirmed && isAdded()) {
+            getParentFragmentManager().setFragmentResult(CANCELLED, new Bundle());
+        }
+        super.onDismiss(dialog);
     }
 
     @Override

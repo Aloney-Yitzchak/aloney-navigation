@@ -26,6 +26,7 @@ import il.org.ay.navigation.data.CampusGraph;
 import il.org.ay.navigation.data.CampusRepository;
 import il.org.ay.navigation.data.Route;
 import il.org.ay.navigation.logic.LocationService;
+import il.org.ay.navigation.logic.NavState;
 import il.org.ay.navigation.logic.NavigationManager;
 import il.org.ay.navigation.logic.WalkingEstimate;
 import il.org.ay.navigation.model.CampusRoom;
@@ -122,6 +123,12 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
         getSupportFragmentManager().setFragmentResultListener(CalibrationDialog.RESULT, this,
                 (key, result) -> onCalibrated(new LatLng(result.getDouble(CalibrationDialog.LAT),
                         result.getDouble(CalibrationDialog.LNG))));
+        getSupportFragmentManager().setFragmentResultListener(CalibrationDialog.CANCELLED, this,
+                (key, result) -> {
+                    if (nav != null) {
+                        nav.cancelCalibration();
+                    }
+                });
         findViewById(R.id.map_floors).setVisibility(View.GONE);         // the campus data has no floors
 
         myLocation.setOnClickListener(v -> {
@@ -181,6 +188,16 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
             @Override
             public void onOffCampus(boolean offCampus) {
                 MapActivity.this.onOffCampus(offCampus);
+            }
+
+            @Override
+            public void onStateChanged(@NonNull NavState state) {
+                if (state == NavState.ARRIVED && room != null) {
+                    ArrivalDialog.show(getSupportFragmentManager(),
+                            RoomAdapter.displayName(sheet, room), room, nav);   // T19, FR-06
+                    sheetTime.setText(R.string.arrival_title);
+                    sheetDistance.setVisibility(View.GONE);
+                }
             }
         });
         wrongLocation.setVisibility(View.VISIBLE);   // T23: mark the position by hand
@@ -246,6 +263,9 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
 
     private void openCalibration() {
         if (getSupportFragmentManager().findFragmentByTag(CalibrationDialog.TAG) == null) {
+            if (nav != null) {
+                nav.startCalibration();   // SDD 6: "wrong location" → manual calibration
+            }
             CalibrationDialog.newInstance(lastPosition, lastAccuracy)
                     .show(getSupportFragmentManager(), CalibrationDialog.TAG);
         }
@@ -280,6 +300,9 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
     }
 
     private void showDistance() {
+        if (nav != null && nav.isArrived()) {
+            return;
+        }
         if (nav != null && nav.isOffCampus()) {
             return;   // onOffCampus already said so
         }

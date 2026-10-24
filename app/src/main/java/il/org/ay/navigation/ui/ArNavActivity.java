@@ -41,6 +41,7 @@ import il.org.ay.navigation.logic.BuildingRecognizer;
 import il.org.ay.navigation.logic.Guidance;
 import il.org.ay.navigation.logic.HeadingService;
 import il.org.ay.navigation.logic.LocationService;
+import il.org.ay.navigation.logic.NavState;
 import il.org.ay.navigation.logic.NavigationManager;
 import il.org.ay.navigation.logic.WalkingEstimate;
 import il.org.ay.navigation.model.CampusRoom;
@@ -175,7 +176,12 @@ public class ArNavActivity extends BaseActivity {
             }
         });
 
-        findViewById(R.id.ar_end).setOnClickListener(v -> finish());
+        findViewById(R.id.ar_end).setOnClickListener(v -> {
+            if (nav != null) {
+                nav.cancel();   // SDD 6: "the user cancels"
+            }
+            finish();
+        });
         findViewById(R.id.ar_show_map).setOnClickListener(v -> openMap());
         findViewById(R.id.ar_flash).setOnClickListener(v -> toggleTorch());
 
@@ -245,7 +251,18 @@ public class ArNavActivity extends BaseActivity {
             if (g.node(r.entranceNodeId) == null) {
                 return;
             }
-            nav = new NavigationManager(g, r.entranceNodeId, null);
+            nav = new NavigationManager(g, r.entranceNodeId, new NavigationManager.Listener() {
+                @Override
+                public void onRouteChanged(@NonNull il.org.ay.navigation.data.Route route, boolean recalculated) {
+                }
+
+                @Override
+                public void onStateChanged(@NonNull NavState state) {
+                    if (state == NavState.ARRIVED) {
+                        ArrivalDialog.show(getSupportFragmentManager(), roomName, r, nav);   // T19, FR-06
+                    }
+                }
+            });
             if (location != null && location.getLast() != null) {
                 onPosition(location.getLast());
             }
@@ -291,6 +308,15 @@ public class ArNavActivity extends BaseActivity {
             instructionCard.setVisibility(View.VISIBLE);
             instruction.setText(R.string.map_off_campus);
             ((TextView) findViewById(R.id.ar_instruction_detail)).setText(R.string.ar_open_map);
+            findViewById(R.id.ar_step).setVisibility(View.GONE);
+            return;
+        }
+        if (nav.isArrived()) {
+            arrow.setVisibility(View.GONE);
+            instructionCard.setVisibility(View.VISIBLE);
+            instruction.setText(R.string.arrival_title);
+            ((android.widget.ImageView) findViewById(R.id.ar_turn_icon)).setImageResource(R.drawable.ic_flag);
+            ((TextView) findViewById(R.id.ar_instruction_detail)).setText(roomName);
             findViewById(R.id.ar_step).setVisibility(View.GONE);
             return;
         }
