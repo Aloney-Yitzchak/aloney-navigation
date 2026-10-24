@@ -62,4 +62,13 @@ public class PathMathTest {
         assertEquals(0, p.t, 0);
         assertEquals(5, p.distance, 0.01);
     }
+
+    @Test
+    public void bearing_theFourDirections() {
+        assertEquals(0, PathMath.bearing(A, at(0, 100)), 0.01);     // north
+        assertEquals(90, PathMath.bearing(A, at(100, 0)), 0.01);    // east
+        assertEquals(180, PathMath.bearing(A, at(0, -100)), 0.01);  // south
+        assertEquals(270, PathMath.bearing(A, at(-100, 0)), 0.01);  // west
+        assertEquals(45, PathMath.bearing(A, at(100, 100)), 0.05);  // north-east
+    }
 }

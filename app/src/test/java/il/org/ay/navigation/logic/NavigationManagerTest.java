@@ -142,4 +142,53 @@ public class NavigationManagerTest {
         assertNull(nav.getRoute());
         assertTrue(nav.isOffCampus());
     }
+
+    // ------------------------------------------------------------ T17
+
+    @Test
+    public void arrow_pointsAtTheNextNode_relativeToThePhone() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));                       // next node: 2, due east
+        assertTrue(Float.isNaN(nav.getArrowAngle())); // no heading yet
+        nav.setHeading(0);                            // phone facing north
+        assertEquals(90, nav.getArrowAngle(), 0.5);   // the arrow points right
+    }
+
+    @Test
+    public void arrow_facingTheNextNode_pointsStraightUp() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        nav.setHeading(90);                           // facing east, towards 2
+        assertEquals(0, Math.abs(HeadingMath.difference(0, nav.getArrowAngle())), 0.5);
+    }
+
+    @Test
+    public void nearTheCorner_theArrowAlreadyPointsAlongTheNextPath() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        nav.update(at(98, 0));                        // 2 m before node 2
+        nav.setHeading(0);                            // facing north, the next path's direction
+        assertEquals(0, Math.abs(HeadingMath.difference(0, nav.getArrowAngle())), 2);
+    }
+
+    @Test
+    public void steps_moveThePositionAlongTheRoute() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        double before = nav.getDistanceLeft();
+        for (int i = 0; i < 10; i++) {
+            nav.onStep();
+        }
+        assertEquals(before - 10 * NavigationManager.STEP_M, nav.getDistanceLeft(), 0.05);
+    }
+
+    @Test
+    public void guidance_onTheSquare() {
+        NavigationManager nav = navigateTo(3);
+        assertNull(nav.getGuidance());
+        nav.update(at(20, 0));
+        Guidance g = nav.getGuidance();
+        assertEquals(Guidance.Action.LEFT, g.action);   // east, then north at node 2
+        assertEquals(80, g.metres, 0.1);
+    }
 }

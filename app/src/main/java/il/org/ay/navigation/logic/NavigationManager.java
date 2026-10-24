@@ -13,7 +13,8 @@ import il.org.ay.navigation.model.Node;
  * from LocationService goes to {@link #update}; when the user has left the route, a new
  * route is calculated from where they are (T14, SRS UC-02 alternative 4a).
  *
- * <p>The arrow angle (T17) and arrival (T19) are added here in later tasks.
+ * <p>T17: the heading from HeadingService gives the arrow angle (SDD 9.4), and steps move
+ * the position along the route between GPS fixes. Arrival (T19) is added later.
  */
 public class NavigationManager {
 
@@ -25,6 +26,12 @@ public class NavigationManager {
      * fix next to a building should not replace a good route.
      */
     public static final int OFF_ROUTE_FIXES = 2;
+
+    /** Closer than this to the next node, the arrow already points at the one after (T17). */
+    public static final double LOOK_AHEAD_M = 4;
+
+    /** Average step length in metres, for moving along the route between GPS fixes (T17). */
+    public static final double STEP_M = 0.7;
 
     /** Farther than this from every path = not on the campus: no route is planned (T23). */
     public static final double OFF_CAMPUS_M = 150;
@@ -49,6 +56,9 @@ public class NavigationManager {
     private int offRouteFixes;
     private int recalculations;
     private boolean offCampus;
+    private final HeadingFilter arrow = new HeadingFilter(0.25f);
+    private float heading;
+    private boolean hasHeading;
 
     public NavigationManager(@NonNull CampusGraph graph, int destinationId, @Nullable Listener listener) {
         this.graph = graph;
@@ -108,6 +118,50 @@ public class NavigationManager {
             }
         }
         return value;
+    }
+
+    // ------------------------------------------------------------ T17: the arrow
+
+    /** SDD 4: update(pos, heading), heading part. Degrees clockwise from true north. */
+    public void setHeading(float degrees) {
+        heading = degrees;
+        hasHeading = true;
+    }
+
+    /**
+     * One step detected (HeadingService, T12): move the position about one step forward along
+     * the route, so the arrow and the distance keep up between GPS fixes. The next GPS fix
+     * replaces this estimate.
+     */
+    public void onStep() {
+        if (route != null && position != null && !offCampus) {
+            position = route.advance(position, STEP_M);
+        }
+    }
+
+    /**
+     * SDD 4: getArrowAngle(). Where to point the arrow on the screen, in degrees clockwise
+     * from straight ahead: α = (θ − heading + 360) mod 360, smoothed so it does not shake.
+     * NaN while there is no route, position or heading.
+     */
+    public float getArrowAngle() {
+        if (route == null || position == null || !hasHeading || offCampus) {
+            return Float.NaN;
+        }
+        Node target = route.lookAhead(position, LOOK_AHEAD_M);
+        float theta = PathMath.bearing(position, LatLng.of(target));
+        return arrow.add(HeadingMath.normalize(theta - heading));
+    }
+
+    /** The instruction for the current position, or null while there is no route. */
+    @Nullable
+    public Guidance getGuidance() {
+        return route == null || position == null || offCampus ? null : Guidance.at(route, position);
+    }
+
+    @Nullable
+    public LatLng getPosition() {
+        return position;
     }
 
     /** True while the last position was far from every campus path. */

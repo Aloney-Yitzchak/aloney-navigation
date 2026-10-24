@@ -94,6 +94,29 @@
     <string name="ar_arrow">חץ הניווט</string>
     <string name="ar_step">שלב %1$d/%2$d</string>
     <string name="ar_end">סיים ניווט</string>
+    <string name="room_minutes">%1$d דק\'</string>
+    <string name="ar_turn_left">פנו שמאלה בעוד %1$d מ\'</string>
+    <string name="ar_turn_right">פנו ימינה בעוד %1$d מ\'</string>
+    <string name="ar_turn_back">הסתובבו בעוד %1$d מ\'</string>
+    <string name="ar_arrive">היעד לפניכם, עוד %1$d מ\'</string>
+    <string name="ar_instruction_detail">%1$s · %2$d מ\' (כ-%3$d דק\')</string>
+    <string name="ar_waiting">מחפש את המיקום שלך…</string>
+    <string name="ar_calibrate_title">כיול המצפן</string>
+    <string name="ar_calibrate_text">החץ צריך מצפן מדויק. הזיזו את הטלפון באוויר בתנועת "שמונה" כמה פעמים, רחוק ממתכת ומגנטים.</string>
+    <string name="steps_title">ספירת צעדים</string>
+    <string name="steps_text">כדי שהחץ והמרחק יתעדכנו גם בין עדכוני ה-GPS, האפליקציה סופרת צעדים. המידע נשאר בטלפון.</string>
+    <string name="steps_allow">אישור</string>
+    <string name="steps_not_now">לא עכשיו</string>
+    <string-array name="compass_points">
+        <item>צפון</item>
+        <item>צפון-מזרח</item>
+        <item>מזרח</item>
+        <item>דרום-מזרח</item>
+        <item>דרום</item>
+        <item>דרום-מערב</item>
+        <item>מערב</item>
+        <item>צפון-מערב</item>
+    </string-array>
     <string name="ar_choose_destination">בחרו יעד בחיפוש כדי לקבל חץ ניווט</string>
     <string name="ar_no_camera_title">אין גישה למצלמה</string>
     <string name="ar_open_map">ניווט במפה</string>
