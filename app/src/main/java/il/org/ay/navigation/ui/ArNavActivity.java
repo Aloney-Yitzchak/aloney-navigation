@@ -139,6 +139,9 @@ public class ArNavActivity extends BaseActivity {
 
         preview = new PreviewView(this);
         preview.setScaleType(PreviewView.ScaleType.FILL_CENTER);
+        // TextureView: scales to fill on every phone (the faster SurfaceView left bands on some)
+        preview.setImplementationMode(PreviewView.ImplementationMode.COMPATIBLE);
+        preview.setBackgroundColor(android.graphics.Color.BLACK);
         FrameLayout box = findViewById(R.id.camera_preview);
         box.addView(preview, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
