@@ -155,14 +155,26 @@ public class CampusMapLayers {
         map.getController().animateTo(geo(p));
     }
 
-    /** Shows the whole route, with room around it. Call after the map has its size. */
-    public void zoomToRoute(@NonNull Route r) {
+    /**
+     * Shows the whole route and the user, above {@code coveredBottomPx} of the map that a
+     * sheet hides. Call after the map has its size.
+     */
+    public void zoomToRoute(@NonNull Route r, @Nullable LatLng user, int coveredBottomPx) {
         List<GeoPoint> points = new ArrayList<>();
         for (Node n : r.nodes()) {
             points.add(geo(n.lat, n.lng));
         }
+        if (user != null) {
+            points.add(geo(user));
+        }
         if (points.size() > 1) {
-            map.zoomToBoundingBox(BoundingBox.fromGeoPointsSafe(points), true, (int) dp(64));
+            BoundingBox box = BoundingBox.fromGeoPointsSafe(points);
+            // stretch the box down so that its real part ends above the sheet:
+            // if the sheet hides a fraction f of the height, add f / (1 − f) of the box below it
+            double f = map.getHeight() > 0 ? Math.min(0.6, (double) coveredBottomPx / map.getHeight()) : 0;
+            double extra = (box.getLatNorth() - box.getLatSouth()) * f / (1 - f);
+            box = new BoundingBox(box.getLatNorth(), box.getLonEast(), box.getLatSouth() - extra, box.getLonWest());
+            map.zoomToBoundingBox(box, true, (int) dp(48));
         } else if (points.size() == 1) {
             map.getController().animateTo(points.get(0), 19.0, 500L);
         }

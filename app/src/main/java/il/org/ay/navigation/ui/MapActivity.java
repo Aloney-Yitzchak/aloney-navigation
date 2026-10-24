@@ -196,7 +196,8 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
         showDistance();
         if (!zoomedToRoute) {
             zoomedToRoute = true;
-            map.post(() -> layers.zoomToRoute(route));
+            // the sheet covers the bottom of the map: keep the route and the user above it
+            map.post(() -> layers.zoomToRoute(route, lastPosition, sheet.getHeight()));
         }
         if (recalculated) {
             showStatus(getString(R.string.map_route_recalculated));
