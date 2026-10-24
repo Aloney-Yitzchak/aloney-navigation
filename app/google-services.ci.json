@@ -1,0 +1,20 @@
+{
+  "_comment": "Placeholder Firebase config for CI and fresh clones, NOT the real project. The build uses app/google-services.json; if it is missing, copy this file there (CI does so automatically). The real file comes from Firebase Console and is never committed.",
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "aloney-navigation-ci",
+    "storage_bucket": "aloney-navigation-ci.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "android_client_info": { "package_name": "il.org.ay.navigation" }
+      },
+      "oauth_client": [],
+      "api_key": [ { "current_key": "placeholder-not-a-real-key" } ],
+      "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+    }
+  ],
+  "configuration_version": "1"
+}

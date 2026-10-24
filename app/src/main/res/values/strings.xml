@@ -13,4 +13,5 @@
     <string name="permission_continue">המשך</string>
 
     <string name="search_placeholder">מסך החיפוש ייבנה במטלה T09</string>
+    <string name="search_local_data">בטלפון: %1$d חדרים (גרסה %2$d).\nמסך החיפוש ייבנה במטלה T09.</string>
 </resources>

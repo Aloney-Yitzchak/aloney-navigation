@@ -35,7 +35,18 @@
 
 ## google-services.json
 
-הקובץ של Firebase **לא נכנס למאגר** (הוא ב-`.gitignore`). מורידים אותו מ-Firebase Console → Project settings → Your apps, ושמים אותו ב-`app/google-services.json`. הוא נדרש מ-T08.
+הקובץ של Firebase **לא נכנס למאגר** (הוא ב-`.gitignore`). מורידים אותו מ-Firebase Console → Project settings → Your apps, ושמים אותו ב-`app/google-services.json`. בלעדיו הבנייה נכשלת.
+
+- **בלי גישה ל-Firebase** (למשל בשכפול חדש): מעתיקים את `app/google-services.ci.json` ל-`app/google-services.json`. האפליקציה תיבנה ותרוץ, אבל לא תסנכרן נתונים.
+- **ב-GitHub Actions** זה קורה אוטומטית, ולכן הבדיקות לא תלויות בפרויקט האמיתי.
+
+## סנכרון הנתונים (T08)
+
+`CampusRepository.sync()` רץ בכל פתיחה של האפליקציה (`SplashActivity`). הוא בודק את `meta/version` ב-Firestore, ומוריד את כל הנתונים רק כשהגרסה בענן חדשה מהגרסה שבטלפון. נתונים לא שלמים נדחים, והטלפון שומר את העותק הקודם. כל שאילתה ל-Room רצה ב-Executor ברקע, והתוצאה חוזרת ל-UI thread.
+
+**בדיקה על הטלפון (AT-09):**
+1. פותחים את האפליקציה עם אינטרנט. במסך החיפוש מופיע "בטלפון: 64 חדרים (גרסה 1)".
+2. עוברים למצב טיסה, סוגרים את האפליקציה לגמרי ופותחים שוב. המסך מציג את אותם 64 חדרים.
 
 ## בדיקת תמיכה ב-ARCore (סיכון R3)
 
