@@ -14,7 +14,7 @@
 | מטלות ומצב העבודה | [Issues](../../issues) ו-[Milestones](../../milestones) |
 | תיק הפרויקט וקבצי Word | [`docs/word`](docs/word) |
 | תרשימים | [`docs/diagrams`](docs/diagrams) |
-| קוד האפליקציה | [`app/`](app) — נבנה במטלה T07 |
+| קוד האפליקציה | [`app/`](app) — פרויקט Android Studio (Java, API 26+) |
 | מודל זיהוי המבנים | [`ml/`](ml) — מטלות T20–T22 |
 | נתוני הקמפוס ותרשים בית הספר | [`campus-data/`](campus-data) — מטלות T05–T06, T28 |
 
