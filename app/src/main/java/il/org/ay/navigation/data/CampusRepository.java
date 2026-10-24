@@ -168,6 +168,12 @@ public class CampusRepository {
         changeListeners.remove(listener);
     }
 
+    /** The path graph from the copy in Room, for route finding (T13, SDD 4: load()). */
+    public void loadGraph(@NonNull Listener<CampusGraph> listener) {
+        io.execute(() -> deliver(listener,
+                new CampusGraph(db.graphDao().getNodes(), db.graphDao().getEdges())));
+    }
+
     /** All rooms, for a quick count or a list. */
     public void allRooms(@NonNull Listener<List<CampusRoom>> listener) {
         io.execute(() -> deliver(listener, db.roomDao().getAll()));

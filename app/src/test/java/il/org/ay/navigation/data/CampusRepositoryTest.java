@@ -200,6 +200,16 @@ public class CampusRepositoryTest {
     }
 
     @Test
+    public void loadGraph_buildsTheRouteGraphFromRoom() throws Exception {
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        CampusGraph graph = await(repo::loadGraph);
+        assertEquals(2, graph.nodeCount());
+        assertEquals(14.2, graph.findPath(1, 2).totalDistance(), 1e-9);
+    }
+
+    @Test
     public void sameVersion_doesNotDownloadAgain() throws Exception {
         remote.version = 1;
         remote.snapshot = CampusSnapshotTest.good(1);
