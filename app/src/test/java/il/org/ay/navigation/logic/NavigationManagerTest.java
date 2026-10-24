@@ -284,4 +284,25 @@ public class NavigationManagerTest {
         nav.update(at(50, 0));                       // nothing more happens
         assertEquals(NavState.WAITING_FOR_DESTINATION, nav.getState());
     }
+
+    // ------------------------------------------------------------ T18
+
+    @Test
+    public void targetBearing_isTheDirectionToTheNextNode_forTheArcoreAnchor() {
+        NavigationManager nav = navigateTo(3);
+        assertTrue(Float.isNaN(nav.getTargetBearing()));
+        nav.update(at(20, 0));                      // next node 2, due east
+        assertEquals(90, nav.getTargetBearing(), 0.5);
+        nav.update(at(98, 0));                      // 2 m before the corner: already north
+        assertEquals(0, Math.abs(HeadingMath.difference(0, nav.getTargetBearing())), 2);   // 2 m west of that path: 1.1°
+    }
+
+    @Test
+    public void targetBearing_noneAfterArriving() {
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(100, 50));
+        nav.update(at(100, 99));
+        nav.update(at(100, 99));
+        assertTrue(Float.isNaN(nav.getTargetBearing()));
+    }
 }

@@ -28,16 +28,29 @@ public class BuildingRecognizer implements ImageAnalysis.Analyzer {
     @Override
     public void analyze(@NonNull ImageProxy image) {
         try {
-            long now = SystemClock.elapsedRealtime();
-            if (frames == 0) {
-                firstFrameMs = now;
-            }
-            lastFrameMs = now;
-            frames++;
+            countFrame();
             // T22: run the model on the image here and set `last`
         } finally {
             image.close();   // CameraX sends the next frame only after this one is closed
         }
+    }
+
+    /**
+     * A camera image from ARCore (T18), when ARCore owns the camera instead of CameraX.
+     * The caller closes the image.
+     */
+    public void analyze(@NonNull android.media.Image image) {
+        countFrame();
+        // T22: run the model on the image here and set `last`
+    }
+
+    private void countFrame() {
+        long now = SystemClock.elapsedRealtime();
+        if (frames == 0) {
+            firstFrameMs = now;
+        }
+        lastFrameMs = now;
+        frames++;
     }
 
     /** SDD 4: getLast(). The last confident recognition, or null (always null until T22). */
