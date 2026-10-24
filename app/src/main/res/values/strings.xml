@@ -65,7 +65,6 @@
     <string name="search_empty_hint">אפשר לחפש מספר חדר, שם החדר או שם המורה</string>
     <string name="search_no_data">עדיין אין חדרים בטלפון</string>
     <string name="search_no_data_hint">צריך להתחבר לאינטרנט פעם אחת כדי להוריד את מפת הקמפוס</string>
-    <string name="search_chosen">נבחר: %1$s. הניווט אליו ייבנה במטלה T11</string>
     <string name="coming_soon">המסך הזה ייבנה בהמשך</string>
     <string name="search_ar_title">מצלמה AR</string>
     <string name="search_ar_text">חץ ניווט על התמונה מהמצלמה</string>
@@ -78,6 +77,12 @@
     <string name="map_floor">ק\' %1$d</string>
     <string name="map_my_location">המיקום שלי</string>
     <string name="map_you_are_here">אתה כאן</string>
+    <string name="map_distance">%1$d מ\'</string>
+    <string name="map_minutes">כ-%1$d דק\' הליכה</string>
+    <string name="map_waiting_for_location">מחפש את המיקום שלך…</string>
+    <string name="map_no_location">בלי הרשאת מיקום אפשר לראות את היעד, אבל לא את המסלול אליו</string>
+    <string name="map_no_route">לא נמצא מסלול ליעד הזה</string>
+    <string name="map_route_recalculated">יצאת מהמסלול. חושב מסלול חדש</string>
     <string name="map_start_ar">ניווט במצלמה (AR)</string>
     <string name="map_route_details">פרטי מסלול והנחיות</string>
 

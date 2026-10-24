@@ -206,10 +206,7 @@ public class SearchActivity extends BaseActivity {
     private void onRoomChosen(CampusRoom room) {
         hideKeyboard();
         repo.addRecent(room.number, this::loadShortcuts);
-        // T11 opens the map with the route
-        Snackbar.make(results, getString(R.string.search_chosen,
-                RoomAdapter.displayName(results, room)), Snackbar.LENGTH_SHORT)
-                .setAnchorView(R.id.bottom_nav).show();
+        startActivity(MapActivity.navigateTo(this, room.number));   // T15: the route to it
     }
 
     // ------------------------------------------------------------ favourites and recent (T10)
