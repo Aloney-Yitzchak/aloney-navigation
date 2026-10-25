@@ -49,6 +49,23 @@ public class CampusRepository {
         FAILED
     }
 
+    /** What happened to a staff edit (T24). */
+    public enum SaveResult {
+        /** The server accepted it; this phone has it, and the others get it on their next sync. */
+        SAVED,
+        /** No answer from the server yet: Firestore sends it when the network is back. */
+        PENDING,
+        /** No network, so nothing was sent. */
+        NO_NETWORK,
+        /** The security rules refused it: not signed in as staff (AT-10). */
+        NOT_ALLOWED,
+        /** The room is not in the cloud (deleted by another update). */
+        NO_SUCH_ROOM,
+        /** A name is required. */
+        EMPTY_NAME,
+        FAILED
+    }
+
     public interface Listener<T> {
         void onResult(T value);
     }
@@ -70,6 +87,10 @@ public class CampusRepository {
         this.main = main;
     }
 
+    /** Emulator tests: a fake cloud, set before the first {@link #get}. */
+    @androidx.annotation.VisibleForTesting
+    public static volatile CampusRemote remoteForTesting;
+
     public static CampusRepository get(Context context) {
         if (instance == null) {
             synchronized (CampusRepository.class) {
@@ -77,7 +98,8 @@ public class CampusRepository {
                     Context app = context.getApplicationContext();
                     Handler handler = new Handler(Looper.getMainLooper());
                     instance = new CampusRepository(AppDatabase.get(app),
-                            new FirestoreSource(FirebaseFirestore.getInstance()),
+                            remoteForTesting != null ? remoteForTesting
+                                    : new FirestoreSource(FirebaseFirestore.getInstance()),
                             app.getSharedPreferences(PREFS, Context.MODE_PRIVATE), handler::post);
                 }
             }
@@ -143,6 +165,57 @@ public class CampusRepository {
             } catch (RuntimeException e) {
                 Log.w(TAG, "saving version " + snapshot.version + " failed", e);
                 deliver(listener, SyncResult.REJECTED_INCOMPLETE);
+            }
+        });
+    }
+
+    /**
+     * T24 (FR-10): a staff member saves a room's name and owner. The network is checked
+     * first (a read from the server), so an edit made offline is refused right away instead
+     * of waiting in a queue. Once the server accepts it, the phone's own copy is updated and
+     * a sync brings the new version, so every open screen shows the change.
+     */
+    public void updateRoom(@NonNull String number, @NonNull String name, @NonNull String owner,
+                           @NonNull Listener<SaveResult> listener) {
+        String cleanName = name.trim();
+        String cleanOwner = owner.trim();
+        if (cleanName.isEmpty()) {
+            deliver(listener, SaveResult.EMPTY_NAME);
+            return;
+        }
+        remote.fetchVersion(new CampusRemote.Callback<Long>() {
+            @Override
+            public void onResult(Long cloudVersion) {
+                remote.updateRoom(number, cleanName, cleanOwner, new CampusRemote.Callback<SaveResult>() {
+                    @Override
+                    public void onResult(SaveResult result) {
+                        if (result != SaveResult.SAVED) {
+                            deliver(listener, result);
+                            return;
+                        }
+                        io.execute(() -> {
+                            db.roomDao().updateDetails(number, cleanName, cleanOwner.isEmpty() ? null : cleanOwner);
+                            main.execute(() -> {
+                                for (Runnable r : changeListeners) {
+                                    r.run();
+                                }
+                                listener.onResult(SaveResult.SAVED);
+                                sync(ignored -> { });   // the full new version, in the background
+                            });
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        deliver(listener, SaveResult.FAILED);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.w(TAG, "updateRoom: no network", e);
+                deliver(listener, SaveResult.NO_NETWORK);
             }
         });
     }

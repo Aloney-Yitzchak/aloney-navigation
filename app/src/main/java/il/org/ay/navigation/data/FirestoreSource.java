@@ -5,12 +5,21 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Source;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import il.org.ay.navigation.model.CampusRoom;
 import il.org.ay.navigation.model.Edge;
@@ -57,6 +66,62 @@ public class FirestoreSource implements CampusRemote {
                     }
                 })
                 .addOnFailureListener(callback::onError);
+    }
+
+    /** How long to wait for the server before saying the change is waiting to be sent. */
+    static final long SAVE_TIMEOUT_MS = 15_000;
+
+    @Override
+    public void updateRoom(String number, String name, String owner,
+                           Callback<CampusRepository.SaveResult> callback) {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("name", name);
+        fields.put("owner", owner.isEmpty() ? null : owner);
+        WriteBatch batch = db.batch();
+        batch.update(db.collection("rooms").document(number), fields);
+        batch.update(db.collection("meta").document("version"), "number", FieldValue.increment(1));
+
+        // Firestore keeps a write that could not be sent and sends it when the network is back;
+        // until then the task does not finish. After a while the screen says so, once.
+        AtomicBoolean answered = new AtomicBoolean();
+        Handler handler = new Handler(Looper.getMainLooper());
+        Runnable timeout = () -> {
+            if (answered.compareAndSet(false, true)) {
+                callback.onResult(CampusRepository.SaveResult.PENDING);
+            }
+        };
+        handler.postDelayed(timeout, SAVE_TIMEOUT_MS);
+        batch.commit()
+                .addOnSuccessListener(v -> {
+                    handler.removeCallbacks(timeout);
+                    if (answered.compareAndSet(false, true)) {
+                        callback.onResult(CampusRepository.SaveResult.SAVED);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    handler.removeCallbacks(timeout);
+                    if (answered.compareAndSet(false, true)) {
+                        callback.onResult(toSaveResult(e));
+                    }
+                });
+    }
+
+    static CampusRepository.SaveResult toSaveResult(Exception e) {
+        if (e instanceof FirebaseFirestoreException) {
+            switch (((FirebaseFirestoreException) e).getCode()) {
+                case PERMISSION_DENIED:
+                case UNAUTHENTICATED:
+                    return CampusRepository.SaveResult.NOT_ALLOWED;   // the rules said no (AT-10)
+                case UNAVAILABLE:
+                case DEADLINE_EXCEEDED:
+                    return CampusRepository.SaveResult.NO_NETWORK;
+                case NOT_FOUND:
+                    return CampusRepository.SaveResult.NO_SUCH_ROOM;
+                default:
+                    break;
+            }
+        }
+        return CampusRepository.SaveResult.FAILED;
     }
 
     static List<Node> toNodes(QuerySnapshot snapshot) {

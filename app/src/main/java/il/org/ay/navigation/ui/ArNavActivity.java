@@ -223,6 +223,8 @@ public class ArNavActivity extends BaseActivity {
                 finish();
             } else if (item.getItemId() == R.id.nav_map) {
                 openMap();
+            } else if (item.getItemId() == R.id.nav_staff) {
+                startActivity(new Intent(this, AdminActivity.class));   // T24
             } else if (item.getItemId() != R.id.nav_ar) {
                 Snackbar.make(preview, R.string.coming_soon, Snackbar.LENGTH_SHORT).setAnchorView(R.id.bottom_nav).show();
             }

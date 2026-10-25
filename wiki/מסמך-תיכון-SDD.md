@@ -123,9 +123,12 @@ RoomWithEntrance findWithEntrance(String number);
 ```java
 FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-// מסך הצוות: עדכון בעל התפקיד של חדר 42
-db.collection("rooms").document("42")
-  .update("owner", "רכזת שכבה ט'");
+// מסך הצוות: עדכון בעל התפקיד של חדר 42, ובאותה כתיבה העלאת גרסת הנתונים,
+// כדי שכל הטלפונות יורידו את השינוי בסנכרון הבא (FirestoreSource.updateRoom, T24)
+WriteBatch batch = db.batch();
+batch.update(db.collection("rooms").document("42"), "owner", "רכזת שכבה ט'");
+batch.update(db.collection("meta").document("version"), "number", FieldValue.increment(1));
+batch.commit();
 
 // בכל מכשיר: האזנה לשינויים ושמירה בעותק המקומי
 db.collection("rooms").addSnapshotListener((snapshot, error) -> {
@@ -303,8 +306,10 @@ namespace data {
     +nextNode(LatLng p) Node
   }
   class AuthManager {
-    +signIn(String email, String pw)
-    +isStaff() boolean
+    <<abstract>>
+    +signIn(String email, String pw, Callback cb)
+    +checkStaff(Callback cb)
+    +email() String
     +signOut()
   }
   class AppDatabase {
