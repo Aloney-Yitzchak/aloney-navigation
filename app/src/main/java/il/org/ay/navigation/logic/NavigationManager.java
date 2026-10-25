@@ -178,12 +178,24 @@ public class NavigationManager {
      * NaN while there is no route, position or heading.
      */
     public float getArrowAngle() {
-        if (route == null || position == null || !hasHeading || offCampus) {
+        float theta = getTargetBearing();
+        if (Float.isNaN(theta) || !hasHeading) {
+            return Float.NaN;
+        }
+        return arrow.add(HeadingMath.normalize(theta - heading));
+    }
+
+    /**
+     * θ in SDD 9.4: the bearing from the user to the point the arrow leads to (the next node,
+     * or the one after when the next is within 4 m). NaN while there is nothing to lead to.
+     * The compass arrow subtracts the heading; the ARCore arrow (T18) places an anchor that way.
+     */
+    public float getTargetBearing() {
+        if (route == null || position == null || offCampus || state != NavState.NAVIGATING) {
             return Float.NaN;
         }
         Node target = route.lookAhead(position, LOOK_AHEAD_M);
-        float theta = PathMath.bearing(position, LatLng.of(target));
-        return arrow.add(HeadingMath.normalize(theta - heading));
+        return PathMath.bearing(position, LatLng.of(target));
     }
 
     /** The instruction for the current position, or null while there is no route. */

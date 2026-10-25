@@ -117,6 +117,8 @@
         <item>מערב</item>
         <item>צפון-מערב</item>
     </string-array>
+    <string name="ar_install_offer">עם Google Play Services for AR החץ "יעמוד" על השביל</string>
+    <string name="ar_install">התקנה</string>
     <string name="ar_choose_destination">בחרו יעד בחיפוש כדי לקבל חץ ניווט</string>
     <string name="ar_no_camera_title">אין גישה למצלמה</string>
     <string name="ar_open_map">ניווט במפה</string>

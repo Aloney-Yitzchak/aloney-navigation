@@ -56,6 +56,11 @@ import il.org.ay.navigation.model.CampusRoom;
  * from HeadingService go to NavigationManager, and a loop redraws the arrow, the instruction
  * and the distances {@link #FRAMES_PER_SECOND} times a second (NFR-01: at least 10).
  * Steps move the position between GPS fixes; their permission is asked here, once (decision #13).
+ *
+ * <p>T18: on a phone with ARCore installed, ARCore owns the camera (ArSessionController): the
+ * camera image is drawn with OpenGL and the arrow is anchored on the ground a few metres ahead
+ * along the path. Without ARCore, or while ARCore is still finding its bearings, the compass
+ * arrow of T17 is shown (FR-11, AT-11).
  */
 public class ArNavActivity extends BaseActivity {
 
@@ -67,6 +72,22 @@ public class ArNavActivity extends BaseActivity {
     private final BuildingRecognizer recognizer = new BuildingRecognizer();
     private final ExecutorService analysisThread = Executors.newSingleThreadExecutor();
     private PreviewView preview;
+
+    // ------------------------------------------------------------ T18: ARCore
+    /** For tests: never use ARCore, as on a phone without it (AT-11). */
+    @VisibleForTesting
+    static boolean forceCompassMode;
+    /** The anchored arrow shows only when ARCore placed it within this time. */
+    private static final long ANCHOR_FRESH_MS = 300;
+    @Nullable
+    private com.google.ar.core.Session arSession;
+    @Nullable
+    private android.opengl.GLSurfaceView arView;
+    @Nullable
+    private ArSessionController arController;
+    private android.widget.ImageView anchoredArrow;
+    private long anchoredArrowMs;
+    private boolean installRequested;
     @Nullable
     private Camera camera;
     private boolean torchOn;
@@ -118,7 +139,7 @@ public class ArNavActivity extends BaseActivity {
     private final ActivityResultLauncher<String> cameraPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
                 if (granted) {
-                    startCamera();
+                    chooseCameraMode();
                 } else {
                     explainNoCamera();
                 }
@@ -146,6 +167,15 @@ public class ArNavActivity extends BaseActivity {
         FrameLayout box = findViewById(R.id.camera_preview);
         box.addView(preview, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // T18: the arrow on the ground, moved by ArSessionController every camera frame
+        anchoredArrow = new android.widget.ImageView(this);
+        anchoredArrow.setImageResource(R.drawable.ic_ar_arrow);
+        anchoredArrow.setColorFilter(ContextCompat.getColor(this, R.color.accent));
+        anchoredArrow.setContentDescription(getString(R.string.ar_arrow));
+        anchoredArrow.setVisibility(View.GONE);
+        int size = getResources().getDimensionPixelSize(R.dimen.ar_anchor_arrow);
+        box.addView(anchoredArrow, new FrameLayout.LayoutParams(size, size));
 
         arrow = findViewById(R.id.ar_arrow);
         instructionCard = (View) findViewById(R.id.ar_instruction).getParent().getParent();
@@ -206,7 +236,7 @@ public class ArNavActivity extends BaseActivity {
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            startCamera();
+            chooseCameraMode();
         } else {
             cameraPermission.launch(Manifest.permission.CAMERA);
         }
@@ -330,7 +360,14 @@ public class ArNavActivity extends BaseActivity {
             return;
         }
         float angle = nav.getArrowAngle();
-        arrow.setVisibility(Float.isNaN(angle) ? View.GONE : View.VISIBLE);
+        if (arController != null) {
+            arController.setTarget(nav.getTargetBearing());   // T18: where to place the anchor
+            arController.setCompassHeading(lastHeading);
+        }
+        // the anchored arrow when ARCore has one; otherwise the compass arrow (FR-11)
+        boolean anchored = arController != null
+                && android.os.SystemClock.elapsedRealtime() - anchoredArrowMs < ANCHOR_FRESH_MS;
+        arrow.setVisibility(anchored || Float.isNaN(angle) ? View.GONE : View.VISIBLE);
         if (!Float.isNaN(angle)) {
             arrow.setRotation(angle);   // the arrow drawable points up = straight ahead
         }
@@ -421,12 +458,24 @@ public class ArNavActivity extends BaseActivity {
         super.onResume();
         heading.start();          // the sensors only while visible (NFR-08)
         handler.post(frame);
+        if (installRequested) {   // back from installing ARCore: start again in AR mode
+            installRequested = false;
+            recreate();
+            return;
+        }
+        resumeAr();
     }
 
     @Override
     protected void onPause() {
         handler.removeCallbacks(frame);
         heading.stop();
+        if (arView != null) {
+            arView.onPause();
+        }
+        if (arSession != null) {
+            arSession.pause();    // ARCore releases the camera (NFR-08)
+        }
         super.onPause();
     }
 
@@ -506,7 +555,133 @@ public class ArNavActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         analysisThread.shutdown();
+        if (arController != null) {
+            arController.release();
+        }
+        if (arSession != null) {
+            arSession.close();
+        }
         super.onDestroy();
+    }
+
+    // ------------------------------------------------------------ T18: ARCore or the compass
+
+    /**
+     * ARCore when it is installed on this phone; the CameraX screen with the compass arrow
+     * otherwise (FR-11). ARCore that could be installed is offered, never forced on the user.
+     */
+    private void chooseCameraMode() {
+        if (forceCompassMode) {
+            startCamera();
+            return;
+        }
+        com.google.ar.core.ArCoreApk.getInstance().checkAvailabilityAsync(this, availability -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            if (availability == com.google.ar.core.ArCoreApk.Availability.SUPPORTED_INSTALLED && startAr()) {
+                return;
+            }
+            startCamera();
+            if (availability == com.google.ar.core.ArCoreApk.Availability.SUPPORTED_NOT_INSTALLED
+                    || availability == com.google.ar.core.ArCoreApk.Availability.SUPPORTED_APK_TOO_OLD) {
+                offerArInstall();
+            }
+        });
+    }
+
+    /** Starts ARCore in place of CameraX. Returns false if it could not start. */
+    private boolean startAr() {
+        try {
+            com.google.ar.core.Session session = new com.google.ar.core.Session(this);
+            com.google.ar.core.Config config = new com.google.ar.core.Config(session);
+            config.setUpdateMode(com.google.ar.core.Config.UpdateMode.LATEST_CAMERA_IMAGE);
+            config.setFocusMode(com.google.ar.core.Config.FocusMode.AUTO);
+            config.setPlaneFindingMode(com.google.ar.core.Config.PlaneFindingMode.DISABLED);
+            config.setLightEstimationMode(com.google.ar.core.Config.LightEstimationMode.DISABLED);
+            session.configure(config);
+            arSession = session;
+        } catch (Exception e) {
+            arSession = null;
+            return false;   // the ARCore service is missing or failed: the compass mode works anyway
+        }
+        FrameLayout box = findViewById(R.id.camera_preview);
+        box.removeView(preview);
+        findViewById(R.id.ar_flash).setVisibility(View.GONE);   // ARCore controls the camera
+        arView = new android.opengl.GLSurfaceView(this);
+        arView.setPreserveEGLContextOnPause(true);
+        arView.setEGLContextClientVersion(2);
+        arView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        arController = new ArSessionController(arSession, recognizer, new ArSessionController.Listener() {
+            @Override
+            public void onArrow(float x, float y, float angle, float scale) {
+                anchoredArrowMs = android.os.SystemClock.elapsedRealtime();
+                anchoredArrow.setVisibility(View.VISIBLE);
+                anchoredArrow.setTranslationX(x - anchoredArrow.getWidth() / 2f);
+                anchoredArrow.setTranslationY(y - anchoredArrow.getHeight() / 2f);
+                anchoredArrow.setRotation(angle);
+                anchoredArrow.setScaleX(scale);
+                anchoredArrow.setScaleY(scale);
+            }
+
+            @Override
+            public void onNoArrow() {
+                anchoredArrow.setVisibility(View.GONE);
+            }
+        });
+        arController.setDisplayRotation(getWindowManager().getDefaultDisplay().getRotation());
+        arView.setRenderer(arController);
+        arView.setRenderMode(android.opengl.GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        box.addView(arView, 0, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        resumeAr();
+        return true;
+    }
+
+    private void resumeAr() {
+        if (arSession == null || !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+            return;
+        }
+        try {
+            arSession.resume();
+            if (arView != null) {
+                arView.onResume();
+            }
+        } catch (Exception e) {
+            // the camera is busy: fall back to the compass screen
+            arSession.close();
+            arSession = null;
+            arController = null;
+            FrameLayout box = findViewById(R.id.camera_preview);
+            if (arView != null) {
+                box.removeView(arView);
+                arView = null;
+            }
+            box.addView(preview, 0);
+            startCamera();
+        }
+    }
+
+    /** ARCore can be installed from Google Play: a message with a button, not a surprise prompt. */
+    private void offerArInstall() {
+        Snackbar.make(preview, R.string.ar_install_offer, Snackbar.LENGTH_LONG)
+                .setAnchorView(R.id.bottom_nav)
+                .setAction(R.string.ar_install, v -> {
+                    try {
+                        com.google.ar.core.ArCoreApk.InstallStatus status =
+                                com.google.ar.core.ArCoreApk.getInstance().requestInstall(this, true);
+                        installRequested = status == com.google.ar.core.ArCoreApk.InstallStatus.INSTALL_REQUESTED;
+                    } catch (Exception e) {
+                        // Google Play is not available: stay with the compass
+                    }
+                })
+                .show();
+    }
+
+    /** True when the screen runs on ARCore (T18). */
+    @VisibleForTesting
+    boolean usesArCore() {
+        return arSession != null;
     }
 
     @VisibleForTesting

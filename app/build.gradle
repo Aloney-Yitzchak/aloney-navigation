@@ -26,7 +26,10 @@ android {
             }
         }
         // every emulator test starts from a fresh install: no data, no permissions
-        testInstrumentationRunnerArguments clearPackageData: 'true'
+        testInstrumentationRunnerArguments clearPackageData: 'true',
+                // a stuck emulator test fails after 2 minutes, with where it was stuck,
+                // instead of silently using up the whole CI job
+                timeout_msec: '120000'
     }
 
     // One signing key for every build: Android Studio, CI and the GitHub releases. A phone
@@ -84,6 +87,9 @@ dependencies {
     implementation "androidx.camera:camera-view:$camerax_version"
     // CameraX hands back a Guava ListenableFuture; Firestore already brings Guava at run time
     implementation 'com.google.guava:guava:33.3.1-android'
+
+    // ARCore: the arrow anchored on the ground (T18). Optional: phones without it use the compass arrow
+    implementation 'com.google.ar:core:1.52.0'
 
     // Firebase Firestore: the shared campus data (T08)
     implementation platform('com.google.firebase:firebase-bom:33.7.0')
