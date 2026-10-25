@@ -305,4 +305,22 @@ public class NavigationManagerTest {
         nav.update(at(100, 99));
         assertTrue(Float.isNaN(nav.getTargetBearing()));
     }
+
+    // ------------------------------------------------------------ T18c: the route ahead for the ground arrows
+
+    @Test
+    public void pathAhead_followsTheRoute_aroundTheCorner() {
+        NavigationManager nav = navigateTo(3);
+        float[] along = {1.5f, 3f};
+        assertNull(nav.getPathAhead(along, 0.5f));          // no position yet
+        nav.update(at(20, 0));                              // heading east along the bottom
+        float[][][] p = nav.getPathAhead(along, 0.5f);
+        assertEquals(1.5, p[0][0][0], 0.2);                 // 1.5 m east
+        assertEquals(0, p[0][0][1], 0.2);
+        assertEquals(2.0, p[1][0][0], 0.2);                 // pointing on east
+        nav.update(at(99, 0));                              // 1 m before the corner
+        p = nav.getPathAhead(along, 0.5f);
+        assertEquals(1, p[0][1][0], 0.3);                   // 3 m along: 1 m east, then 2 m north
+        assertEquals(2, p[0][1][1], 0.3);
+    }
 }

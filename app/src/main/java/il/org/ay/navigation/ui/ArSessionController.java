@@ -12,10 +12,15 @@ import androidx.annotation.Nullable;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Frame;
+import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
+import com.google.ar.core.TrackingFailureReason;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.NotYetAvailableException;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -23,37 +28,53 @@ import javax.microedition.khronos.opengles.GL10;
 import il.org.ay.navigation.logic.ArAlignment;
 import il.org.ay.navigation.logic.ArProjection;
 import il.org.ay.navigation.logic.BuildingRecognizer;
+import il.org.ay.navigation.logic.GroundPath;
 import il.org.ay.navigation.logic.HeadingMath;
 
 /**
- * The ARCore side of the camera screen (T18). Runs on the OpenGL thread, once per camera
- * frame: draws the camera image, keeps ARCore's world tied to north (ArAlignment), keeps an
- * anchor on the ground a few metres ahead along the path, and tells the screen where that
- * anchor is on the screen, so the arrow stays put in the world while the phone moves.
+ * The ARCore side of the camera screen (T18, T18c). Runs on the OpenGL thread, once per camera
+ * frame: draws the camera image, keeps ARCore's world tied to north (ArAlignment), and draws
+ * the next metres of the route as chevrons lying on the ground (ArGroundArrows).
+ *
+ * <p>The chevrons are placed once, around an ARCore anchor on the floor where the user stands,
+ * and stay fixed in the world: GPS noise does not move them. They are placed again when the
+ * user has walked on, or when the route ahead turned.
  */
 class ArSessionController implements GLSurfaceView.Renderer {
 
-    /** Where the screen should draw the arrow, or that it should not. */
-    interface Listener {
-        /** x, y: screen pixels; angle: degrees clockwise from up; scale: 1 = 3 m away. */
-        void onArrow(float x, float y, float angle, float scale);
-
-        void onNoArrow();
+    /** What the screen should show (T18c); also shown in the mode chip's window. */
+    enum State {
+        /** ARCore has not produced a frame yet. */
+        STARTING,
+        /** ARCore lost track of the phone's movement (see {@link #trackingFailure()}). */
+        NOT_TRACKING,
+        /** ARCore tracks, but north is not known yet: the phone has not been held up. */
+        NO_NORTH,
+        /** No route to show (arrived, off campus, or no destination). */
+        NO_ROUTE,
+        /** The chevrons are placed, but none is on the screen: the phone looks elsewhere. */
+        OFF_SCREEN,
+        /** The chevrons are on the screen. */
+        GROUND
     }
 
-    /** How far ahead the arrow is placed, along the direction to the next point. */
-    static final float AHEAD_M = 3f;
-    /** A phone held in front of the chest is about this high above the ground. */
-    static final float PHONE_HEIGHT_M = 1.3f;
-    /** A new anchor when the user is this close to the old one… */
-    static final float REACHED_M = 1.5f;
-    /** …or when the direction to the next point turned more than this since it was placed. */
+    interface Listener {
+        /** Called on the main thread when the state changes. */
+        void onState(@NonNull State state);
+    }
+
+    /** A new set of chevrons once the user is this far from where the last set was placed… */
+    static final float WALKED_M = 2.5f;
+    /** …or when the route ahead turned more than this since then. */
     static final float TURNED_DEG = 25f;
+    /** Without a floor plane, the floor is this far below the phone (held in front of the chest). */
+    static final float PHONE_HEIGHT_M = 1.3f;
     /** Every n-th camera frame goes to the building model. */
     static final int RECOGNIZER_EVERY = 4;
 
     private final Session session;
     private final ArBackgroundRenderer background = new ArBackgroundRenderer();
+    private final ArGroundArrows arrows = new ArGroundArrows();
     private final ArAlignment alignment = new ArAlignment();
     private final BuildingRecognizer recognizer;
     private final Listener listener;
@@ -64,15 +85,21 @@ class ArSessionController implements GLSurfaceView.Renderer {
     private int height;
     private long frames;
 
-    /** Written by the screen, read on the GL thread. NaN = nothing to point at. */
-    private volatile float targetBearing = Float.NaN;
+    /** Written by the screen, read on the GL thread. Null = nothing to lead to. */
+    @Nullable
+    private volatile float[][][] path;
     private volatile float compassHeading = Float.NaN;
     private volatile int displayRotation;
 
     @Nullable
     private Anchor anchor;
-    private float anchorBearing;
-    private volatile boolean tracking;
+    private List<GroundPath.Chevron> chevrons = Collections.emptyList();
+    private float placedBearing = Float.NaN;
+
+    private volatile State state = State.STARTING;
+    private volatile String trackingFailure = "";
+    private volatile boolean floorFromPlane;
+    private volatile int visibleChevrons;
 
     ArSessionController(@NonNull Session session, @NonNull BuildingRecognizer recognizer, @NonNull Listener listener) {
         this.session = session;
@@ -80,9 +107,9 @@ class ArSessionController implements GLSurfaceView.Renderer {
         this.listener = listener;
     }
 
-    /** The bearing (true north) from the user to the point the arrow should lead to. */
-    void setTarget(float bearing) {
-        targetBearing = bearing;
+    /** The route ahead from {@code NavigationManager.getPathAhead(GroundPath.ALONG, GroundPath.STEP)}. */
+    void setPath(@Nullable float[][][] pathAhead) {
+        path = pathAhead;
     }
 
     void setCompassHeading(float heading) {
@@ -93,14 +120,42 @@ class ArSessionController implements GLSurfaceView.Renderer {
         displayRotation = rotation;
     }
 
-    boolean isTracking() {
-        return tracking;
+    // ------------------------------------------------------------ for the mode chip's window
+
+    @NonNull
+    State state() {
+        return state;
     }
+
+    /** ARCore's reason when it does not track ("" otherwise): INSUFFICIENT_FEATURES, EXCESSIVE_MOTION… */
+    @NonNull
+    String trackingFailure() {
+        return trackingFailure;
+    }
+
+    boolean isNorthAligned() {
+        return alignment.isReady();
+    }
+
+    float northOffset() {
+        return alignment.isReady() ? alignment.offset() : Float.NaN;
+    }
+
+    boolean floorFromPlane() {
+        return floorFromPlane;
+    }
+
+    int visibleChevrons() {
+        return visibleChevrons;
+    }
+
+    // ------------------------------------------------------------ OpenGL
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0f, 0f, 0f, 1f);
         session.setCameraTextureName(background.createOnGlThread());
+        arrows.createOnGlThread();
     }
 
     @Override
@@ -124,34 +179,41 @@ class ArSessionController implements GLSurfaceView.Renderer {
         sendToRecognizer(frame);
 
         Camera camera = frame.getCamera();
-        tracking = camera.getTrackingState() == TrackingState.TRACKING;
-        if (!tracking) {
-            hideArrow();
+        if (camera.getTrackingState() != TrackingState.TRACKING) {
+            TrackingFailureReason why = camera.getTrackingFailureReason();
+            trackingFailure = why == null ? "" : why.name();
+            setState(State.NOT_TRACKING);
             return;
         }
+        trackingFailure = "";
         Pose pose = camera.getPose();
         float[] z = pose.getZAxis();                 // the camera looks along −z
         float heading = compassHeading;
         if (!Float.isNaN(heading)) {
             alignment.update(-z[0], -z[1], -z[2], heading);
         }
-        float bearing = targetBearing;
-        if (!alignment.isReady() || Float.isNaN(bearing)) {
-            hideArrow();
+        if (!alignment.isReady()) {
+            setState(State.NO_NORTH);
             return;
         }
-        placeAnchorIfNeeded(pose, bearing);
-        drawArrow(camera, bearing);
+        float[][][] ahead = path;
+        if (ahead == null) {
+            setState(State.NO_ROUTE);
+            return;
+        }
+        placeIfNeeded(pose, ahead);
+        drawChevrons(camera, pose);
     }
 
-    /** A new anchor 3 m ahead on the ground when there is none, it was reached, or the way turned. */
-    private void placeAnchorIfNeeded(Pose camera, float bearing) {
-        boolean need = anchor == null
-                || anchor.getTrackingState() == TrackingState.STOPPED
-                || Math.abs(HeadingMath.difference(anchorBearing, bearing)) > TURNED_DEG;
+    /** New chevrons around a new anchor when there are none, the user walked on, or the route turned. */
+    private void placeIfNeeded(Pose camera, float[][][] ahead) {
+        float bearing = firstBearing(ahead);
+        boolean need = anchor == null || anchor.getTrackingState() == TrackingState.STOPPED || chevrons.isEmpty()
+                || (!Float.isNaN(bearing) && !Float.isNaN(placedBearing)
+                && Math.abs(HeadingMath.difference(placedBearing, bearing)) > TURNED_DEG);
         if (!need) {
             Pose a = anchor.getPose();
-            need = Math.hypot(a.tx() - camera.tx(), a.tz() - camera.tz()) < REACHED_M;
+            need = Math.hypot(a.tx() - camera.tx(), a.tz() - camera.tz()) > WALKED_M;
         }
         if (!need) {
             return;
@@ -159,40 +221,81 @@ class ArSessionController implements GLSurfaceView.Renderer {
         if (anchor != null) {
             anchor.detach();
         }
-        float[] d = alignment.direction(bearing);
-        Pose ground = Pose.makeTranslation(
-                camera.tx() + d[0] * AHEAD_M, camera.ty() - PHONE_HEIGHT_M, camera.tz() + d[1] * AHEAD_M);
-        anchor = session.createAnchor(ground);
-        anchorBearing = bearing;
+        anchor = session.createAnchor(Pose.makeTranslation(camera.tx(), floorY(camera), camera.tz()));
+        chevrons = GroundPath.chevrons(ahead[0], ahead[1], GroundPath.ALONG, alignment.offset());
+        placedBearing = bearing;
     }
 
-    /** Projects the anchor and a point 1 m further along the way; the arrow goes from one to the other. */
-    private void drawArrow(Camera camera, float bearing) {
+    /** The bearing of the route at the first chevron, to notice a turn. */
+    private static float firstBearing(float[][][] ahead) {
+        float de = ahead[1][0][0] - ahead[0][0][0];
+        float dn = ahead[1][0][1] - ahead[0][0][1];
+        if (Math.hypot(de, dn) < 0.05) {
+            return Float.NaN;
+        }
+        return HeadingMath.normalize((float) Math.toDegrees(Math.atan2(de, dn)));
+    }
+
+    /**
+     * The floor: the highest horizontal surface ARCore found at least 50 cm below the phone,
+     * or 1.3 m below the phone when it found none yet.
+     */
+    private float floorY(Pose camera) {
+        float best = Float.NaN;
+        for (Plane plane : session.getAllTrackables(Plane.class)) {
+            if (plane.getTrackingState() != TrackingState.TRACKING
+                    || plane.getType() != Plane.Type.HORIZONTAL_UPWARD_FACING
+                    || plane.getSubsumedBy() != null) {
+                continue;
+            }
+            float y = plane.getCenterPose().ty();
+            if (y < camera.ty() - 0.5f && (Float.isNaN(best) || y > best)) {
+                best = y;
+            }
+        }
+        floorFromPlane = !Float.isNaN(best);
+        return floorFromPlane ? best : camera.ty() - PHONE_HEIGHT_M;
+    }
+
+    private void drawChevrons(Camera camera, Pose pose) {
         if (anchor == null || anchor.getTrackingState() != TrackingState.TRACKING) {
-            hideArrow();
+            setState(State.NOT_TRACKING);
             return;
         }
         camera.getViewMatrix(view, 0);
         camera.getProjectionMatrix(projection, 0, 0.1f, 100f);
         Pose a = anchor.getPose();
-        float[] d = alignment.direction(bearing);
-        float[] from = {a.tx(), a.ty(), a.tz()};
-        float[] to = {a.tx() + d[0], a.ty(), a.tz() + d[1]};
-        float[] screen = ArProjection.toScreen(view, projection, from[0], from[1], from[2], width, height);
-        float angle = ArProjection.screenAngle(view, projection, from, to, width, height);
-        if (screen == null || Float.isNaN(angle)
-                || screen[0] < 0 || screen[0] > width || screen[1] < 0 || screen[1] > height) {
-            hideArrow();   // behind the user or off the screen: the compass arrow takes over
-            return;
+        int visible = 0;
+        arrows.begin();
+        for (GroundPath.Chevron c : chevrons) {
+            float x = a.tx() + c.x;
+            float y = a.ty() + 0.02f;   // just above the floor
+            float z = a.tz() + c.z;
+            float distance = (float) Math.sqrt(sq(x - pose.tx()) + sq(y - pose.ty()) + sq(z - pose.tz()));
+            float alpha = GroundPath.alpha(distance);
+            if (alpha <= 0f) {
+                continue;
+            }
+            arrows.draw(view, projection, x, y, z, c.yawDegrees(), alpha);
+            float[] screen = ArProjection.toScreen(view, projection, x, y, z, width, height);
+            if (screen != null && screen[0] >= 0 && screen[0] <= width && screen[1] >= 0 && screen[1] <= height) {
+                visible++;
+            }
         }
-        float scale = Math.max(0.4f, Math.min(1.6f, AHEAD_M / screen[2]));
-        float x = screen[0];
-        float y = screen[1];
-        main.post(() -> listener.onArrow(x, y, angle, scale));
+        arrows.end();
+        visibleChevrons = visible;
+        setState(visible > 0 ? State.GROUND : State.OFF_SCREEN);
     }
 
-    private void hideArrow() {
-        main.post(listener::onNoArrow);
+    private static float sq(float v) {
+        return v * v;
+    }
+
+    private void setState(State s) {
+        if (state != s) {
+            state = s;
+            main.post(() -> listener.onState(s));
+        }
     }
 
     /** Every few frames, the camera image goes to the building model (T22). */

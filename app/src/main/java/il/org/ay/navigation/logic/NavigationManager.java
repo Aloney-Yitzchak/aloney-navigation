@@ -198,6 +198,26 @@ public class NavigationManager {
         return PathMath.bearing(position, LatLng.of(target));
     }
 
+    /**
+     * T18c: the route ahead as metres east/north of the user, for the arrows on the ground.
+     * {@code result[0][i]} is the point {@code along[i]} metres further along the route, and
+     * {@code result[1][i]} the point {@code step} metres after it (which way the arrow there
+     * points). Null while there is nothing to lead to (same rule as {@link #getTargetBearing}).
+     */
+    @Nullable
+    public float[][][] getPathAhead(@NonNull float[] along, float step) {
+        if (route == null || position == null || offCampus || state != NavState.NAVIGATING) {
+            return null;
+        }
+        float[][] points = new float[along.length][];
+        float[][] ahead = new float[along.length][];
+        for (int i = 0; i < along.length; i++) {
+            points[i] = GroundPath.enu(position, route.advance(position, along[i]));
+            ahead[i] = GroundPath.enu(position, route.advance(position, along[i] + step));
+        }
+        return new float[][][]{points, ahead};
+    }
+
     /** The instruction for the current position, or null while there is no route. */
     @Nullable
     public Guidance getGuidance() {

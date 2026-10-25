@@ -16,7 +16,6 @@
     <dimen name="icon_medium">24dp</dimen>
     <dimen name="icon_circle">48dp</dimen>
     <dimen name="hero_circle">104dp</dimen>
-    <dimen name="ar_anchor_arrow">120dp</dimen>
     <dimen name="text_display">28sp</dimen>
     <dimen name="text_title">22sp</dimen>
     <dimen name="text_subtitle">18sp</dimen>
