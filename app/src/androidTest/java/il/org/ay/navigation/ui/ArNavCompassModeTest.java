@@ -88,13 +88,21 @@ public class ArNavCompassModeTest {
         AtomicBoolean ar = new AtomicBoolean(true);
         AtomicInteger arrow = new AtomicInteger();
         AtomicInteger frames = new AtomicInteger();
+        java.util.concurrent.atomic.AtomicReference<String> chip = new java.util.concurrent.atomic.AtomicReference<>();
+        java.util.concurrent.atomic.AtomicReference<il.org.ay.navigation.logic.ArStatus> status =
+                new java.util.concurrent.atomic.AtomicReference<>();
         scenario.onActivity(a -> {
             ar.set(a.usesArCore());
+            chip.set(((android.widget.TextView) a.findViewById(R.id.ar_mode)).getText().toString());
+            status.set(a.arStatus());
             arrow.set(a.findViewById(R.id.ar_arrow).getVisibility());
             frames.set(a.recognizer().frameCount());
         });
         assertFalse("ARCore was used although it is off", ar.get());
         assertEquals(View.VISIBLE, arrow.get());          // FR-11: the arrow by the compass
+        // T18b: the screen says it is in compass mode, and why
+        assertEquals(il.org.ay.navigation.logic.ArStatus.FORCED_COMPASS, status.get());
+        assertEquals("מצפן", chip.get());
         ArNavActivityTest.screenshot("20-compass-mode");
     }
 }

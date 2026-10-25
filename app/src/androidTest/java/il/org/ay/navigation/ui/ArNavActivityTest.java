@@ -93,6 +93,18 @@ public class ArNavActivityTest {
         int n = waitForFrames(10);
         assertTrue("only " + n + " frames reached the recognizer", n >= 10);
         onView(withId(R.id.ar_destination)).check(matches(withText("ניווט אל: מתמטיקה")));
+        // T18b: GitHub's emulator has no ARCore, so the screen settles on the compass with a
+        // reason (logged as "ArNav"), instead of staying on "checking"
+        long settle = android.os.SystemClock.uptimeMillis() + 8_000;
+        java.util.concurrent.atomic.AtomicReference<il.org.ay.navigation.logic.ArStatus> status =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        do {
+            scenario.onActivity(a -> status.set(a.arStatus()));
+            android.os.SystemClock.sleep(200);
+        } while (status.get() == il.org.ay.navigation.logic.ArStatus.CHECKING
+                && android.os.SystemClock.uptimeMillis() < settle);
+        assertTrue("still checking ARCore", status.get() != il.org.ay.navigation.logic.ArStatus.CHECKING);
+        assertTrue("ARCore on an emulator without it", status.get() != il.org.ay.navigation.logic.ArStatus.RUNNING);
         screenshot("16-camera");
     }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -37,6 +39,7 @@ import java.util.concurrent.Executors;
 
 import il.org.ay.navigation.R;
 import il.org.ay.navigation.data.CampusRepository;
+import il.org.ay.navigation.logic.ArStatus;
 import il.org.ay.navigation.logic.BuildingRecognizer;
 import il.org.ay.navigation.logic.Guidance;
 import il.org.ay.navigation.logic.HeadingService;
@@ -77,6 +80,11 @@ public class ArNavActivity extends BaseActivity {
     /** For tests: never use ARCore, as on a phone without it (AT-11). */
     @VisibleForTesting
     static boolean forceCompassMode;
+    private static final String AR_TAG = "ArNav";
+    /** T18b: why ARCore or the compass, for the mode chip. */
+    private ArStatus arStatus = ArStatus.CHECKING;
+    @Nullable
+    private String arError;
     /** The anchored arrow shows only when ARCore placed it within this time. */
     private static final long ANCHOR_FRESH_MS = 300;
     @Nullable
@@ -187,6 +195,7 @@ public class ArNavActivity extends BaseActivity {
         findViewById(R.id.ar_detected).setVisibility(View.GONE);   // T22: the building model
         findViewById(R.id.ar_sound).setVisibility(View.GONE);      // spoken instructions: not planned
         findViewById(R.id.ar_calibrate).setOnClickListener(v -> explainCompassCalibration());
+        findViewById(R.id.ar_mode).setOnClickListener(v -> explainArMode());   // T18b
         heading = new HeadingService(this);
         heading.addListener(new HeadingService.Listener() {
             @Override
@@ -574,25 +583,113 @@ public class ArNavActivity extends BaseActivity {
      */
     private void chooseCameraMode() {
         if (forceCompassMode) {
+            setArStatus(ArStatus.FORCED_COMPASS, null);
             startCamera();
             return;
         }
+        setArStatus(ArStatus.CHECKING, null);
+        checkArCore(1);
+    }
+
+    /**
+     * T18b: ARCore's first answer is often "still checking"; it is asked again a few times
+     * before the screen settles on the compass, and every answer is logged.
+     */
+    private void checkArCore(int attempt) {
         com.google.ar.core.ArCoreApk.getInstance().checkAvailabilityAsync(this, availability -> {
             if (isFinishing() || isDestroyed()) {
                 return;
             }
-            if (availability == com.google.ar.core.ArCoreApk.Availability.SUPPORTED_INSTALLED && startAr()) {
+            Log.i(AR_TAG, "ARCore availability (check " + attempt + "): " + availability);
+            long retry = ArStatus.retryDelayMs(availability, attempt);
+            if (retry >= 0) {
+                handler.postDelayed(() -> checkArCore(attempt + 1), retry);
                 return;
             }
+            ArStatus status = ArStatus.fromAvailability(availability);
+            if (status == ArStatus.RUNNING) {
+                if (startAr()) {
+                    return;   // ARCore runs, or resumeAr() already went back to the compass
+                }
+            } else {
+                setArStatus(status == ArStatus.CHECKING ? ArStatus.CHECK_FAILED : status, null);
+            }
             startCamera();
-            if (availability == com.google.ar.core.ArCoreApk.Availability.SUPPORTED_NOT_INSTALLED
-                    || availability == com.google.ar.core.ArCoreApk.Availability.SUPPORTED_APK_TOO_OLD) {
+            if (arStatus.canInstall) {
                 offerArInstall();
             }
         });
     }
 
-    /** Starts ARCore in place of CameraX. Returns false if it could not start. */
+    /** What the mode chip shows, and the log line that says why. */
+    private void setArStatus(@NonNull ArStatus status, @Nullable Exception error) {
+        arStatus = status;
+        arError = error == null ? null : error.getClass().getSimpleName()
+                + (error.getMessage() == null ? "" : ": " + error.getMessage());
+        if (error != null) {
+            Log.w(AR_TAG, "ARCore: " + status, error);
+        } else {
+            Log.i(AR_TAG, "ARCore: " + status);
+        }
+        Chip chip = findViewById(R.id.ar_mode);
+        if (chip == null) {
+            return;
+        }
+        boolean ar = status == ArStatus.RUNNING;
+        chip.setText(ar ? R.string.ar_mode_ar : status == ArStatus.CHECKING ? R.string.ar_mode_checking : R.string.ar_mode_compass);
+        chip.setChipIconResource(ar ? R.drawable.ic_view_in_ar : R.drawable.ic_explore);
+        chip.setContentDescription(getString(R.string.ar_mode_description, chip.getText(), getString(reasonText(status))));
+    }
+
+    @androidx.annotation.StringRes
+    static int reasonText(@NonNull ArStatus status) {
+        switch (status) {
+            case RUNNING:
+                return R.string.ar_reason_running;
+            case CHECKING:
+                return R.string.ar_reason_checking;
+            case FORCED_COMPASS:
+                return R.string.ar_reason_forced;
+            case NOT_INSTALLED:
+                return R.string.ar_reason_not_installed;
+            case APK_TOO_OLD:
+                return R.string.ar_reason_apk_too_old;
+            case SDK_TOO_OLD:
+                return R.string.ar_reason_sdk_too_old;
+            case DEVICE_NOT_SUPPORTED:
+                return R.string.ar_reason_not_supported;
+            case INSTALL_DECLINED:
+                return R.string.ar_reason_declined;
+            case CHECK_FAILED:
+                return R.string.ar_reason_check_failed;
+            case CAMERA_BUSY:
+                return R.string.ar_reason_camera_busy;
+            default:
+                return R.string.ar_reason_failed;
+        }
+    }
+
+    /** The mode chip was tapped: why AR or the compass, and what can be done. */
+    private void explainArMode() {
+        String message = getString(reasonText(arStatus));
+        if (arError != null) {
+            message += "\n\n" + getString(R.string.ar_reason_error, arError);
+        }
+        MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(arStatus == ArStatus.RUNNING ? R.string.ar_mode_title_ar : R.string.ar_mode_title_compass)
+                .setMessage(message)
+                .setPositiveButton(R.string.action_close, null);
+        if (arStatus.canInstall) {
+            dialog.setNeutralButton(arStatus == ArStatus.APK_TOO_OLD ? R.string.ar_update : R.string.ar_install,
+                    (d, w) -> requestArInstall());
+        }
+        dialog.show();
+    }
+
+    /**
+     * Starts ARCore in place of CameraX. Returns false if no session could be created (the
+     * reason is in arStatus); true once it took over the camera view.
+     */
     private boolean startAr() {
         try {
             com.google.ar.core.Session session = new com.google.ar.core.Session(this);
@@ -605,6 +702,7 @@ public class ArNavActivity extends BaseActivity {
             arSession = session;
         } catch (Exception e) {
             arSession = null;
+            setArStatus(ArStatus.fromException(e), e);
             return false;   // the ARCore service is missing or failed: the compass mode works anyway
         }
         FrameLayout box = findViewById(R.id.camera_preview);
@@ -636,7 +734,8 @@ public class ArNavActivity extends BaseActivity {
         arView.setRenderMode(android.opengl.GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         box.addView(arView, 0, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        resumeAr();
+        setArStatus(ArStatus.RUNNING, null);
+        resumeAr();   // falls back to the compass, with the reason, if the camera does not open
         return true;
     }
 
@@ -651,6 +750,7 @@ public class ArNavActivity extends BaseActivity {
             }
         } catch (Exception e) {
             // the camera is busy: fall back to the compass screen
+            setArStatus(ArStatus.fromException(e), e);
             arSession.close();
             arSession = null;
             arController = null;
@@ -668,16 +768,24 @@ public class ArNavActivity extends BaseActivity {
     private void offerArInstall() {
         Snackbar.make(preview, R.string.ar_install_offer, Snackbar.LENGTH_LONG)
                 .setAnchorView(R.id.bottom_nav)
-                .setAction(R.string.ar_install, v -> {
-                    try {
-                        com.google.ar.core.ArCoreApk.InstallStatus status =
-                                com.google.ar.core.ArCoreApk.getInstance().requestInstall(this, true);
-                        installRequested = status == com.google.ar.core.ArCoreApk.InstallStatus.INSTALL_REQUESTED;
-                    } catch (Exception e) {
-                        // Google Play is not available: stay with the compass
-                    }
-                })
+                .setAction(arStatus == ArStatus.APK_TOO_OLD ? R.string.ar_update : R.string.ar_install,
+                        v -> requestArInstall())
                 .show();
+    }
+
+    private void requestArInstall() {
+        try {
+            com.google.ar.core.ArCoreApk.InstallStatus status =
+                    com.google.ar.core.ArCoreApk.getInstance().requestInstall(this, true);
+            installRequested = status == com.google.ar.core.ArCoreApk.InstallStatus.INSTALL_REQUESTED;
+        } catch (Exception e) {
+            setArStatus(ArStatus.fromException(e), e);   // declined, or Google Play is not available
+        }
+    }
+
+    @VisibleForTesting
+    ArStatus arStatus() {
+        return arStatus;
     }
 
     /** True when the screen runs on ARCore (T18). */

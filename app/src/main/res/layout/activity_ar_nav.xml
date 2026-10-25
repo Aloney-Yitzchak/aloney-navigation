@@ -75,6 +75,17 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
+                <!-- T18b: AR or compass; tapping it says why -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/ar_mode"
+                    style="@style/Widget.Aloney.Chip.Overlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_small"
+                    android:text="@string/ar_mode_checking"
+                    app:chipIcon="@drawable/ic_explore"
+                    tools:text="מצפן" />
+
                 <com.google.android.material.chip.Chip
                     android:id="@+id/ar_detected"
                     style="@style/Widget.Aloney.Chip.Overlay"
