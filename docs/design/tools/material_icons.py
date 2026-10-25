@@ -30,6 +30,8 @@ ICONS = {
     "save": "save", "person": "person", "notes": "sticky_note_2", "edit": "edit", "add": "add",
     "remove": "remove", "opacity": "opacity", "touch_app": "touch_app", "add_location": "add_location_alt",
     "ar_arrow": "navigation-fill", "library": "local_library", "meeting_room": "meeting_room", "school": "school", "badge": "badge",
+    # T20a: building photos
+    "photo_camera": "photo_camera", "delete": "delete", "folder_zip": "folder_zip", "photo_library": "photo_library",
 }
 
 # icons that point "forward" or "back": flipped automatically in right-to-left layouts

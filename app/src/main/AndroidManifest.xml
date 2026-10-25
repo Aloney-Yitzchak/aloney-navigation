@@ -60,6 +60,26 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- T20a: the buildings to photograph, and the camera for them (staff only) -->
+        <activity
+            android:name=".ui.PhotoTasksActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.PhotoCaptureActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- T20a: shares the exported zip of photos with Drive, Gmail or a computer -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.exports"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- T11: the position while navigating. Bound only, so it stops with the screens (NFR-08) -->
         <service
             android:name=".logic.LocationService"

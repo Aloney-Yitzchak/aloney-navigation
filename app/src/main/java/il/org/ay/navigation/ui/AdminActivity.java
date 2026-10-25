@@ -85,6 +85,8 @@ public class AdminActivity extends BaseActivity {
             return false;
         });
         findViewById(R.id.admin_back).setOnClickListener(v -> finish());
+        findViewById(R.id.admin_photos).setOnClickListener(v ->
+                startActivity(new android.content.Intent(this, PhotoTasksActivity.class)));   // T20a
         findViewById(R.id.admin_update_map).setOnClickListener(v ->
                 Snackbar.make(roomsState, R.string.coming_soon, Snackbar.LENGTH_SHORT).show());   // T28
 
@@ -215,6 +217,25 @@ public class AdminActivity extends BaseActivity {
                     rooms.isEmpty() ? getString(R.string.admin_no_rooms) : null);
         });
         repo.allRooms(this::showMapCard);
+        showPhotoCount();
+    }
+
+    /** T20a: how many building photos wait on this phone to be exported. */
+    private void showPhotoCount() {
+        il.org.ay.navigation.data.PhotoStore store = il.org.ay.navigation.data.PhotoStore.get(this);
+        new Thread(() -> {
+            int n = store.total();
+            runOnUiThread(() -> ((TextView) findViewById(R.id.admin_photos_info)).setText(
+                    getResources().getQuantityString(R.plurals.photo_summary_phone, n, n)));
+        }).start();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (signedIn) {
+            showPhotoCount();   // back from photographing
+        }
     }
 
     private void showMapCard(List<CampusRoom> rooms) {

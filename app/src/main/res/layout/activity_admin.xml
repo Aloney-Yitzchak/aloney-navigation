@@ -263,6 +263,59 @@
                     app:icon="@drawable/ic_edit_location" />
             </LinearLayout>
 
+            <!-- T20a: photographing the buildings for the model -->
+            <LinearLayout
+                android:id="@+id/admin_photos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/margin_screen"
+                android:layout_marginBottom="@dimen/spacing_medium"
+                android:background="@drawable/bg_rounded_green"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_medium"
+                    android:layout_height="@dimen/icon_medium"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_photo_camera"
+                    app:tint="@color/primary" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Text.Body.Bold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_photos_title"
+                        android:textColor="@color/primary_dark" />
+
+                    <TextView
+                        android:id="@+id/admin_photos_info"
+                        style="@style/Text.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/primary_dark"
+                        tools:text="120 תמונות בטלפון הזה" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="@dimen/icon_medium"
+                    android:layout_height="@dimen/icon_medium"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chevron_left"
+                    app:tint="@color/primary" />
+            </LinearLayout>
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/admin_search_layout"
                 style="@style/Widget.Aloney.TextInput.Search"
