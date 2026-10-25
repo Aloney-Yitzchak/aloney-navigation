@@ -62,7 +62,7 @@ public class MapActivityTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
     }
 
     private List<Overlay> overlays() {

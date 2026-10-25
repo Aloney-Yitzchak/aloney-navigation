@@ -102,6 +102,8 @@ final class SnapshotSamples {
     }
 
     static void fillAr(View v) {
+        text(v, R.id.ar_mode, v.getContext().getString(R.string.ar_mode_ar));   // T18b
+        ((com.google.android.material.chip.Chip) v.findViewById(R.id.ar_mode)).setChipIconResource(R.drawable.ic_view_in_ar);
         text(v, R.id.ar_destination, v.getContext().getString(R.string.ar_destination, "חדר 42 — מתמטיקה"));
         text(v, R.id.ar_destination_distance, "45 מ'");
         text(v, R.id.ar_detected, "מבנה ט' זוהה");

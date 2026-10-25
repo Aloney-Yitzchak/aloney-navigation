@@ -137,7 +137,8 @@ public class PhotoTasksTest {
 
     @Test
     public void staffAddsABuilding_andItGetsTheNextLabel() {
-        try (ActivityScenario<PhotoTasksActivity> scenario = ActivityScenario.launch(PhotoTasksActivity.class)) {
+        ActivityScenario<PhotoTasksActivity> scenario = ActivityScenario.launch(PhotoTasksActivity.class);
+        try {
             waitFor(() -> rows(scenario) == 2, "the two tasks");
             screenshot("24-photo-tasks");
             scenario.onActivity(a -> a.findViewById(il.org.ay.navigation.R.id.photo_add_task).performClick());
@@ -154,6 +155,8 @@ public class PhotoTasksTest {
             assertEquals("building_02", added.label);
             assertEquals("חדר האוכל", added.name);
             assertEquals(40, added.target);
+        } finally {
+            TestScreens.finish(scenario);
         }
     }
 
@@ -165,7 +168,8 @@ public class PhotoTasksTest {
     public void takingAPhoto_savesItInTheBuildingsFolder_andCountsIt_andDeletingUndoesIt() {
         Context context = ApplicationProvider.getApplicationContext();
         Intent intent = PhotoCaptureActivity.intent(context, tasks.list.get(0));
-        try (ActivityScenario<PhotoCaptureActivity> scenario = ActivityScenario.launch(intent)) {
+        ActivityScenario<PhotoCaptureActivity> scenario = ActivityScenario.launch(intent);
+        try {
             waitFor(() -> {
                 AtomicReference<Boolean> ready = new AtomicReference<>();
                 scenario.onActivity(a -> ready.set(a.readyToShoot()));
@@ -188,6 +192,8 @@ public class PhotoTasksTest {
             waitFor(() -> photos(scenario) == 0, "the photo to be deleted");
             assertEquals(0, store.count("building_01"));
             assertEquals(Arrays.asList("building_01+", "building_01-"), tasks.counted);
+        } finally {
+            TestScreens.finish(scenario);
         }
     }
 

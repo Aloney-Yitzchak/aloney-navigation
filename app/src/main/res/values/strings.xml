@@ -119,6 +119,26 @@
     </string-array>
     <string name="ar_install_offer">עם Google Play Services for AR החץ "יעמוד" על השביל</string>
     <string name="ar_install">התקנה</string>
+    <string name="ar_update">עדכון</string>
+    <!-- T18b: the camera mode chip -->
+    <string name="ar_mode_ar">AR</string>
+    <string name="ar_mode_compass">מצפן</string>
+    <string name="ar_mode_checking">בודק AR…</string>
+    <string name="ar_mode_description">מצב המצלמה: %1$s. %2$s</string>
+    <string name="ar_mode_title_ar">החץ מונח על הקרקע (ARCore)</string>
+    <string name="ar_mode_title_compass">החץ לפי המצפן</string>
+    <string name="ar_reason_running">ARCore עוקב אחרי התנועה של הטלפון, והחץ נשאר במקומו על השביל.</string>
+    <string name="ar_reason_checking">בודק אם ARCore זמין בטלפון.</string>
+    <string name="ar_reason_forced">מצב מצפן נבחר לבדיקה.</string>
+    <string name="ar_reason_not_installed">Google Play Services for AR לא מותקן. אחרי ההתקנה החץ "יעמוד" על השביל.</string>
+    <string name="ar_reason_apk_too_old">Google Play Services for AR ישן מדי. אחרי עדכון ב-Google Play החץ "יעמוד" על השביל.</string>
+    <string name="ar_reason_sdk_too_old">גרסת האפליקציה ישנה יותר מ-ARCore שבטלפון. צריך לעדכן את האפליקציה.</string>
+    <string name="ar_reason_not_supported">הטלפון הזה לא תומך ב-ARCore. הניווט עובד עם המצפן.</string>
+    <string name="ar_reason_declined">ההתקנה של Google Play Services for AR בוטלה.</string>
+    <string name="ar_reason_check_failed">הבדיקה אם ARCore זמין לא הסתיימה. אולי אין אינטרנט בפעם הראשונה; כדאי לנסות שוב אחר כך.</string>
+    <string name="ar_reason_camera_busy">ARCore לא הצליח לפתוח את המצלמה. אולי אפליקציה אחרת משתמשת בה.</string>
+    <string name="ar_reason_failed">ARCore לא הצליח להתחיל.</string>
+    <string name="ar_reason_error">פרטים: %1$s</string>
     <string name="ar_choose_destination">בחרו יעד בחיפוש כדי לקבל חץ ניווט</string>
     <string name="ar_no_camera_title">אין גישה למצלמה</string>
     <string name="ar_open_map">ניווט במפה</string>
