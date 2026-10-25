@@ -26,6 +26,8 @@ public abstract class AuthManager {
         TOO_MANY_TRIES,
         /** No network. Signing in needs one (NFR-06: FR-10 is the one online feature). */
         NO_NETWORK,
+        /** The user closed the Google account picker: nothing to say. */
+        CANCELLED,
         /** Anything else. */
         FAILED
     }
@@ -60,6 +62,26 @@ public abstract class AuthManager {
      * also works offline; the rules check a fresh token anyway when saving.
      */
     public abstract void checkStaff(@NonNull Callback callback);
+
+    /**
+     * T24b: signs in with a Google account (the school's, a-y.org.il, is offered first) and
+     * checks the claim, like {@link #signIn}. The first sign-in creates the Firebase user;
+     * the staff claim is given to it afterwards with set_staff_claim.py.
+     */
+    public void signInWithGoogle(@NonNull android.app.Activity activity, @NonNull Callback callback) {
+        callback.onResult(Result.FAILED);
+    }
+
+    /** Whether "sign in with Google" can be offered (the Firebase config has its web client). */
+    public boolean canSignInWithGoogle(@NonNull android.content.Context context) {
+        return false;
+    }
+
+    /** The email of the last sign-in attempt that reached Firebase (also after a NOT_STAFF sign-out). */
+    @Nullable
+    public String lastEmail() {
+        return email();
+    }
 
     /** The signed-in user's email, or null. */
     @Nullable

@@ -209,6 +209,9 @@
     <string name="admin_update_map">התאמת מפה שנתית</string>
     <string name="admin_search_hint">חיפוש חדר לעריכה</string>
     <string name="admin_signing_in">מתחבר…</string>
+    <string name="admin_google">כניסה עם חשבון בית הספר (Google)</string>
+    <string name="admin_or">או עם מייל וסיסמה</string>
+    <string name="admin_error_not_staff_google">נכנסת עם %1$s, אבל לחשבון הזה עוד אין הרשאת צוות. אפשר לבקש אותה מצוות האפליקציה, ואז להיכנס שוב</string>
     <string name="admin_error_fields">יש למלא כתובת מייל וסיסמה</string>
     <string name="admin_error_credentials">המייל או הסיסמה שגויים</string>
     <string name="admin_error_not_staff">לחשבון הזה אין הרשאת צוות. אפשר לבקש אותה מצוות האפליקציה</string>
