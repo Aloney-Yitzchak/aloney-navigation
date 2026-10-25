@@ -139,6 +139,22 @@
     <string name="ar_reason_camera_busy">ARCore לא הצליח לפתוח את המצלמה. אולי אפליקציה אחרת משתמשת בה.</string>
     <string name="ar_reason_failed">ARCore לא הצליח להתחיל.</string>
     <string name="ar_reason_error">פרטים: %1$s</string>
+    <!-- T18c: what the AR view does right now, in the mode chip's window -->
+    <string name="ar_view_ground">החצים מונחים על הרצפה לאורך המסלול.</string>
+    <string name="ar_view_not_tracking">ARCore עוד לא עוקב אחרי התנועה, ולכן מוצג חץ המצפן. כדאי להזיז את הטלפון לאט, אל משטח עם פרטים (לא קיר לבן), ובמקום מואר.</string>
+    <string name="ar_view_no_north">ARCore עוקב, אבל עוד לא יודע איפה הצפון, ולכן מוצג חץ המצפן. מחזיקים את הטלפון זקוף לכמה שניות.</string>
+    <string name="ar_view_no_route">אין מסלול להראות כרגע (אין יעד, הגעתם, או שאתם מחוץ לקמפוס).</string>
+    <string name="ar_view_off_screen">החצים מונחים על הרצפה, אבל לא בתמונה, ולכן מוצג חץ המצפן. מורידים את הטלפון מעט כלפי השביל.</string>
+    <string name="ar_view_starting">ARCore מתחיל…</string>
+    <string name="ar_detail_tracking">מעקב: %1$s</string>
+    <string name="ar_detail_north">צפון: %1$s</string>
+    <string name="ar_detail_north_offset">מכויל (%1$d°)</string>
+    <string name="ar_detail_floor">רצפה: %1$s</string>
+    <string name="ar_detail_floor_plane">זוהתה</string>
+    <string name="ar_detail_floor_estimate">משוערת, 1.3 מ\' מתחת לטלפון</string>
+    <string name="ar_detail_chevrons">חצים בתמונה: %1$d</string>
+    <string name="ar_detail_yes">כן</string>
+    <string name="ar_detail_no">לא</string>
     <string name="ar_choose_destination">בחרו יעד בחיפוש כדי לקבל חץ ניווט</string>
     <string name="ar_no_camera_title">אין גישה למצלמה</string>
     <string name="ar_open_map">ניווט במפה</string>

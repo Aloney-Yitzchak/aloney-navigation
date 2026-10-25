@@ -41,6 +41,7 @@ import il.org.ay.navigation.R;
 import il.org.ay.navigation.data.CampusRepository;
 import il.org.ay.navigation.logic.ArStatus;
 import il.org.ay.navigation.logic.BuildingRecognizer;
+import il.org.ay.navigation.logic.GroundPath;
 import il.org.ay.navigation.logic.Guidance;
 import il.org.ay.navigation.logic.HeadingService;
 import il.org.ay.navigation.logic.LocationService;
@@ -85,16 +86,14 @@ public class ArNavActivity extends BaseActivity {
     private ArStatus arStatus = ArStatus.CHECKING;
     @Nullable
     private String arError;
-    /** The anchored arrow shows only when ARCore placed it within this time. */
-    private static final long ANCHOR_FRESH_MS = 300;
     @Nullable
     private com.google.ar.core.Session arSession;
     @Nullable
     private android.opengl.GLSurfaceView arView;
     @Nullable
     private ArSessionController arController;
-    private android.widget.ImageView anchoredArrow;
-    private long anchoredArrowMs;
+    /** T18c: what the ARCore side shows; the compass arrow is shown unless it is GROUND. */
+    private ArSessionController.State groundState = ArSessionController.State.STARTING;
     private boolean installRequested;
     @Nullable
     private Camera camera;
@@ -177,13 +176,6 @@ public class ArNavActivity extends BaseActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         // T18: the arrow on the ground, moved by ArSessionController every camera frame
-        anchoredArrow = new android.widget.ImageView(this);
-        anchoredArrow.setImageResource(R.drawable.ic_ar_arrow);
-        anchoredArrow.setColorFilter(ContextCompat.getColor(this, R.color.accent));
-        anchoredArrow.setContentDescription(getString(R.string.ar_arrow));
-        anchoredArrow.setVisibility(View.GONE);
-        int size = getResources().getDimensionPixelSize(R.dimen.ar_anchor_arrow);
-        box.addView(anchoredArrow, new FrameLayout.LayoutParams(size, size));
 
         arrow = findViewById(R.id.ar_arrow);
         instructionCard = (View) findViewById(R.id.ar_instruction).getParent().getParent();
@@ -372,13 +364,13 @@ public class ArNavActivity extends BaseActivity {
         }
         float angle = nav.getArrowAngle();
         if (arController != null) {
-            arController.setTarget(nav.getTargetBearing());   // T18: where to place the anchor
+            // T18c: the route ahead, for the chevrons on the ground
+            arController.setPath(nav.getPathAhead(GroundPath.ALONG, GroundPath.STEP));
             arController.setCompassHeading(lastHeading);
         }
-        // the anchored arrow when ARCore has one; otherwise the compass arrow (FR-11)
-        boolean anchored = arController != null
-                && android.os.SystemClock.elapsedRealtime() - anchoredArrowMs < ANCHOR_FRESH_MS;
-        arrow.setVisibility(anchored || Float.isNaN(angle) ? View.GONE : View.VISIBLE);
+        // the chevrons on the ground when ARCore shows them; otherwise the compass arrow (FR-11)
+        boolean onGround = arController != null && groundState == ArSessionController.State.GROUND;
+        arrow.setVisibility(onGround || Float.isNaN(angle) ? View.GONE : View.VISIBLE);
         if (!Float.isNaN(angle)) {
             arrow.setRotation(angle);   // the arrow drawable points up = straight ahead
         }
@@ -669,11 +661,52 @@ public class ArNavActivity extends BaseActivity {
         }
     }
 
+    /** T18c: tracking, north, the floor, and which arrow is shown and why. */
+    private String arDetails(ArSessionController c) {
+        ArSessionController.State st = c.state();
+        int why;
+        switch (st) {
+            case GROUND:
+                why = R.string.ar_view_ground;
+                break;
+            case NOT_TRACKING:
+                why = R.string.ar_view_not_tracking;
+                break;
+            case NO_NORTH:
+                why = R.string.ar_view_no_north;
+                break;
+            case NO_ROUTE:
+                why = R.string.ar_view_no_route;
+                break;
+            case OFF_SCREEN:
+                why = R.string.ar_view_off_screen;
+                break;
+            default:
+                why = R.string.ar_view_starting;
+                break;
+        }
+        StringBuilder b = new StringBuilder(getString(why));
+        b.append("\n\n").append(getString(R.string.ar_detail_tracking,
+                st == ArSessionController.State.NOT_TRACKING || st == ArSessionController.State.STARTING
+                        ? getString(R.string.ar_detail_no) + (c.trackingFailure().isEmpty() ? "" : " (" + c.trackingFailure() + ")")
+                        : getString(R.string.ar_detail_yes)));
+        b.append("\n").append(getString(R.string.ar_detail_north, c.isNorthAligned()
+                ? getString(R.string.ar_detail_north_offset, Math.round(c.northOffset()))
+                : getString(R.string.ar_detail_no)));
+        b.append("\n").append(getString(R.string.ar_detail_floor, getString(
+                c.floorFromPlane() ? R.string.ar_detail_floor_plane : R.string.ar_detail_floor_estimate)));
+        b.append("\n").append(getString(R.string.ar_detail_chevrons, c.visibleChevrons()));
+        return b.toString();
+    }
+
     /** The mode chip was tapped: why AR or the compass, and what can be done. */
     private void explainArMode() {
         String message = getString(reasonText(arStatus));
         if (arError != null) {
             message += "\n\n" + getString(R.string.ar_reason_error, arError);
+        }
+        if (arController != null) {
+            message += "\n\n" + arDetails(arController);   // T18c: what the AR view does right now
         }
         MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(arStatus == ArStatus.RUNNING ? R.string.ar_mode_title_ar : R.string.ar_mode_title_compass)
@@ -696,7 +729,7 @@ public class ArNavActivity extends BaseActivity {
             com.google.ar.core.Config config = new com.google.ar.core.Config(session);
             config.setUpdateMode(com.google.ar.core.Config.UpdateMode.LATEST_CAMERA_IMAGE);
             config.setFocusMode(com.google.ar.core.Config.FocusMode.AUTO);
-            config.setPlaneFindingMode(com.google.ar.core.Config.PlaneFindingMode.DISABLED);
+            config.setPlaneFindingMode(com.google.ar.core.Config.PlaneFindingMode.HORIZONTAL);   // T18c: the floor
             config.setLightEstimationMode(com.google.ar.core.Config.LightEstimationMode.DISABLED);
             session.configure(config);
             arSession = session;
@@ -712,22 +745,9 @@ public class ArNavActivity extends BaseActivity {
         arView.setPreserveEGLContextOnPause(true);
         arView.setEGLContextClientVersion(2);
         arView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        arController = new ArSessionController(arSession, recognizer, new ArSessionController.Listener() {
-            @Override
-            public void onArrow(float x, float y, float angle, float scale) {
-                anchoredArrowMs = android.os.SystemClock.elapsedRealtime();
-                anchoredArrow.setVisibility(View.VISIBLE);
-                anchoredArrow.setTranslationX(x - anchoredArrow.getWidth() / 2f);
-                anchoredArrow.setTranslationY(y - anchoredArrow.getHeight() / 2f);
-                anchoredArrow.setRotation(angle);
-                anchoredArrow.setScaleX(scale);
-                anchoredArrow.setScaleY(scale);
-            }
-
-            @Override
-            public void onNoArrow() {
-                anchoredArrow.setVisibility(View.GONE);
-            }
+        arController = new ArSessionController(arSession, recognizer, state -> {
+            groundState = state;
+            Log.i(AR_TAG, "AR view: " + state);
         });
         arController.setDisplayRotation(getWindowManager().getDefaultDisplay().getRotation());
         arView.setRenderer(arController);
