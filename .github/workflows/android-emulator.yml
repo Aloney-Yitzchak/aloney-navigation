@@ -48,15 +48,20 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          # the default 2 GB is tight for Android 14 with Google services: the test
+          # process was being lost halfway through the run (T18)
+          ram-size: 4096M
           disable-animations: true
           # -camera-back emulated: a moving test pattern, so the camera tests get real frames (T16)
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back emulated
           # A freshly booted emulator sometimes shows "System UI isn't responding" or is slow to
           # give the app window focus: hide error dialogs, unlock, and retry the tests once.
+          # Each attempt is stopped after 15 minutes (a full run takes about 6), so a stuck
+          # emulator fails the attempt instead of the whole job running out of time.
           script: |
             adb shell settings put global hide_error_dialogs 1 || true
             adb shell input keyevent 82 || true
-            ./gradlew connectedDebugAndroidTest || ./gradlew connectedDebugAndroidTest || touch tests-failed
+            timeout 15m ./gradlew connectedDebugAndroidTest || timeout 15m ./gradlew connectedDebugAndroidTest || touch tests-failed
             mkdir -p screenshots/api-${{ matrix.api-level }}
             adb pull /sdcard/Pictures/aloney/. screenshots/api-${{ matrix.api-level }}/ || true
             test ! -f tests-failed
