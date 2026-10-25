@@ -69,7 +69,7 @@ public class SearchActivityTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class SearchActivityTest {
         onView(withId(R.id.favorites_header)).check(matches(isDisplayed()));
 
         // AT-02: close the app and open it again
-        scenario.close();
+        TestScreens.finish(scenario);
         scenario = ActivityScenario.launch(SearchActivity.class);
         waitForChips(R.id.favorites_chips, 1);
         // the chip, not the row with the same name in the list below it
@@ -156,7 +156,7 @@ public class SearchActivityTest {
         waitForChips(R.id.recent_chips, 1);
         onView(withId(R.id.recent_header)).check(matches(isDisplayed()));
 
-        scenario.close();
+        TestScreens.finish(scenario);
         scenario = ActivityScenario.launch(SearchActivity.class);
         waitForChips(R.id.recent_chips, 1);
         screenshot("09-search-recent");

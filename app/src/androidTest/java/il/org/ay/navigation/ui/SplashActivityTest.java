@@ -64,7 +64,7 @@ public class SplashActivityTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
     }
 
     @Test

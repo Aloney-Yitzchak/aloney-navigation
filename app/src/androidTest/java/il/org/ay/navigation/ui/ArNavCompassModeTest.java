@@ -68,7 +68,7 @@ public class ArNavCompassModeTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
         ArNavActivity.forceCompassMode = false;
         LocationService.useSourceForTesting(null);
     }

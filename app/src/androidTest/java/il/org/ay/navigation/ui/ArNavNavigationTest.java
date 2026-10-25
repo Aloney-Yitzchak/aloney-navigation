@@ -71,7 +71,7 @@ public class ArNavNavigationTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
         LocationService.useSourceForTesting(null);
     }
 

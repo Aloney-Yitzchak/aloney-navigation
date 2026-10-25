@@ -28,7 +28,8 @@ public class ArNavNoCameraTest {
 
     @Test
     public void cameraDeclined_offersTheMap() {
-        try (ActivityScenario<ArNavActivity> scenario = ActivityScenario.launch(ArNavActivity.class)) {
+        ActivityScenario<ArNavActivity> scenario = ActivityScenario.launch(ArNavActivity.class);
+        try {
             UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
             UiObject2 deny = device.wait(Until.findObject(By.res(Pattern.compile(".*:id/permission_deny.*button"))), 10_000);
             assertNotNull("the camera permission prompt did not appear", deny);
@@ -37,6 +38,8 @@ public class ArNavNoCameraTest {
             onView(withText(R.string.ar_no_camera_title)).inRoot(isDialog()).check(matches(isDisplayed()));
             onView(withText(R.string.ar_open_map)).inRoot(isDialog()).check(matches(isDisplayed()));
             ArNavActivityTest.screenshot("17-camera-declined");
+        } finally {
+            TestScreens.finish(scenario);
         }
     }
 }

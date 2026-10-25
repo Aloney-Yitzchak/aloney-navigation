@@ -70,7 +70,7 @@ public class ArNavActivityTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
     }
 
     private int frames() {

@@ -128,7 +128,7 @@ public class AdminActivityTest {
 
     @After
     public void tearDown() {
-        scenario.close();
+        TestScreens.finish(scenario);
         AuthManager.useForTesting(null);
     }
 
@@ -182,7 +182,7 @@ public class AdminActivityTest {
 
     @Test
     public void signedInBefore_opensStraightOnTheRooms_andLogoutReturnsToSignIn() {
-        scenario.close();
+        TestScreens.finish(scenario);
         auth.signedIn = "staff@a-y.org.il";
         scenario = ActivityScenario.launch(AdminActivity.class);
         assertVisible(R.id.admin_rooms_state);
