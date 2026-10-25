@@ -182,6 +182,61 @@
     <string name="admin_edit_room">עריכת חדר %1$s</string>
     <string name="admin_no_rooms">אין חדרים בטלפון עדיין. החדרים יורדים מהשרת בפתיחה הראשונה עם אינטרנט</string>
     <string name="admin_map_unknown_year">מפת בית הספר</string>
+    <string name="admin_photos_title">צילום מבנים למודל</string>
+
+    <!-- T20a: building photos -->
+    <string name="photo_tasks_screen">צילום מבנים למודל</string>
+    <string name="photo_tasks_privacy">התמונות נשמרות רק בטלפון הזה, עד שמייצאים אותן. בלי אנשים בתמונה: מחכים שיעברו.</string>
+    <plurals name="photo_summary_phone">
+        <item quantity="one">בטלפון הזה: תמונה אחת</item>
+        <item quantity="two">בטלפון הזה: שתי תמונות</item>
+        <item quantity="many">בטלפון הזה: %1$d תמונות</item>
+        <item quantity="other">בטלפון הזה: %1$d תמונות</item>
+    </plurals>
+    <string name="photo_summary_all">מכל הטלפונות: %1$d מתוך %2$d</string>
+    <string name="photo_task_count">%1$d בטלפון · %2$d/%3$d בסך הכול</string>
+    <string name="photo_task_shoot">צילום %1$s</string>
+    <string name="photo_task_edit">עריכת %1$s</string>
+    <string name="photo_add_task">מבנה חדש</string>
+    <string name="photo_export">ייצוא zip</string>
+    <string name="photo_export_title">ייצוא התמונות</string>
+    <string name="photo_exporting">אורז את התמונות…</string>
+    <string name="photo_export_nothing">אין עדיין תמונות בטלפון הזה</string>
+    <string name="photo_export_failed">הייצוא נכשל. אולי אין מספיק מקום בטלפון</string>
+    <string name="photo_export_subject">תמונות מבנים לאימון המודל</string>
+    <string name="photo_delete_all">מחיקת התמונות מהטלפון</string>
+    <string name="photo_delete_all_message">%1$d התמונות שבטלפון הזה יימחקו. כדאי למחוק רק אחרי שקובץ ה-zip שמור ב-Drive או במחשב.</string>
+    <string name="photo_delete_confirm">מחיקה</string>
+    <string name="photo_deleted">%1$d תמונות נמחקו מהטלפון</string>
+    <string name="photo_add_title">מבנה חדש לצילום</string>
+    <string name="photo_edit_title">עריכת משימת צילום</string>
+    <string name="photo_task_name">שם המבנה</string>
+    <string name="photo_task_name_hint">למשל: בניין המדעים</string>
+    <string name="photo_task_target">כמה תמונות צריך</string>
+    <string name="photo_task_target_help">30 עד 50 לכל מבנה</string>
+    <string name="photo_task_note">מאיפה לצלם</string>
+    <string name="photo_task_note_hint">למשל: מהשביל הראשי ומהחניה</string>
+    <string name="photo_task_delete">מחיקת המשימה</string>
+    <string name="photo_task_delete_message">המשימה תימחק מכל הטלפונות. תמונות שכבר צולמו נשארות ונכנסות לייצוא.</string>
+    <string name="photo_error_name">יש למלא שם</string>
+    <string name="photo_error_target">מספר בין 1 ל-500</string>
+    <string name="photo_tasks_empty">עדיין אין מבנים ברשימה. מוסיפים עם "מבנה חדש".</string>
+
+    <string name="capture_shutter">צילום</string>
+    <string name="capture_last">התמונה האחרונה</string>
+    <string name="capture_delete_last">מחיקת התמונה האחרונה</string>
+    <string name="capture_count">%1$d/%2$d</string>
+    <string name="capture_done">הגעתם ליעד! אפשר להמשיך לצלם לגיוון</string>
+    <string name="capture_failed">הצילום נכשל. כדאי לנסות שוב</string>
+    <string name="capture_deleted">התמונה נמחקה</string>
+    <string-array name="capture_tips">
+        <item>צלמו את כל המבנה, ואז גם פרטים: כניסה, חלון, שלט</item>
+        <item>עכשיו מזווית אחרת: כמה צעדים הצידה</item>
+        <item>מקרוב, ואחר כך מרחוק</item>
+        <item>מכיוון השביל, כמו שמי שהולך בו רואה</item>
+        <item>בלי אנשים בתמונה: מחכים שיעברו</item>
+        <item>כדאי לחזור בשעה אחרת או ביום מעונן</item>
+    </string-array>
 
     <!-- room edit sheet -->
     <string name="room_edit_title">עריכת חדר %1$s</string>

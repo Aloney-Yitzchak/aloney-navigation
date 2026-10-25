@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T20a: one building to photograph. Tapping the row opens the camera. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:background="@drawable/bg_rounded_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/photo_task_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_circle_primary_container"
+        android:importantForAccessibility="no"
+        android:padding="8dp"
+        android:src="@drawable/ic_building"
+        app:tint="@color/primary" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/photo_task_name"
+            style="@style/Text.Body.Bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="בניין המדעים" />
+
+        <TextView
+            android:id="@+id/photo_task_note"
+            style="@style/Text.Secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="מהשביל הראשי ומהחניה" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/photo_task_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            app:indicatorColor="@color/primary"
+            app:trackColor="@color/primary_container"
+            app:trackCornerRadius="2dp"
+            tools:progress="30" />
+
+        <TextView
+            android:id="@+id/photo_task_count"
+            style="@style/Text.Secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            tools:text="12 בטלפון הזה · 30 מתוך 40 בסך הכול" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/photo_task_edit"
+        style="@style/Widget.Aloney.IconButton"
+        android:layout_width="@dimen/touch_target"
+        android:layout_height="@dimen/touch_target"
+        app:icon="@drawable/ic_edit"
+        app:iconTint="@color/text_secondary"
+        tools:contentDescription="עריכת המשימה" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/photo_task_shoot"
+        style="@style/Widget.Aloney.IconButton"
+        android:layout_width="@dimen/touch_target"
+        android:layout_height="@dimen/touch_target"
+        app:icon="@drawable/ic_photo_camera"
+        app:iconTint="@color/primary"
+        tools:contentDescription="צילום" />
+</LinearLayout>

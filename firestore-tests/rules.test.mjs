@@ -58,3 +58,11 @@ test('a staff claim that is not exactly true does not count', async () => {
   const fake = env.authenticatedContext('x', { staff: 'true' }).firestore();
   await assertFails(updateDoc(doc(fake, 'rooms/36'), { owner: 'x' }));
 });
+
+// T20a: the list of buildings to photograph follows the same rule
+test('staff can add a building to photograph and count photos; others cannot', async () => {
+  await assertSucceeds(setDoc(doc(staff(), 'photoTasks/building_01'), { name: 'בניין המדעים', target: 40, order: 1 }));
+  await assertSucceeds(updateDoc(doc(staff(), 'photoTasks/building_01'), { taken: 1 }));
+  await assertFails(setDoc(doc(student(), 'photoTasks/building_02'), { name: 'x', target: 40, order: 2 }));
+  await assertFails(updateDoc(doc(anonymous(), 'photoTasks/building_01'), { taken: 99 }));
+});

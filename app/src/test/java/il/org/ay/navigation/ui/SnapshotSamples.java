@@ -146,6 +146,8 @@ final class SnapshotSamples {
         bar.inflateMenu(R.menu.admin_bar);
         text(v, R.id.admin_map_title, v.getContext().getString(R.string.admin_map_title, "תשפ״ז"));
         text(v, R.id.admin_map_info, v.getContext().getString(R.string.admin_map_info, 64, 3));
+        text(v, R.id.admin_photos_info, v.getContext().getResources()
+                .getQuantityString(R.plurals.photo_summary_phone, 120, 120));
         text(v, R.id.admin_search, "42");
         RecyclerView list = v.findViewById(R.id.admin_rooms);
         list.setAdapter(new RoomsAdapter(new String[][]{
@@ -159,6 +161,40 @@ final class SnapshotSamples {
         text(v, R.id.room_edit_entrance, "כניסה 12");
         text(v, R.id.room_edit_name, "חדר מתמטיקה");
         text(v, R.id.room_edit_owner, "רכזת שכבה ט'");
+    }
+
+    /** T20a: three buildings and "other", part-way through. */
+    static void fillPhotoTasks(View v) {
+        android.content.Context c = v.getContext();
+        text(v, R.id.photo_summary, c.getResources().getQuantityString(R.plurals.photo_summary_phone, 52, 52));
+        text(v, R.id.photo_summary_all, c.getString(R.string.photo_summary_all, 97, 160));
+        il.org.ay.navigation.model.PhotoTask[] tasks = {
+                new il.org.ay.navigation.model.PhotoTask("building_01", "בניין המדעים", 40, "מהשביל הראשי ומהחניה", 1),
+                new il.org.ay.navigation.model.PhotoTask("building_02", "חדר האוכל", 40, null, 2),
+                new il.org.ay.navigation.model.PhotoTask("building_03", "הספרייה", 40, "גם מהצד של הדשא", 3),
+                new il.org.ay.navigation.model.PhotoTask("other", "אחר: שבילים, עצים, שמיים", 40, "כל מה שאינו מבנה", 1000),
+        };
+        int[][] counts = {{20, 40}, {12, 25}, {0, 0}, {20, 32}};
+        java.util.List<PhotoTasksActivity.Row> rows = new java.util.ArrayList<>();
+        for (int i = 0; i < tasks.length; i++) {
+            tasks[i].taken = counts[i][1];
+            rows.add(new PhotoTasksActivity.Row(tasks[i], counts[i][0]));
+        }
+        PhotoTasksActivity.TaskAdapter adapter = new PhotoTasksActivity.TaskAdapter(t -> { }, t -> { });
+        RecyclerView list = v.findViewById(R.id.photo_tasks);
+        list.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(c));
+        list.setAdapter(adapter);
+        adapter.submitList(rows);
+    }
+
+    static void fillPhotoCapture(View v) {
+        text(v, R.id.capture_name, "בניין המדעים");
+        text(v, R.id.capture_tip, v.getContext().getResources().getStringArray(R.array.capture_tips)[1]);
+        text(v, R.id.capture_count, v.getContext().getString(R.string.capture_count, 12, 40));
+        v.findViewById(R.id.capture_preview).setBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(v.getContext(), R.color.camera_placeholder));
+        v.findViewById(R.id.capture_last).setVisibility(View.VISIBLE);
+        v.findViewById(R.id.capture_delete_last).setVisibility(View.VISIBLE);
     }
 
     static void fillAlignment(View v) {

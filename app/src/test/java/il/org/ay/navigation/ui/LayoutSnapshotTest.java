@@ -135,6 +135,30 @@ public class LayoutSnapshotTest {
     }
 
     @Test
+    public void photoTasks() {
+        View v = inflate(R.layout.activity_photo_tasks);
+        SnapshotSamples.fillPhotoTasks(v);
+        paparazzi.snapshot(v);
+    }
+
+    @Test
+    public void photoTaskDialog() {
+        View v = inflate(R.layout.dialog_photo_task);
+        SnapshotSamples.text(v, R.id.photo_task_name_field, "בניין המדעים");
+        SnapshotSamples.text(v, R.id.photo_task_target_field, "40");
+        SnapshotSamples.text(v, R.id.photo_task_note_field, "מהשביל הראשי ומהחניה");
+        v.setBackgroundResource(R.drawable.bg_sheet);
+        paparazzi.snapshot(SnapshotSamples.overDimmedScreen(v, Gravity.CENTER));
+    }
+
+    @Test
+    public void photoCapture() {
+        View v = inflate(R.layout.activity_photo_capture);
+        SnapshotSamples.fillPhotoCapture(v);
+        paparazzi.snapshot(v);
+    }
+
+    @Test
     public void mapAlignment() {
         View v = inflate(R.layout.activity_map_alignment);
         SnapshotSamples.fillAlignment(v);
