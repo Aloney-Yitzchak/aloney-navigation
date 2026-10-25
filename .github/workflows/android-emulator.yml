@@ -6,10 +6,10 @@ name: Android emulator tests
 
 on:
   pull_request:
-    paths: ['app/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradle/**', '.github/workflows/android-emulator.yml']
+    paths: ['app/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradle/**', '.github/workflows/android-emulator.yml', '.github/scripts/**']
   push:
     branches: [main]
-    paths: ['app/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradle/**', '.github/workflows/android-emulator.yml']
+    paths: ['app/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradle/**', '.github/workflows/android-emulator.yml', '.github/scripts/**']
   workflow_dispatch:
 
 jobs:
@@ -54,17 +54,9 @@ jobs:
           disable-animations: true
           # -camera-back emulated: a moving test pattern, so the camera tests get real frames (T16)
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back emulated
-          # A freshly booted emulator sometimes shows "System UI isn't responding" or is slow to
-          # give the app window focus: hide error dialogs, unlock, and retry the tests once.
-          # Each attempt is stopped after 15 minutes (a full run takes about 6), so a stuck
-          # emulator fails the attempt instead of the whole job running out of time.
-          script: |
-            adb shell settings put global hide_error_dialogs 1 || true
-            adb shell input keyevent 82 || true
-            timeout 15m ./gradlew connectedDebugAndroidTest || timeout 15m ./gradlew connectedDebugAndroidTest || touch tests-failed
-            mkdir -p screenshots/api-${{ matrix.api-level }}
-            adb pull /sdcard/Pictures/aloney/. screenshots/api-${{ matrix.api-level }}/ || true
-            test ! -f tests-failed
+          # hides error dialogs, unlocks, keeps the device log, retries once:
+          # see .github/scripts/emulator-tests.sh
+          script: bash .github/scripts/emulator-tests.sh ${{ matrix.api-level }}
 
       - name: Screenshots
         if: always()
@@ -75,7 +67,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Test report
-        if: failure() || cancelled()
+        if: always()   # also when the retry passed: the first attempt's logs are in logs/
         uses: actions/upload-artifact@v4
         with:
           name: test-report-api-${{ matrix.api-level }}
@@ -83,3 +75,4 @@ jobs:
           path: |
             app/build/reports/androidTests/
             app/build/outputs/androidTest-results/
+            logs/
