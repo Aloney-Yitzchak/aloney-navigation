@@ -131,6 +131,8 @@ public class SearchActivity extends BaseActivity {
                 overridePendingTransition(0, 0);
             } else if (item.getItemId() == R.id.nav_ar) {
                 startActivity(ArNavActivity.navigateTo(this, null));
+            } else if (item.getItemId() == R.id.nav_staff) {
+                startActivity(new Intent(this, AdminActivity.class));   // T24
             } else if (item.getItemId() != R.id.nav_search) {
                 comingSoon();
             }

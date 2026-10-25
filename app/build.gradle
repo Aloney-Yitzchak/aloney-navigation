@@ -94,6 +94,8 @@ dependencies {
     // Firebase Firestore: the shared campus data (T08)
     implementation platform('com.google.firebase:firebase-bom:33.7.0')
     implementation 'com.google.firebase:firebase-firestore'
+    // T24: staff sign-in (email and password); the staff claim is checked by the rules
+    implementation 'com.google.firebase:firebase-auth'
 
     // Room: local database (T04)
     def room_version = '2.6.1'

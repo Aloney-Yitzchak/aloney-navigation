@@ -17,4 +17,12 @@ public interface CampusRemote {
 
     /** Everything: nodes, edges and rooms, plus the version they belong to. */
     void fetchAll(Callback<CampusSnapshot> callback);
+
+    /**
+     * T24 (FR-10): a staff member changes a room's name and owner. In the same write the
+     * data version goes up by one, so every phone downloads the change on its next sync.
+     * Only the result is reported (onResult), never onError.
+     */
+    void updateRoom(String number, String name, String owner,
+                    Callback<CampusRepository.SaveResult> callback);
 }

@@ -18,6 +18,10 @@ public interface RoomDao {
     @Query("SELECT * FROM rooms WHERE number = :number")
     CampusRoom findByNumber(String number);
 
+    /** T24: a staff edit, copied to the phone right after the server accepted it. */
+    @Query("UPDATE rooms SET name = :name, owner = :owner WHERE number = :number")
+    void updateDetails(String number, String name, String owner);
+
     /** FR-01: search by number, name or owner. */
     @Query("SELECT * FROM rooms " +
            "WHERE number LIKE '%' || :text || '%' " +

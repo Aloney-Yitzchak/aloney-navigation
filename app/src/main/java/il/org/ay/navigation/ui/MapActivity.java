@@ -147,6 +147,8 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
                 openSearch();
             } else if (item.getItemId() == R.id.nav_ar) {
                 startActivity(ArNavActivity.navigateTo(this, room != null ? room.number : null));
+            } else if (item.getItemId() == R.id.nav_staff) {
+                startActivity(new Intent(this, AdminActivity.class));   // T24
             } else if (item.getItemId() != R.id.nav_map) {
                 comingSoon();
             }

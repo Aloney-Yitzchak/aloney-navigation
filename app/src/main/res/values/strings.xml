@@ -172,6 +172,16 @@
     <string name="admin_map_info">%1$d חדרים · גרסה %2$d</string>
     <string name="admin_update_map">התאמת מפה שנתית</string>
     <string name="admin_search_hint">חיפוש חדר לעריכה</string>
+    <string name="admin_signing_in">מתחבר…</string>
+    <string name="admin_error_fields">יש למלא כתובת מייל וסיסמה</string>
+    <string name="admin_error_credentials">המייל או הסיסמה שגויים</string>
+    <string name="admin_error_not_staff">לחשבון הזה אין הרשאת צוות. אפשר לבקש אותה מצוות האפליקציה</string>
+    <string name="admin_error_too_many">יותר מדי ניסיונות. כדאי לנסות שוב בעוד כמה דקות</string>
+    <string name="admin_error_offline">אין חיבור לאינטרנט. כניסת צוות ושמירת שינויים דורשות חיבור</string>
+    <string name="admin_error_failed">משהו השתבש. כדאי לנסות שוב</string>
+    <string name="admin_edit_room">עריכת חדר %1$s</string>
+    <string name="admin_no_rooms">אין חדרים בטלפון עדיין. החדרים יורדים מהשרת בפתיחה הראשונה עם אינטרנט</string>
+    <string name="admin_map_unknown_year">מפת בית הספר</string>
 
     <!-- room edit sheet -->
     <string name="room_edit_title">עריכת חדר %1$s</string>
@@ -181,6 +191,14 @@
     <string name="room_edit_notes">הערה לניווט</string>
     <string name="room_edit_sync_note">השינוי נשמר בשרת ומגיע לכל הטלפונות בפתיחה הבאה של האפליקציה.</string>
     <string name="room_edit_save">שמירה</string>
+    <string name="room_edit_entrance">כניסה %1$d</string>
+    <string name="room_edit_no_entrance">בלי כניסה במפה</string>
+    <string name="room_edit_saving">שומר…</string>
+    <string name="room_edit_saved">חדר %1$s עודכן</string>
+    <string name="room_edit_pending">אין תשובה מהשרת. השינוי יישלח כשיחזור החיבור</string>
+    <string name="room_edit_not_allowed">השרת דחה את השינוי: אין הרשאת צוות. כדאי להתחבר מחדש</string>
+    <string name="room_edit_no_such_room">החדר הזה כבר לא קיים בשרת</string>
+    <string name="room_edit_empty_name">יש למלא שם לחדר</string>
 
     <!-- yearly map alignment -->
     <string name="alignment_title">התאמת מפת %1$s</string>

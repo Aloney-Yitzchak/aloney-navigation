@@ -1,6 +1,7 @@
 package il.org.ay.navigation.data;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
 import android.content.Context;
@@ -47,6 +48,17 @@ public class CampusRepositoryTest {
             fetchAllCalls++;
             if (offline) callback.onError(new Exception("no network"));
             else callback.onResult(snapshot);
+        }
+
+        /** T24: what the server answers to a staff edit; the last edit it received. */
+        CampusRepository.SaveResult saveAnswer = CampusRepository.SaveResult.SAVED;
+        String[] lastEdit;
+
+        @Override
+        public void updateRoom(String number, String name, String owner,
+                               Callback<CampusRepository.SaveResult> callback) {
+            lastEdit = new String[]{number, name, owner};
+            callback.onResult(saveAnswer);
         }
     }
 
@@ -248,5 +260,70 @@ public class CampusRepositoryTest {
     public void roomQueries_areRefusedOnTheMainThread() {
         // Room's guard is on (no allowMainThreadQueries), so the repository must use its executor
         assertThrows(IllegalStateException.class, () -> db.roomDao().getAll());
+    }
+
+    // ------------------------------------------------------------ T24, FR-10
+
+    private CampusRoom room(String number) throws InterruptedException {
+        return await(l -> repo.findRoom(number, l));
+    }
+
+    @Test
+    public void staffEdit_isSentToTheServer_andShownOnThisPhoneRightAway() throws Exception {
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        CampusRepository.SaveResult result = await(l -> repo.updateRoom("20", "  ספרייה וחדר עיון ", "רכזת ספרייה", l));
+        assertEquals(CampusRepository.SaveResult.SAVED, result);
+        assertEquals("ספרייה וחדר עיון", remote.lastEdit[1]);   // trimmed
+        assertEquals("ספרייה וחדר עיון", room("20").name);
+        assertEquals("רכזת ספרייה", room("20").owner);
+    }
+
+    @Test
+    public void staffEdit_anEmptyOwnerIsSavedAsNoOwner() throws Exception {
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        this.<CampusRepository.SaveResult>await(l -> repo.updateRoom("20", "ספרייה", "   ", l));
+        assertNull(room("20").owner);
+    }
+
+    @Test
+    public void staffEdit_withoutAName_isNotSent() throws Exception {
+        CampusRepository.SaveResult result = await(l -> repo.updateRoom("20", "  ", "x", l));
+        assertEquals(CampusRepository.SaveResult.EMPTY_NAME, result);
+        assertNull(remote.lastEdit);
+    }
+
+    @Test
+    public void staffEdit_offline_isRefusedAtOnce_notQueued() throws Exception {
+        remote.offline = true;
+        CampusRepository.SaveResult result = await(l -> repo.updateRoom("20", "ספרייה", "", l));
+        assertEquals(CampusRepository.SaveResult.NO_NETWORK, result);
+        assertNull(remote.lastEdit);
+    }
+
+    @Test
+    public void staffEdit_refusedByTheRules_leavesThePhoneUnchanged() throws Exception {
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        String before = room("20").name;
+        remote.saveAnswer = CampusRepository.SaveResult.NOT_ALLOWED;
+        CampusRepository.SaveResult result = await(l -> repo.updateRoom("20", "שם אחר", "", l));
+        assertEquals(CampusRepository.SaveResult.NOT_ALLOWED, result);
+        assertEquals(before, room("20").name);
+    }
+
+    @Test
+    public void staffEdit_openScreensAreTold() throws Exception {
+        remote.version = 1;
+        remote.snapshot = CampusSnapshotTest.good(1);
+        sync();
+        int[] calls = {0};
+        repo.addChangeListener(() -> calls[0]++);
+        this.<CampusRepository.SaveResult>await(l -> repo.updateRoom("20", "ספרייה", "", l));
+        assertEquals(1, calls[0]);
     }
 }
