@@ -33,3 +33,5 @@ firestore-debug.log
 ui-debug.log
 node_modules/
 *-debug.log
+# campus-data: OSM downloads for merge_osm.py (re-fetched with --download)
+campus-data/osm/
