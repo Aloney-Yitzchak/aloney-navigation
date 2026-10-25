@@ -118,11 +118,29 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- T24b: the school's Google account; email and password stay below as a backup -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/admin_google"
+                    style="@style/Widget.Aloney.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_large"
+                    android:text="@string/admin_google"
+                    app:icon="@drawable/ic_account" />
+
+                <TextView
+                    android:id="@+id/admin_or"
+                    style="@style/Text.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="@string/admin_or" />
+
                 <TextView
                     style="@style/Text.Label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_large"
+                    android:layout_marginTop="@dimen/spacing_small"
                     android:labelFor="@id/admin_email"
                     android:text="@string/admin_email" />
 

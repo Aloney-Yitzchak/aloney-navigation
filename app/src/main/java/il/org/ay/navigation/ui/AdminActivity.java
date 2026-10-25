@@ -77,6 +77,11 @@ public class AdminActivity extends BaseActivity {
         search = findViewById(R.id.admin_search);
 
         loginButton.setOnClickListener(v -> signIn());
+        // T24b: Google, when the Firebase config has it (not in the CI placeholder)
+        boolean google = auth.canSignInWithGoogle(this);
+        findViewById(R.id.admin_google).setVisibility(google ? View.VISIBLE : View.GONE);
+        findViewById(R.id.admin_or).setVisibility(google ? View.VISIBLE : View.GONE);
+        findViewById(R.id.admin_google).setOnClickListener(v -> signInWithGoogle());
         password.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_NULL) {
                 signIn();
@@ -178,6 +183,42 @@ public class AdminActivity extends BaseActivity {
                     break;
             }
         });
+    }
+
+    private void signInWithGoogle() {
+        loginError.setVisibility(View.GONE);
+        View button = findViewById(R.id.admin_google);
+        button.setEnabled(false);
+        auth.signInWithGoogle(this, result -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            button.setEnabled(true);
+            switch (result) {
+                case STAFF:
+                    showRooms();
+                    break;
+                case CANCELLED:
+                    break;
+                case NOT_STAFF:
+                    // the account exists now; staff access is given to it by email
+                    loginError.setText(getString(R.string.admin_error_not_staff_google, lastGoogleEmail()));
+                    loginError.setVisibility(View.VISIBLE);
+                    break;
+                case NO_NETWORK:
+                    showLoginError(R.string.admin_error_offline);
+                    break;
+                default:
+                    showLoginError(R.string.admin_error_failed);
+                    break;
+            }
+        });
+    }
+
+    /** The account just used, for the message (signed out again by then, so from Firebase's last user). */
+    private String lastGoogleEmail() {
+        String mail = auth.lastEmail();
+        return mail == null ? "" : mail;
     }
 
     private void showLoginError(@StringRes int message) {

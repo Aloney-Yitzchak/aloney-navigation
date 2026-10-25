@@ -22,6 +22,11 @@ public class ServerAnswersTest {
     }
 
     @Test
+    public void googleAccountsOfTheSchool_areOfferedFirst() {
+        assertEquals("a-y.org.il", FirebaseAuthManager.SCHOOL_DOMAIN);
+    }
+
+    @Test
     public void signIn_noNetwork() {
         assertEquals(AuthManager.Result.NO_NETWORK,
                 FirebaseAuthManager.toResult(new FirebaseNetworkException("offline")));
