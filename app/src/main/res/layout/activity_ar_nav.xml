@@ -16,7 +16,6 @@
         style="@style/Widget.Aloney.Toolbar.Main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:subtitle="@string/ar_screen"
         app:title="@string/app_name" />
 
     <FrameLayout
@@ -103,19 +102,10 @@
                     android:layout_weight="1" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/ar_sound"
-                    style="@style/Widget.Aloney.OverlayButton"
-                    android:layout_width="@dimen/touch_target"
-                    android:layout_height="@dimen/touch_target"
-                    android:contentDescription="@string/ar_sound"
-                    app:icon="@drawable/ic_volume_up" />
-
-                <com.google.android.material.button.MaterialButton
                     android:id="@+id/ar_flash"
                     style="@style/Widget.Aloney.OverlayButton"
                     android:layout_width="@dimen/touch_target"
                     android:layout_height="@dimen/touch_target"
-                    android:layout_marginStart="@dimen/spacing_small"
                     android:contentDescription="@string/ar_flash"
                     app:icon="@drawable/ic_flash_off" />
             </LinearLayout>
@@ -157,13 +147,6 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/ar_heading"
-                    style="@style/Widget.Aloney.Chip.Overlay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipIcon="@drawable/ic_explore"
-                    tools:text="צפון-מערב" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
@@ -251,75 +234,6 @@
             android:text="@string/ar_calibrate"
             app:icon="@drawable/ic_straighten" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/ar_show_map"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/ar_show_map"
-            app:backgroundTint="@color/primary"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Aloney.Circle"
-            app:srcCompat="@drawable/ic_map"
-            app:tint="@color/white" />
-    </LinearLayout>
-
-    <!-- the destination -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_screen"
-        android:background="@drawable/bg_rounded_card"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="12dp">
-
-        <TextView
-            android:id="@+id/ar_room_number"
-            android:layout_width="@dimen/icon_circle"
-            android:layout_height="@dimen/icon_circle"
-            android:background="@drawable/bg_circle_primary_container"
-            android:gravity="center"
-            android:textColor="@color/primary"
-            android:textSize="@dimen/text_body"
-            android:textStyle="bold"
-            tools:text="42" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/ar_room_name"
-                style="@style/Text.Label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                tools:text="חדר 42 — מתמטיקה" />
-
-            <TextView
-                android:id="@+id/ar_room_owner"
-                style="@style/Text.Secondary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                tools:text="רכזת שכבה ט'" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/ar_time_left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawablePadding="@dimen/spacing_tiny"
-            android:gravity="center_vertical"
-            android:textColor="@color/primary"
-            android:textSize="@dimen/text_secondary"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_walk_green"
-            tools:text="2 דק'" />
     </LinearLayout>
 
     <include layout="@layout/view_bottom_nav" />

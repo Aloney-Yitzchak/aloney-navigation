@@ -15,7 +15,6 @@
         style="@style/Widget.Aloney.Toolbar.Main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:subtitle="@string/map_screen"
         app:title="@string/app_name" />
 
     <FrameLayout
@@ -39,7 +38,7 @@
                 android:text="@string/map_placeholder" />
         </FrameLayout>
 
-        <!-- over the map, at the top: "wrong location?" (finding 3), floors, my location -->
+        <!-- over the map, at the top: "wrong location?" (finding 3) and my location -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,29 +62,6 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
-
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/map_floors"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:checkedButton="@id/map_floor_1"
-                app:selectionRequired="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/map_floor_1"
-                    style="@style/Widget.Aloney.FloorButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="ק' 1" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/map_floor_2"
-                    style="@style/Widget.Aloney.FloorButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="ק' 2" />
-            </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/map_my_location"
@@ -177,30 +153,8 @@
                     app:chipIcon="@drawable/ic_schedule"
                     tools:text="כ-2 דק' הליכה" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/map_entrance"
-                    style="@style/Widget.Aloney.Chip.Green"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipIcon="@drawable/ic_building"
-                    tools:text="אגף צפוני" />
             </com.google.android.material.chip.ChipGroup>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/map_start_ar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:text="@string/map_start_ar"
-                app:icon="@drawable/ic_view_in_ar" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/map_route_details"
-                style="@style/Widget.Aloney.Button.Text.Grey"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/map_route_details" />
         </LinearLayout>
     </FrameLayout>
 

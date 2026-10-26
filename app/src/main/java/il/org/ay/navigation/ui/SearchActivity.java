@@ -16,7 +16,6 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
@@ -54,8 +53,6 @@ public class SearchActivity extends BaseActivity {
     private TextView emptyTitle;
     private TextView emptyText;
     private TextView resultsTitle;
-    private TextView resultsCount;
-    private TextView status;
 
     private ChipGroup favoriteChips;
     private ChipGroup recentChips;
@@ -63,8 +60,6 @@ public class SearchActivity extends BaseActivity {
     private View favoritesScroll;
     private View recentHeader;
     private View recentScroll;
-    private MaterialButton favoritesEdit;
-    private boolean editingFavorites;
     private boolean hasRecents;
     private String currentQuery = "";
 
@@ -83,8 +78,6 @@ public class SearchActivity extends BaseActivity {
         emptyTitle = findViewById(R.id.search_empty_title);
         emptyText = findViewById(R.id.search_empty_text);
         resultsTitle = findViewById(R.id.results_title);
-        resultsCount = findViewById(R.id.results_count);
-        status = findViewById(R.id.search_status);
 
         favoriteChips = findViewById(R.id.favorites_chips);
         recentChips = findViewById(R.id.recent_chips);
@@ -92,8 +85,6 @@ public class SearchActivity extends BaseActivity {
         favoritesScroll = findViewById(R.id.favorites_scroll);
         recentHeader = findViewById(R.id.recent_header);
         recentScroll = findViewById(R.id.recent_scroll);
-        favoritesEdit = findViewById(R.id.favorites_edit);
-        favoritesEdit.setOnClickListener(v -> setEditingFavorites(!editingFavorites));
 
         adapter = new RoomAdapter(this::onRoomChosen, this::onStarClicked);
         results.setAdapter(adapter);
@@ -138,10 +129,8 @@ public class SearchActivity extends BaseActivity {
             }
             return false;  // this screen stays the search tab
         });
-        findViewById(R.id.search_ar_open).setOnClickListener(v -> startActivity(ArNavActivity.navigateTo(this, null)));
 
         search();
-        showStatus();
         loadShortcuts();
     }
 
@@ -166,7 +155,6 @@ public class SearchActivity extends BaseActivity {
     /** The first sync finished while this screen was open: show the new rooms. */
     private void onCampusChanged() {
         search();
-        showStatus();
         loadShortcuts();  // a room that left the campus data took its favourite with it
     }
 
@@ -186,8 +174,6 @@ public class SearchActivity extends BaseActivity {
         showRecentSection();
         resultsTitle.setText(query.isEmpty() ? getString(R.string.search_results_all)
                 : getString(R.string.search_results, typed));
-        resultsCount.setText(String.valueOf(rooms.size()));
-        resultsCount.setVisibility(rooms.isEmpty() ? View.GONE : View.VISIBLE);
         adapter.show(rooms, query, () -> results.scrollToPosition(0));
 
         boolean noRooms = rooms.isEmpty();
@@ -202,11 +188,6 @@ public class SearchActivity extends BaseActivity {
     }
 
     /** How many rooms the phone holds and which version (T08, AT-09). */
-    private void showStatus() {
-        repo.allRooms(rooms -> status.setText(
-                getString(R.string.search_local_data, rooms.size(), repo.localVersion())));
-    }
-
     private void onRoomChosen(CampusRoom room) {
         hideKeyboard();
         repo.addRecent(room.number, this::loadShortcuts);
@@ -227,17 +208,14 @@ public class SearchActivity extends BaseActivity {
     /** Reads favourites and recent searches from Room and redraws the two chip rows and the stars. */
     private void loadShortcuts() {
         repo.favorites(rooms -> {
-            fillChips(favoriteChips, rooms, R.drawable.ic_star_filled, true);
+            fillChips(favoriteChips, rooms, R.drawable.ic_star_filled);
             boolean any = !rooms.isEmpty();
             favoritesHeader.setVisibility(any ? View.VISIBLE : View.GONE);
             favoritesScroll.setVisibility(any ? View.VISIBLE : View.GONE);
-            if (!any) {
-                setEditingFavorites(false);
-            }
         });
         repo.favoriteNumbers(adapter::setFavorites);
         repo.recents(rooms -> {
-            fillChips(recentChips, rooms, R.drawable.ic_schedule, false);
+            fillChips(recentChips, rooms, R.drawable.ic_schedule);
             hasRecents = !rooms.isEmpty();
             showRecentSection();
         });
@@ -250,7 +228,7 @@ public class SearchActivity extends BaseActivity {
         recentScroll.setVisibility(v);
     }
 
-    private void fillChips(ChipGroup group, List<CampusRoom> rooms, int icon, boolean favorites) {
+    private void fillChips(ChipGroup group, List<CampusRoom> rooms, int icon) {
         group.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(this);
         for (CampusRoom room : rooms) {
@@ -259,21 +237,7 @@ public class SearchActivity extends BaseActivity {
             chip.setChipIconResource(icon);
             chip.setTag(room.number);
             chip.setOnClickListener(v -> onRoomChosen(room));
-            if (favorites) {
-                chip.setCloseIconVisible(editingFavorites);
-                chip.setCloseIconContentDescription(getString(R.string.action_unfavorite));
-                chip.setOnCloseIconClickListener(v -> onStarClicked(room));
-            }
             group.addView(chip);
-        }
-    }
-
-    /** "עריכה": each favourite gets an × that removes it. */
-    private void setEditingFavorites(boolean editing) {
-        editingFavorites = editing;
-        favoritesEdit.setText(editing ? R.string.search_favorites_done : R.string.search_favorites_edit);
-        for (int i = 0; i < favoriteChips.getChildCount(); i++) {
-            ((Chip) favoriteChips.getChildAt(i)).setCloseIconVisible(editing);
         }
     }
 
