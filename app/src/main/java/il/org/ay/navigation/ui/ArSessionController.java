@@ -65,8 +65,10 @@ class ArSessionController implements GLSurfaceView.Renderer {
 
     /** A new set of chevrons once the user is this far from where the last set was placed… */
     static final float WALKED_M = 2.5f;
-    /** …or when the route ahead turned more than this since then. */
+    /** …or when the route ahead turned more than this since then… */
     static final float TURNED_DEG = 25f;
+    /** …or when north (the alignment) moved more than this since then (T18d). */
+    static final float NORTH_MOVED_DEG = 8f;
     /** Without a floor plane, the floor is this far below the phone (held in front of the chest). */
     static final float PHONE_HEIGHT_M = 1.3f;
     /** Every n-th camera frame goes to the building model. */
@@ -95,6 +97,7 @@ class ArSessionController implements GLSurfaceView.Renderer {
     private Anchor anchor;
     private List<GroundPath.Chevron> chevrons = Collections.emptyList();
     private float placedBearing = Float.NaN;
+    private float placedOffset = Float.NaN;
 
     private volatile State state = State.STARTING;
     private volatile String trackingFailure = "";
@@ -135,6 +138,11 @@ class ArSessionController implements GLSurfaceView.Renderer {
 
     boolean isNorthAligned() {
         return alignment.isReady();
+    }
+
+    /** Frames used so far to find north (ready at ArAlignment.SETTLE_FRAMES). */
+    int northFrames() {
+        return alignment.frames();
     }
 
     float northOffset() {
@@ -210,7 +218,8 @@ class ArSessionController implements GLSurfaceView.Renderer {
         float bearing = firstBearing(ahead);
         boolean need = anchor == null || anchor.getTrackingState() == TrackingState.STOPPED || chevrons.isEmpty()
                 || (!Float.isNaN(bearing) && !Float.isNaN(placedBearing)
-                && Math.abs(HeadingMath.difference(placedBearing, bearing)) > TURNED_DEG);
+                && Math.abs(HeadingMath.difference(placedBearing, bearing)) > TURNED_DEG)
+                || Math.abs(HeadingMath.difference(placedOffset, alignment.offset())) > NORTH_MOVED_DEG;
         if (!need) {
             Pose a = anchor.getPose();
             need = Math.hypot(a.tx() - camera.tx(), a.tz() - camera.tz()) > WALKED_M;
@@ -224,6 +233,7 @@ class ArSessionController implements GLSurfaceView.Renderer {
         anchor = session.createAnchor(Pose.makeTranslation(camera.tx(), floorY(camera), camera.tz()));
         chevrons = GroundPath.chevrons(ahead[0], ahead[1], GroundPath.ALONG, alignment.offset());
         placedBearing = bearing;
+        placedOffset = alignment.offset();
     }
 
     /** The bearing of the route at the first chevron, to notice a turn. */

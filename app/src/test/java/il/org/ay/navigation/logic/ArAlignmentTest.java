@@ -28,7 +28,6 @@ public class ArAlignmentTest {
         ArAlignment a = new ArAlignment();
         float[] f = forward(0);
         a.update(f[0], f[1], f[2], 90);                    // the compass says east
-        assertTrue(a.isReady());
         assertEquals(90, a.offset(), 1e-3);
         // turning 30° right: ARCore says 30, the compass says 120; the offset stays 90
         f = forward(30);
@@ -64,5 +63,18 @@ public class ArAlignmentTest {
         ArAlignment a = new ArAlignment();
         assertFalse(a.update(0, -0.9f, -0.3f, 50));      // looking down at the feet
         assertFalse(a.isReady());
+    }
+
+    @Test
+    public void northIsReady_onlyAfterTheCompassSettled() {   // T18d
+        ArAlignment a = new ArAlignment();
+        float[] f = forward(0);
+        for (int i = 1; i < ArAlignment.SETTLE_FRAMES; i++) {
+            a.update(f[0], f[1], f[2], 90);
+            assertFalse("ready after " + i + " frames", a.isReady());
+        }
+        a.update(f[0], f[1], f[2], 90);
+        assertTrue(a.isReady());
+        assertEquals(ArAlignment.SETTLE_FRAMES, a.frames());
     }
 }

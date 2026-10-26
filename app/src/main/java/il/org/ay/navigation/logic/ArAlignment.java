@@ -26,7 +26,15 @@ public class ArAlignment {
     /** Only frames with the camera this close to level are used (a phone held up). */
     public static final double MAX_TILT_DEG = 35;
 
+    /**
+     * T18d: north counts as known only after this many frames (about a second and a half of the
+     * phone held up). The first compass readings shake most; arrows placed on them pointed the
+     * wrong way until the next placement.
+     */
+    public static final int SETTLE_FRAMES = 45;
+
     private final HeadingFilter offset = new HeadingFilter(SMOOTHING);
+    private int frames;
 
     /** The camera's direction in ARCore's world, degrees clockwise from ARCore's −z. */
     public static float yaw(float forwardX, float forwardZ) {
@@ -46,11 +54,18 @@ public class ArAlignment {
             return false;
         }
         offset.add(HeadingMath.normalize(compassHeading - yaw(forwardX, forwardZ)));
+        frames++;
         return true;
     }
 
+    /** North is known well enough to place arrows (T18d: after {@link #SETTLE_FRAMES} frames). */
     public boolean isReady() {
-        return offset.hasValue();
+        return offset.hasValue() && frames >= SETTLE_FRAMES;
+    }
+
+    /** How many frames have been used so far. */
+    public int frames() {
+        return frames;
     }
 
     /** Where ARCore's −z points, in degrees from true north. */

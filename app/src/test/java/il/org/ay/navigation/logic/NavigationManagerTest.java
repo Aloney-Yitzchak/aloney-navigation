@@ -323,4 +323,14 @@ public class NavigationManagerTest {
         assertEquals(1, p[0][1][0], 0.3);                   // 3 m along: 1 m east, then 2 m north
         assertEquals(2, p[0][1][1], 0.3);
     }
+
+    @Test
+    public void pathAhead_startsAtTheUsersFeet_evenWhenGpsIsBesideThePath() {   // T18d
+        NavigationManager nav = navigateTo(3);
+        nav.update(at(20, 0));
+        nav.update(at(30, 6));                              // GPS 6 m north of the path along y = 0
+        float[][][] p = nav.getPathAhead(new float[]{1.5f}, 0.5f);
+        assertEquals(1.5, p[0][0][0], 0.2);                 // 1.5 m ahead (east)…
+        assertEquals(0, p[0][0][1], 0.2);                   // …not 6 m to the side
+    }
 }
