@@ -203,17 +203,22 @@ public class NavigationManager {
      * {@code result[0][i]} is the point {@code along[i]} metres further along the route, and
      * {@code result[1][i]} the point {@code step} metres after it (which way the arrow there
      * points). Null while there is nothing to lead to (same rule as {@link #getTargetBearing}).
+     *
+     * <p>T18d: measured from the user's point <em>on the route</em>, not from the GPS position.
+     * GPS is often several metres to the side, and the arrows would then lie beside the user,
+     * out of the picture. The user stands on the path, so the path's shape starts at their feet.
      */
     @Nullable
     public float[][][] getPathAhead(@NonNull float[] along, float step) {
         if (route == null || position == null || offCampus || state != NavState.NAVIGATING) {
             return null;
         }
+        LatLng onRoute = route.advance(position, 0);
         float[][] points = new float[along.length][];
         float[][] ahead = new float[along.length][];
         for (int i = 0; i < along.length; i++) {
-            points[i] = GroundPath.enu(position, route.advance(position, along[i]));
-            ahead[i] = GroundPath.enu(position, route.advance(position, along[i] + step));
+            points[i] = GroundPath.enu(onRoute, route.advance(position, along[i]));
+            ahead[i] = GroundPath.enu(onRoute, route.advance(position, along[i] + step));
         }
         return new float[][][]{points, ahead};
     }

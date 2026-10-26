@@ -692,7 +692,9 @@ public class ArNavActivity extends BaseActivity {
                         : getString(R.string.ar_detail_yes)));
         b.append("\n").append(getString(R.string.ar_detail_north, c.isNorthAligned()
                 ? getString(R.string.ar_detail_north_offset, Math.round(c.northOffset()))
-                : getString(R.string.ar_detail_no)));
+                : getString(R.string.ar_detail_north_settling,
+                Math.min(c.northFrames(), il.org.ay.navigation.logic.ArAlignment.SETTLE_FRAMES),
+                il.org.ay.navigation.logic.ArAlignment.SETTLE_FRAMES)));
         b.append("\n").append(getString(R.string.ar_detail_floor, getString(
                 c.floorFromPlane() ? R.string.ar_detail_floor_plane : R.string.ar_detail_floor_estimate)));
         b.append("\n").append(getString(R.string.ar_detail_chevrons, c.visibleChevrons()));
