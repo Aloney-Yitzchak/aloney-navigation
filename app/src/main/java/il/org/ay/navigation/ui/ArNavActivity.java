@@ -82,6 +82,8 @@ public class ArNavActivity extends BaseActivity {
     @VisibleForTesting
     static boolean forceCompassMode;
     private static final String AR_TAG = "ArNav";
+    /** T31: the GPS chip shows only when the accuracy is worse than this. */
+    static final float POOR_GPS_M = 10f;
     /** T18b: why ARCore or the compass, for the mode chip. */
     private ArStatus arStatus = ArStatus.CHECKING;
     @Nullable
@@ -180,12 +182,11 @@ public class ArNavActivity extends BaseActivity {
         arrow = findViewById(R.id.ar_arrow);
         instructionCard = (View) findViewById(R.id.ar_instruction).getParent().getParent();
         // shown by the loop when there is something to show
-        for (int id : new int[]{R.id.ar_arrow, R.id.ar_gps_accuracy, R.id.ar_heading, R.id.ar_calibrate}) {
+        for (int id : new int[]{R.id.ar_arrow, R.id.ar_gps_accuracy, R.id.ar_calibrate}) {
             findViewById(id).setVisibility(View.GONE);
         }
         instructionCard.setVisibility(View.GONE);
         findViewById(R.id.ar_detected).setVisibility(View.GONE);   // T22: the building model
-        findViewById(R.id.ar_sound).setVisibility(View.GONE);      // spoken instructions: not planned
         findViewById(R.id.ar_calibrate).setOnClickListener(v -> explainCompassCalibration());
         findViewById(R.id.ar_mode).setOnClickListener(v -> explainArMode());   // T18b
         heading = new HeadingService(this);
@@ -213,7 +214,6 @@ public class ArNavActivity extends BaseActivity {
             }
             finish();
         });
-        findViewById(R.id.ar_show_map).setOnClickListener(v -> openMap());
         findViewById(R.id.ar_flash).setOnClickListener(v -> toggleTorch());
 
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
@@ -245,33 +245,19 @@ public class ArNavActivity extends BaseActivity {
         }
     }
 
-    /** The destination bar and card; without a destination, a hint to choose one. */
+    /** The destination bar; without a destination, a hint to choose one. */
     private void showDestination(@Nullable CampusRoom r) {
         room = r;
         TextView bar = findViewById(R.id.ar_destination);
-        View card = findViewById(R.id.ar_room_number).getParent() instanceof View
-                ? (View) findViewById(R.id.ar_room_number).getParent() : null;
-        findViewById(R.id.ar_destination_distance).setVisibility(View.GONE);   // the loop shows them
-        findViewById(R.id.ar_time_left).setVisibility(View.GONE);
+        findViewById(R.id.ar_destination_distance).setVisibility(View.GONE);   // the loop shows it
         if (r == null) {
             bar.setText(R.string.ar_choose_destination);
-            if (card != null) {
-                card.setVisibility(View.GONE);
-            }
             return;
         }
         CharSequence name = RoomAdapter.displayName(bar, r);
         roomName = name;
         bar.setText(getString(R.string.ar_destination, name));   // finding 7: the real destination
         startNavigation(r);
-        if (card != null) {
-            card.setVisibility(View.VISIBLE);
-        }
-        ((TextView) findViewById(R.id.ar_room_number)).setText(r.number);
-        ((TextView) findViewById(R.id.ar_room_name)).setText(name);
-        TextView owner = findViewById(R.id.ar_room_owner);
-        owner.setText(r.owner);
-        owner.setVisibility(r.owner == null || r.owner.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     // ------------------------------------------------------------ T17: navigation
@@ -319,16 +305,12 @@ public class ArNavActivity extends BaseActivity {
         frames++;
         handler.postDelayed(frame, 1000 / FRAMES_PER_SECOND);
 
+        // T31: the GPS accuracy only when it is poor enough to matter (a warning, not a gauge)
         TextView gps = findViewById(R.id.ar_gps_accuracy);
-        gps.setVisibility(accuracy > 0 ? View.VISIBLE : View.GONE);
-        if (accuracy > 0) {
+        boolean poorGps = accuracy > POOR_GPS_M;
+        gps.setVisibility(poorGps ? View.VISIBLE : View.GONE);
+        if (poorGps) {
             gps.setText(getString(R.string.ar_gps_accuracy, Math.round(accuracy)));
-        }
-        TextView compass = findViewById(R.id.ar_heading);
-        compass.setVisibility(Float.isNaN(lastHeading) ? View.GONE : View.VISIBLE);
-        if (!Float.isNaN(lastHeading)) {
-            String[] points = getResources().getStringArray(R.array.compass_points);
-            compass.setText(points[Math.round(lastHeading / 45f) % 8]);
         }
         findViewById(R.id.ar_calibrate).setVisibility(compassPoor ? View.VISIBLE : View.GONE);
 
@@ -336,6 +318,8 @@ public class ArNavActivity extends BaseActivity {
             return;
         }
         TextView instruction = findViewById(R.id.ar_instruction);
+        TextView detail = findViewById(R.id.ar_instruction_detail);
+        detail.setVisibility(View.VISIBLE);   // hidden again below while guiding: the bar has it
         if (nav.isOffCampus()) {
             arrow.setVisibility(View.GONE);
             instructionCard.setVisibility(View.VISIBLE);
@@ -402,17 +386,14 @@ public class ArNavActivity extends BaseActivity {
         double left = nav.getDistanceLeft();
         int leftM = WalkingEstimate.roundedMetres(left);
         int minutes = WalkingEstimate.minutes(left);
-        ((TextView) findViewById(R.id.ar_instruction_detail))
-                .setText(getString(R.string.ar_instruction_detail, roomName, leftM, minutes));
+        detail.setVisibility(View.GONE);
         TextView step = findViewById(R.id.ar_step);
         step.setVisibility(View.VISIBLE);
         step.setText(getString(R.string.ar_step, g.step, g.steps));
+        // T31: what is left, once, in the destination bar
         TextView distance = findViewById(R.id.ar_destination_distance);
         distance.setVisibility(View.VISIBLE);
-        distance.setText(getString(R.string.map_distance, leftM));
-        TextView time = findViewById(R.id.ar_time_left);
-        time.setVisibility(View.VISIBLE);
-        time.setText(getString(R.string.room_minutes, minutes));
+        distance.setText(getString(R.string.ar_left, leftM, minutes));
     }
 
     /** Decision #13: the step permission is asked where steps are used, once. */

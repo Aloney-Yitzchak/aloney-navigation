@@ -115,8 +115,6 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
 
         sheet.setVisibility(View.GONE);
         myLocation.setVisibility(View.GONE);
-        findViewById(R.id.map_entrance).setVisibility(View.GONE);       // the data has no wings or floors
-        findViewById(R.id.map_route_details).setVisibility(View.GONE);  // a step list is not planned
         wrongLocation = findViewById(R.id.map_wrong_location);         // shown when navigating
         wrongLocation.setVisibility(View.GONE);
         wrongLocation.setOnClickListener(v -> openCalibration());
@@ -129,15 +127,12 @@ public class MapActivity extends BaseActivity implements LocationService.Listene
                         nav.cancelCalibration();
                     }
                 });
-        findViewById(R.id.map_floors).setVisibility(View.GONE);         // the campus data has no floors
 
         myLocation.setOnClickListener(v -> {
             if (lastPosition != null) {
                 layers.centerOn(lastPosition);
             }
         });
-        findViewById(R.id.map_start_ar).setOnClickListener(v ->
-                startActivity(ArNavActivity.navigateTo(this, room != null ? room.number : null)));
         favorite.setOnClickListener(v -> toggleFavorite());
 
         BottomNavigationView nav = findViewById(R.id.bottom_nav);

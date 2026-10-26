@@ -89,11 +89,9 @@ public class AdminActivity extends BaseActivity {
             }
             return false;
         });
-        findViewById(R.id.admin_back).setOnClickListener(v -> finish());
         findViewById(R.id.admin_photos).setOnClickListener(v ->
                 startActivity(new android.content.Intent(this, PhotoTasksActivity.class)));   // T20a
-        findViewById(R.id.admin_update_map).setOnClickListener(v ->
-                Snackbar.make(roomsState, R.string.coming_soon, Snackbar.LENGTH_SHORT).show());   // T28
+        findViewById(R.id.admin_update_map).setVisibility(View.GONE);   // T31: hidden until T28 builds it
 
         adapter = new AdminRoomAdapter(this::openEditor);
         RecyclerView list = findViewById(R.id.admin_rooms);

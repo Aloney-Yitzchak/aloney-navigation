@@ -136,18 +136,6 @@
         <item name="iconSize">@dimen/icon_medium</item>
     </style>
     <!-- floor switch on the map: the chosen floor light green -->
-    <style name="Widget.Aloney.FloorButton" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="android:minWidth">@dimen/touch_target</item>
-        <item name="android:minHeight">@dimen/touch_target</item>
-        <item name="android:paddingStart">12dp</item>
-        <item name="android:paddingEnd">12dp</item>
-        <item name="android:insetTop">0dp</item>
-        <item name="android:insetBottom">0dp</item>
-        <item name="backgroundTint">@color/floor_button_background</item>
-        <item name="android:textColor">@color/floor_button_text</item>
-        <item name="strokeWidth">0dp</item>
-        <item name="android:textSize">@dimen/text_body</item>
-    </style>
     <!-- round dark buttons on top of the camera image -->
     <style name="Widget.Aloney.OverlayButton" parent="Widget.Material3.Button.IconButton.Filled">
         <item name="backgroundTint">@color/overlay_chip</item>
@@ -250,11 +238,10 @@
         <item name="android:background">@color/background</item>
         <item name="android:elevation">2dp</item>
     </style>
-    <!-- the main screens: the app name in green, the screen name under it in Hebrew (finding 5) -->
+    <!-- the main screens: the app name in green. The bottom bar shows which screen it is (T31) -->
     <style name="Widget.Aloney.Toolbar.Main">
         <item name="titleTextColor">@color/primary</item>
         <item name="logo">@drawable/ic_logo_app</item>
-        <item name="menu">@menu/app_bar</item>
     </style>
     <style name="Widget.Aloney.BottomNav" parent="Widget.Material3.BottomNavigationView">
         <item name="itemIconTint">@color/bottom_nav_item</item>

@@ -64,12 +64,6 @@
                         android:src="@drawable/ic_shield" />
                 </FrameLayout>
 
-                <TextView
-                    style="@style/Text.Display"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_medium"
-                    android:text="@string/admin_login_title" />
 
                 <TextView
                     style="@style/Text.Secondary"
@@ -208,31 +202,7 @@
                     android:text="@string/admin_login_button"
                     app:icon="@drawable/ic_login" />
 
-                <TextView
-                    style="@style/Text.Secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:drawablePadding="@dimen/spacing_tiny"
-                    android:gravity="center_vertical"
-                    android:text="@string/admin_login_secure"
-                    app:drawableStartCompat="@drawable/ic_lock"
-                    app:drawableTint="@color/primary" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:minHeight="@dimen/spacing_medium" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/admin_back"
-                    style="@style/Widget.Aloney.Button.Text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/admin_back_to_students"
-                    app:icon="@drawable/ic_arrow_forward"
-                    app:iconGravity="textEnd" />
             </LinearLayout>
         </ScrollView>
 

@@ -96,7 +96,7 @@ public class SplashActivityTest {
     @Test
     public void allowBoth_opensSearch() {
         startAndAnswer(ALLOW, ALLOW);
-        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_text)).check(matches(isDisplayed()));
         // Hebrew in the search field, next to its icon (the JVM snapshots cannot show this)
         onView(withId(R.id.search_text)).perform(replaceText("מז"), closeSoftKeyboard());
         screenshot("02-search");
@@ -109,7 +109,7 @@ public class SplashActivityTest {
         screenshot("03-camera-denied");
         assertDialogIsRightToLeft();
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
-        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_text)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class SplashActivityTest {
         onView(withText(R.string.permission_missing_location)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("04-location-denied");
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
-        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_text)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class SplashActivityTest {
         onView(withText(R.string.permission_missing_both)).inRoot(isDialog()).check(matches(isDisplayed()));
         screenshot("05-both-denied");
         onView(withText(R.string.permission_continue)).inRoot(isDialog()).perform(click());
-        onView(withId(R.id.search_status)).check(matches(isDisplayed()));
+        onView(withId(R.id.search_text)).check(matches(isDisplayed()));
     }
 
     /** The permissions view replaces the splash after a moment. */

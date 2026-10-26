@@ -37,11 +37,8 @@ final class SnapshotSamples {
 
     /** The search screen as T09 runs it: the real adapter, "מז" typed, favourites still hidden (T10). */
     static void fillSearch(View v) {
-        text(v, R.id.search_status, "64 חדרים · גרסה 3");
         text(v, R.id.search_text, "מז");
         text(v, R.id.results_title, v.getContext().getString(R.string.search_results, "מז"));
-        text(v, R.id.results_count, "3");
-        v.findViewById(R.id.results_count).setVisibility(View.VISIBLE);
         RecyclerView list = v.findViewById(R.id.search_results);
         RoomAdapter adapter = new RoomAdapter(room -> { }, room -> { });
         list.setAdapter(adapter);
@@ -54,7 +51,6 @@ final class SnapshotSamples {
 
     /** The empty box: favourites, recent searches and all the rooms (T10). */
     static void fillSearchStart(View v) {
-        text(v, R.id.search_status, "64 חדרים · גרסה 3");
         v.findViewById(R.id.favorites_header).setVisibility(View.VISIBLE);
         v.findViewById(R.id.favorites_scroll).setVisibility(View.VISIBLE);
         ChipGroup favorites = v.findViewById(R.id.favorites_chips);
@@ -66,8 +62,6 @@ final class SnapshotSamples {
         addShortcut(recent, "מתמטיקה", R.drawable.ic_schedule);
         addShortcut(recent, "מעבדת ביולוגיה", R.drawable.ic_schedule);
         addShortcut(recent, "חדר 12", R.drawable.ic_schedule);
-        text(v, R.id.results_count, "64");
-        v.findViewById(R.id.results_count).setVisibility(View.VISIBLE);
         RecyclerView list = v.findViewById(R.id.search_results);
         RoomAdapter adapter = new RoomAdapter(room -> { }, room -> { });
         list.setAdapter(adapter);
@@ -82,7 +76,6 @@ final class SnapshotSamples {
 
     /** No room matches what was typed. */
     static void fillSearchEmpty(View v) {
-        text(v, R.id.search_status, "64 חדרים · גרסה 3");
         text(v, R.id.search_text, "xyz");
         text(v, R.id.results_title, v.getContext().getString(R.string.search_results, "xyz"));
         v.findViewById(R.id.search_empty).setVisibility(View.VISIBLE);
@@ -91,13 +84,10 @@ final class SnapshotSamples {
     }
 
     static void fillMap(View v) {
-        text(v, R.id.map_floor_1, v.getContext().getString(R.string.map_floor, 1));
-        text(v, R.id.map_floor_2, v.getContext().getString(R.string.map_floor, 2));
         text(v, R.id.map_destination_name, "חדר 42 — מתמטיקה");
         text(v, R.id.map_destination_detail, "רכזת שכבה ט'");
         text(v, R.id.map_distance, "120 מ'");
         text(v, R.id.map_time, "כ-2 דק' הליכה");
-        text(v, R.id.map_entrance, "כניסה 12");
         selectTab(v, R.id.nav_map);
     }
 
@@ -105,18 +95,12 @@ final class SnapshotSamples {
         text(v, R.id.ar_mode, v.getContext().getString(R.string.ar_mode_ar));   // T18b
         ((com.google.android.material.chip.Chip) v.findViewById(R.id.ar_mode)).setChipIconResource(R.drawable.ic_view_in_ar);
         text(v, R.id.ar_destination, v.getContext().getString(R.string.ar_destination, "חדר 42 — מתמטיקה"));
-        text(v, R.id.ar_destination_distance, "45 מ'");
-        text(v, R.id.ar_detected, "מבנה ט' זוהה");
-        v.findViewById(R.id.ar_detected).setVisibility(View.VISIBLE);
-        text(v, R.id.ar_gps_accuracy, v.getContext().getString(R.string.ar_gps_accuracy, 4));
-        text(v, R.id.ar_heading, "צפון-מערב");
+        text(v, R.id.ar_destination_distance, v.getContext().getString(R.string.ar_left, 120, 2));   // T31
+        v.findViewById(R.id.ar_detected).setVisibility(View.GONE);      // T22, later
+        v.findViewById(R.id.ar_gps_accuracy).setVisibility(View.GONE);  // T31: only when poor
         text(v, R.id.ar_instruction, "פנו שמאלה בעוד 15 מ'");
-        text(v, R.id.ar_instruction_detail, "חדר 42 · 120 מ' (כ-2 דק')");
+        v.findViewById(R.id.ar_instruction_detail).setVisibility(View.GONE);
         text(v, R.id.ar_step, v.getContext().getString(R.string.ar_step, 2, 4));
-        text(v, R.id.ar_room_number, "42");
-        text(v, R.id.ar_room_name, "חדר 42 — מתמטיקה");
-        text(v, R.id.ar_room_owner, "רכזת שכבה ט'");
-        text(v, R.id.ar_time_left, "2 דק'");
         selectTab(v, R.id.nav_ar);
     }
 
@@ -148,6 +132,7 @@ final class SnapshotSamples {
         bar.inflateMenu(R.menu.admin_bar);
         text(v, R.id.admin_map_title, v.getContext().getString(R.string.admin_map_title, "תשפ״ז"));
         text(v, R.id.admin_map_info, v.getContext().getString(R.string.admin_map_info, 64, 3));
+        v.findViewById(R.id.admin_update_map).setVisibility(View.GONE);   // until T28
         text(v, R.id.admin_photos_info, v.getContext().getResources()
                 .getQuantityString(R.plurals.photo_summary_phone, 120, 120));
         text(v, R.id.admin_search, "42");

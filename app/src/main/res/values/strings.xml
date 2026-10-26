@@ -9,13 +9,10 @@
     <string name="nav_map">מפה ומסלול</string>
     <string name="nav_ar">מצלמה AR</string>
     <string name="nav_staff">ניהול צוות</string>
-    <string name="action_search">חיפוש</string>
-    <string name="action_account">כניסת צוות</string>
     <string name="action_back">חזרה</string>
     <string name="action_close">סגירה</string>
     <string name="action_cancel">ביטול</string>
     <string name="action_favorite">הוספה למועדפים</string>
-    <string name="action_open">פתח</string>
     <string name="room_badge_description">חדר %1$s</string>
     <string name="room_floor">קומה %1$s</string>
 
@@ -48,14 +45,9 @@
     <string name="permission_continue">המשך</string>
 
     <!-- search -->
-    <string name="search_screen">חיפוש יעד</string>
-    <string name="search_title">לאן הולכים?</string>
-    <string name="search_hint">מספר חדר, שם או מורה</string>
-    <string name="search_local_data">%1$d חדרים · גרסה %2$d</string>
+    <string name="search_hint">לאן הולכים? חדר, שם או מורה</string>
     <string name="search_favorites">מועדפים</string>
-    <string name="search_favorites_edit">עריכה</string>
     <string name="search_recent">חיפושים אחרונים</string>
-    <string name="search_favorites_done">סיום</string>
     <string name="favorite_added">%1$s נוסף למועדפים</string>
     <string name="favorite_removed">%1$s הוסר מהמועדפים</string>
     <string name="action_unfavorite">הסרה מהמועדפים</string>
@@ -66,15 +58,11 @@
     <string name="search_no_data">עדיין אין חדרים בטלפון</string>
     <string name="search_no_data_hint">צריך להתחבר לאינטרנט פעם אחת כדי להוריד את מפת הקמפוס</string>
     <string name="coming_soon">המסך הזה ייבנה בהמשך</string>
-    <string name="search_ar_title">מצלמה AR</string>
-    <string name="search_ar_text">חץ ניווט על התמונה מהמצלמה</string>
     <string name="room_distance">%1$d מ\' · %2$d דק\'</string>
 
     <!-- map -->
-    <string name="map_screen">מפה ומסלול</string>
     <string name="map_placeholder">טוען את מפת הקמפוס…</string>
     <string name="map_wrong_location">המיקום שגוי?</string>
-    <string name="map_floor">ק\' %1$d</string>
     <string name="map_my_location">המיקום שלי</string>
     <string name="map_you_are_here">אתה כאן</string>
     <string name="map_distance">%1$d מ\'</string>
@@ -83,23 +71,17 @@
     <string name="map_no_location">בלי הרשאת מיקום אפשר לראות את היעד, אבל לא את המסלול אליו</string>
     <string name="map_no_route">לא נמצא מסלול ליעד הזה</string>
     <string name="map_route_recalculated">יצאת מהמסלול. חושב מסלול חדש</string>
-    <string name="map_start_ar">ניווט במצלמה (AR)</string>
-    <string name="map_route_details">פרטי מסלול והנחיות</string>
 
     <!-- AR -->
-    <string name="ar_screen">מצלמה AR</string>
     <string name="ar_destination">ניווט אל: %1$s</string>
-    <string name="ar_sound">השמעת הנחיות</string>
     <string name="ar_flash">פנס</string>
     <string name="ar_arrow">חץ הניווט</string>
     <string name="ar_step">שלב %1$d/%2$d</string>
     <string name="ar_end">סיים ניווט</string>
-    <string name="room_minutes">%1$d דק\'</string>
     <string name="ar_turn_left">פנו שמאלה בעוד %1$d מ\'</string>
     <string name="ar_turn_right">פנו ימינה בעוד %1$d מ\'</string>
     <string name="ar_turn_back">הסתובבו בעוד %1$d מ\'</string>
     <string name="ar_arrive">היעד לפניכם, עוד %1$d מ\'</string>
-    <string name="ar_instruction_detail">%1$s · %2$d מ\' (כ-%3$d דק\')</string>
     <string name="ar_waiting">מחפש את המיקום שלך…</string>
     <string name="ar_calibrate_title">כיול המצפן</string>
     <string name="ar_calibrate_text">החץ צריך מצפן מדויק. הזיזו את הטלפון באוויר בתנועת "שמונה" כמה פעמים, רחוק ממתכת ומגנטים.</string>
@@ -107,16 +89,6 @@
     <string name="steps_text">כדי שהחץ והמרחק יתעדכנו גם בין עדכוני ה-GPS, האפליקציה סופרת צעדים. המידע נשאר בטלפון.</string>
     <string name="steps_allow">אישור</string>
     <string name="steps_not_now">לא עכשיו</string>
-    <string-array name="compass_points">
-        <item>צפון</item>
-        <item>צפון-מזרח</item>
-        <item>מזרח</item>
-        <item>דרום-מזרח</item>
-        <item>דרום</item>
-        <item>דרום-מערב</item>
-        <item>מערב</item>
-        <item>צפון-מערב</item>
-    </string-array>
     <string name="ar_install_offer">עם Google Play Services for AR החץ "יעמוד" על השביל</string>
     <string name="ar_install">התקנה</string>
     <string name="ar_update">עדכון</string>
@@ -159,7 +131,7 @@
     <string name="ar_no_camera_title">אין גישה למצלמה</string>
     <string name="ar_open_map">ניווט במפה</string>
     <string name="ar_calibrate">כיול כיוון</string>
-    <string name="ar_show_map">הצגת המפה</string>
+    <string name="ar_left">%1$d מ\' · %2$d דק\'</string>
     <string name="ar_gps_accuracy">דיוק GPS: ±%1$d מ\'</string>
 
     <!-- arrival -->
@@ -191,7 +163,6 @@
 
     <!-- staff -->
     <string name="admin_login_screen">כניסת צוות</string>
-    <string name="admin_login_title">כניסת צוות</string>
     <string name="admin_login_subtitle">עדכון החדרים והמפה של הקמפוס</string>
     <string name="admin_login_notice_title">גישה לצוות בלבד</string>
     <string name="admin_login_notice_text">מורים, רכזים והנהלה שקיבלו הרשאה מצוות האפליקציה.</string>
@@ -199,8 +170,6 @@
     <string name="admin_email_hint">name@a-y.org.il</string>
     <string name="admin_password">סיסמה</string>
     <string name="admin_login_button">כניסה</string>
-    <string name="admin_login_secure">החיבור מוצפן</string>
-    <string name="admin_back_to_students">חזרה לניווט</string>
     <string name="admin_rooms_screen">ניהול חדרים</string>
     <string name="admin_rooms_subtitle">מחובר: %1$s</string>
     <string name="admin_logout">יציאה</string>

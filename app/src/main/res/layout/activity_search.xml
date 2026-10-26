@@ -14,7 +14,6 @@
         style="@style/Widget.Aloney.Toolbar.Main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:subtitle="@string/search_screen"
         app:title="@string/app_name" />
 
     <LinearLayout
@@ -24,36 +23,11 @@
         android:paddingHorizontal="@dimen/margin_screen"
         android:paddingTop="@dimen/spacing_medium">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/Text.Title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/search_title"
-                android:textSize="@dimen/text_display" />
-
-            <!-- how many rooms the phone holds, and which version (T08, AT-09) -->
-            <com.google.android.material.chip.Chip
-                android:id="@+id/search_status"
-                style="@style/Widget.Aloney.Chip.Green"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:chipIcon="@drawable/ic_near_me"
-                tools:text="64 חדרים · גרסה 3" />
-        </LinearLayout>
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/search_input"
             style="@style/Widget.Aloney.TextInput.Search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
             app:endIconMode="clear_text"
             app:hintEnabled="false"
             app:startIconDrawable="@drawable/ic_search">
@@ -87,13 +61,7 @@
                 android:layout_weight="1"
                 android:text="@string/search_favorites" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/favorites_edit"
-                style="@style/Widget.Aloney.Button.Text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/search_favorites_edit" />
-        </LinearLayout>
+</LinearLayout>
     </LinearLayout>
 
     <HorizontalScrollView
@@ -159,18 +127,6 @@
             android:layout_weight="1"
             android:text="@string/search_results_all" />
 
-        <TextView
-            android:id="@+id/results_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_pill_grey"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="2dp"
-            android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_secondary"
-            android:visibility="gone"
-            tools:text="3"
-            tools:visibility="visible" />
     </LinearLayout>
 
     <FrameLayout
@@ -227,60 +183,6 @@
                 android:text="@string/search_empty_hint" />
         </LinearLayout>
     </FrameLayout>
-
-    <!-- shortcut to the camera view -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/search_ar_card"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_screen">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="12dp">
-
-            <ImageView
-                android:layout_width="@dimen/icon_circle"
-                android:layout_height="@dimen/icon_circle"
-                android:background="@drawable/bg_circle_primary_container"
-                android:importantForAccessibility="no"
-                android:padding="12dp"
-                android:src="@drawable/ic_explore"
-                app:tint="@color/primary" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    style="@style/Text.Label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/search_ar_title" />
-
-                <TextView
-                    style="@style/Text.Secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/search_ar_text" />
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/search_ar_open"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="@dimen/touch_target"
-                android:text="@string/action_open"
-                android:textSize="@dimen/text_body"
-                app:icon="@drawable/ic_view_in_ar" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
     <include layout="@layout/view_bottom_nav" />
 </LinearLayout>
