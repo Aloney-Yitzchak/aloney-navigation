@@ -57,6 +57,9 @@ STRAIGHT_DEG = 8         # thin out shape points where the way turns less than t
 MAX_SEGMENT_M = 40       # …but keep a point at least this often
 MAX_MOVE_M = 0.5         # an entrance moves at most this far towards its building's wall
 SNAP_TO_NODE_M = 0.6     # an entrance link ending this close to a junction uses that junction
+SPOKE_STUB_M = 6         # a stub off a through path is removed only if it is this short
+SAME_POINT_M = 1.0       # two junctions this close are one point (T05d)
+LINK_DEAD_END_M = 6      # a dead end this close to another path is linked to it (T05d)
 
 LAT0 = 32.5115
 LNG0 = 35.0040
@@ -226,7 +229,13 @@ class Graph:
 # ---------------------------------------------------------------- the steps
 
 def relink_entrances_step1(g, report):
-    """Removes every entrance's old link, and the spoke junctions left serving nothing."""
+    """Removes every entrance's old link, and the spoke junctions left serving nothing.
+
+    A spoke is removed only when nothing else is left on it, or when it is a short stub
+    (under SPOKE_STUB_M) hanging off a path that goes on both ways. There is no cascade: T05d found that removing
+    one stub after another had also removed a stretch of the main path (65–66) whose end
+    the entrances hung from.
+    """
     spokes = set()
     for e in [i for i in g.pos if g.kind[i] == "entrance"]:
         for j in list(g.adj[e]):
@@ -234,17 +243,14 @@ def relink_entrances_step1(g, report):
             if g.kind[j] == "junction":
                 spokes.add(j)
     removed = 0
-    changed = True
-    while changed:
-        changed = False
-        for s in list(spokes):
-            if s in g.pos and len(g.adj[s]) <= 1:
-                nbrs = list(g.adj[s])
-                g.remove(s)
-                spokes.discard(s)
-                removed += 1
-                spokes.update(n for n in nbrs if g.kind.get(n) == "junction")
-                changed = True
+    for s in sorted(spokes):
+        if s not in g.pos:
+            continue
+        nbrs = list(g.adj[s])
+        if not nbrs or (len(nbrs) == 1 and len(g.adj[nbrs[0]]) >= 3
+                        and math.dist(g.pos[s], g.pos[nbrs[0]]) < SPOKE_STUB_M):
+            g.remove(s)
+            removed += 1
     report.append(f"קישורי כניסה ישנים הוסרו; {removed} צמתי 'חישור' שנשארו בלי שימוש נמחקו")
 
 
@@ -453,6 +459,104 @@ def merge_close_junctions(g, limit=0.5):
     return merged
 
 
+# ---------------------------------------------------------------- T05d: repair
+
+def crosses_building(a, b, buildings):
+    """Whether the straight line a-b passes through a building (ends excluded)."""
+    n = max(3, int(math.dist(a, b) / 0.5))
+    for k in range(1, n):
+        p = (a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n)
+        if any(inside(p, poly) for poly in buildings):
+            return True
+    return False
+
+
+def repair(g, buildings, report):
+    """Joins what is drawn as one path network but was not connected in the graph:
+    junctions within 1 m become one point, crossing paths get a junction, and a dead end
+    within 6 m of another path is linked to it (unless the link would cross a building)."""
+    # a: one point, not two
+    merged = 0
+    ids = sorted(i for i in g.pos if g.kind[i] == "junction")
+    for k, a in enumerate(ids):
+        if a not in g.pos:
+            continue
+        for b in ids[k + 1:]:
+            if b in g.pos and math.dist(g.pos[a], g.pos[b]) < SAME_POINT_M:
+                for n in list(g.adj[b]):
+                    if n != a:
+                        g.link(a, n)
+                g.remove(b)
+                merged += 1
+    # b: a junction where two paths cross
+    crossings = 0
+    changed = True
+    while changed:
+        changed = False
+        edges = g.path_edges()
+        for k, (a, b) in enumerate(edges):
+            for c, d in edges[k + 1:]:
+                if len({a, b, c, d}) < 4:
+                    continue
+                x = crossing(g.pos[a], g.pos[b], g.pos[c], g.pos[d])
+                if x:
+                    j = g.split(a, b, x)
+                    j2 = g.split(c, d, x)
+                    if j2 != j:
+                        for n in list(g.adj[j2]):
+                            if n != j:
+                                g.link(j, n)
+                        g.remove(j2)
+                    crossings += 1
+                    changed = True
+                    break
+            if changed:
+                break
+    # c: dead ends next to another path
+    linked = []
+    for i in sorted(g.pos):
+        if g.kind.get(i) != "junction" or len(g.adj[i]) != 1:
+            continue
+        own = set(g.adj[i]) | {i}
+        candidates = [(a, b) for a, b in g.path_edges() if a not in own and b not in own]
+        d, edge, q, _ = g.nearest_on_paths(g.pos[i], candidates)
+        if edge and d <= LINK_DEAD_END_M and not crosses_building(g.pos[i], q, buildings):
+            g.link(i, g.split(edge[0], edge[1], q))
+            linked.append(round(d, 1))
+    report.append(f"תיקון הרשת: {merged} צמתים כפולים אוחדו, {crossings} הצטלבויות קיבלו צומת, "
+                  f"{len(linked)} קצוות מתים חוברו לשביל סמוך")
+
+
+def detours(g, buildings=(), limit=2.0, min_m=25):
+    """Entrance pairs whose route is more than `limit` times the straight line (and at least
+    min_m apart) although no building stands between them: a sign of a missing connection.
+    Returns (count, worst examples)."""
+    import heapq
+    ents = sorted(i for i in g.pos if g.kind[i] == "entrance")
+    bad = []
+    for s in ents:
+        dist = {s: 0.0}
+        h = [(0.0, s)]
+        while h:
+            dd, u = heapq.heappop(h)
+            if dd > dist[u]:
+                continue
+            for v in g.adj[u]:
+                nd = dd + math.dist(g.pos[u], g.pos[v])
+                if nd < dist.get(v, math.inf):
+                    dist[v] = nd
+                    heapq.heappush(h, (nd, v))
+        for t in ents:
+            if t <= s:
+                continue
+            straight = math.dist(g.pos[s], g.pos[t])
+            if (straight >= min_m and dist.get(t, math.inf) > limit * straight
+                    and not crosses_building(g.pos[s], g.pos[t], buildings)):
+                bad.append((dist.get(t, math.inf) / straight, g.label[s], g.label[t]))
+    bad.sort(reverse=True)
+    return len(bad), bad[:5]
+
+
 def split_long_edges(g):
     """Edges longer than MAX_SEGMENT_M get junctions every ≤ 40 m (the app snaps to segments)."""
     split = 0
@@ -527,10 +631,14 @@ def main(argv=None):
     report = [f"לפני: {len(data.nodes)} נקודות, {len(data.edges)} קשתות"]
     relink_entrances_step1(g, report)
     add_osm_step3(g, points, osm_graph(points, ways, boundary), report)
+    repair(g, buildings, report)
     entrances_step4(g, buildings, report)
     report.append(f"צמתים קרובים מ-50 ס\"מ זה לזה אוחדו: {merge_close_junctions(g)}")
     report.append(f"נקודות ביניים מיותרות על קו ישר: {drop_bare_junctions(g)} אוחדו")
     report.append(f"קשתות ארוכות מ-{MAX_SEGMENT_M} מ' חולקו: {split_long_edges(g)}")
+    n_bad, worst = detours(g, buildings)
+    report.append(f"זוגות כניסות שהמסלול ביניהם ארוך פי 2 ויותר מהקו הישר: {n_bad}"
+                  + (f" (הגרועים: {[(round(r, 1), a, b) for r, a, b in worst]})" if n_bad else ""))
     out = to_campus(g, data)
     total = sum(e.length_m for e in out.edges)
     report.append(f"אחרי: {len(out.nodes)} נקודות, {len(out.edges)} קשתות, {total / 1000:.1f} ק\"מ שבילים")
